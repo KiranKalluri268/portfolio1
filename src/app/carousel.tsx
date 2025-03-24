@@ -21,29 +21,35 @@ export default function Carousel() {
   }, []);
 
   return (
-    <motion.section
-      className="h-screen w-full flex flex-col justify-center items-center bg-black text-white overflow-hidden relative"
-    >
-      {/* ✅ Title above projects */}
+    <motion.section className="h-screen w-full flex flex-col justify-center items-center bg-black text-white overflow-hidden relative">
       <h2 className="text-5xl font-bold text-center mb-16 relative z-10">Projects</h2>
 
-      {/* Projects Carousel */}
       <div className="relative w-full flex justify-center items-center h-[60vh]">
         {projects.map((project, i) => {
           const offset = (i - index + projects.length) % projects.length;
-          let xTranslate = offset === 0 ? "0%" : offset === 1 ? "35vw" : "-35vw";
-          let scale = offset === 0 ? 1.2 : 1;
-          let opacity = offset === 0 || offset === 1 || offset === projects.length - 1 ? 1 : 0; // ✅ Hide projects behind left
-          let zIndex = offset === 0 ? 10 : offset === 1 ? 5 : 1; // ✅ Only middle & right projects visible
+
+          let xTranslate =
+            offset === 0 ? "0%"       // ✅ Middle project (Main focus)
+            : offset === 1 ? "34vw"   // ✅ Right project (Next in line)
+            : offset === projects.length - 1 ? "-34vw"  // ✅ Left project (Moves under)
+            : "-34vw";  // ✅ Any hidden project remains aligned
+
+          let scale = offset === 0 ? 1.15 : 1;
+          
+          // ✅ Ensure left project stays visible throughout
+          let opacity = offset === 0 || offset === 1 ? 1 : offset === projects.length - 1 ? 1 : 0;
+
+          // ✅ Keep left project UNDER the middle & right (`zIndex: 1`)
+          let zIndex = offset === 0 ? 10 : offset === 1 ? 2 : offset === projects.length - 1 ? 3 : 1;
 
           return (
             <motion.div
               key={project.id}
-              className="absolute transition-transform duration-500 ease-in-out"
+              className="absolute transition-transform duration-[600ms] ease-in-out"
               animate={{ opacity, scale, x: xTranslate }}
               style={{ zIndex }}
             >
-              <div className="w-[30vw] min-h-[50vh] p-10 bg-gray-900 rounded-xl text-center shadow-xl">
+              <div className="w-[30vw] min-h-[55vh] p-10 bg-gray-900 rounded-xl text-center shadow-xl">
                 <h3 className="text-3xl font-semibold">{project.title}</h3>
                 <p className="text-gray-400 mt-4">{project.description}</p>
               </div>
