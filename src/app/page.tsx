@@ -1,14 +1,22 @@
 "use client";
 import { motion } from "framer-motion";
-import Hero from "./hero"; // Import Hero
-import Carousel from "./carousel"; // Import Carousel
+import { useInView } from "react-intersection-observer";
+import Hero from "./hero";
+import Carousel from "./carousel";
 
 export default function Home() {
+  const { ref, inView } = useInView({
+    triggerOnce: false, // ✅ Keeps checking until user actually sees the section
+    threshold: 0.5, // ✅ Triggers only when at least 50% of the section is visible
+  });
+
+  console.log("Projects Section Visible:", inView); // ✅ Debugging log
+
   return (
     <div className="bg-black text-white flex flex-col min-h-screen">
       {/* Header */}
       <motion.header
-        className="w-full bg-black text-white py-6 px-6 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-lg"
+        className="w-full bg-black text-white pt-6 pb-0 px-6 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-lg"
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
@@ -32,8 +40,10 @@ export default function Home() {
       {/* Hero Section */}
       <Hero />
 
-      {/* Projects Section */}
-      <Carousel />
+      {/* Projects Section (Only Appears When Scrolled) */}
+      <div ref={ref} id="projects" className="min-h-screen flex items-center justify-center">
+        {inView && <Carousel isVisible={inView} />} {/* ✅ Starts only when inView is true */}
+      </div>
 
       {/* Contact Section */}
       <motion.section
