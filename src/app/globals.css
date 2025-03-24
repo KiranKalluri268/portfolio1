@@ -10,7 +10,7 @@ body {
 }
 
 .foldit {
-  font-family: "Foldit", sans-serif; /* Ensure Foldit is applied */
+  font-family: "Foldit", sans-serif !important; /* Ensure Foldit is applied */
 }
 
 @keyframes fadeIn {
