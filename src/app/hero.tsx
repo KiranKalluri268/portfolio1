@@ -76,7 +76,7 @@ export default function Hero() {
         style={{ opacity, scale }}
       >
         <div className="max-w-4xl w-full text-left">
-          <h2 className="text-5xl sm:text-6xl md:text-9xl font-bold font-[Foldit]">
+          <h2 className="text-5xl sm:text-6xl md:text-9xl font-bold foldit">
             {displayText}
             {displayText.length < staticText.length && <span className="text-blue-500 animate-blink">|</span>}
           </h2>
