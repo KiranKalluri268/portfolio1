@@ -81,7 +81,7 @@ export default function Hero() {
             {displayText.length < staticText.length && <span className="text-blue-500 animate-blink">|</span>}
           </h2>
 
-          <h2 className="text-4xl sm:text-5xl md:text-9xl font-bold mt-4 font-[Foldit]">
+          <h2 className="text-4xl sm:text-5xl md:text-9xl font-bold mt-4 foldit">
             <span className="text-blue-500">{secondLine}</span>
             {showSecondCursor && <span className="text-red-500 animate-blink">|</span>}
           </h2>
