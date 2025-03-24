@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    optimizeFonts: false, // Disable font optimization
-  },
+  optimizeFonts: false, // ✅ Disable Next.js font optimization
   devIndicators: false,
 };
 
