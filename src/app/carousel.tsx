@@ -38,15 +38,15 @@ export default function Carousel({ isVisible }: { isVisible: boolean }) {
         {projects.map((project, i) => {
           const offset = (i - index + projects.length) % projects.length;
 
-          let xTranslate =
+          const xTranslate =
             offset === 0 ? "0%"       
             : offset === 1 ? "34vw"   
             : offset === projects.length - 1 ? "-34vw"  
             : "-34vw";  
 
-          let scale = offset === 0 ? 1.15 : 1;
-          let opacity = offset === 0 || offset === 1 ? 1 : offset === projects.length - 1 ? 1 : 0;
-          let zIndex = offset === 0 ? 10 : offset === 1 ? 2 : offset === projects.length - 1 ? 3 : 1;
+          const scale = offset === 0 ? 1.15 : 1;
+          const opacity = offset === 0 || offset === 1 ? 1 : offset === projects.length - 1 ? 1 : 0;
+          const zIndex = offset === 0 ? 10 : offset === 1 ? 2 : offset === projects.length - 1 ? 3 : 1;
 
           return (
             <motion.div

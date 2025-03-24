@@ -40,7 +40,7 @@ export default function Hero() {
 
   useEffect(() => {
     if (!isFirstLineDone) return;
-
+  
     let timeout: NodeJS.Timeout;
     if (!isDeleting && secondLine.length < words[currentWordIndex].length) {
       timeout = setTimeout(() => {
@@ -56,14 +56,14 @@ export default function Hero() {
       setIsDeleting(false);
       setCurrentWordIndex((prev) => (prev + 1) % words.length);
     }
-
+  
     return () => clearTimeout(timeout);
-  }, [secondLine, isDeleting, isFirstLineDone]);
+  }, [secondLine, isDeleting, isFirstLineDone, currentWordIndex, words]); // ✅ Added missing dependencies  
 
   // 📌 Add scroll animation
   const { scrollYProgress } = useScroll();
-  const opacity = useTransform(scrollYProgress, [0, 0.4, 0.5, 1], [1, 0.8, 0, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.4, 0.5, 1], [1, 0.8, 0, 0]);
+  const opacity = useTransform(scrollYProgress, [0, 0.4, 0.5, 1], [1, 0.9, 0, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.4, 0.5, 1], [1, 0.95, 0.7, 0.6]);
 
   return (
     <>
