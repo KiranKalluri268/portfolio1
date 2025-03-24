@@ -9,10 +9,6 @@ body {
   font-family: "Tektur", sans-serif; /* Default font */
 }
 
-.foldit {
-  font-family: "Foldit", sans-serif !important; /* Ensure Foldit is applied */
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
