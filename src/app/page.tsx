@@ -57,7 +57,7 @@ export default function Home() {
         <h2 className="text-3xl font-bold">Contact Me</h2>
         <p className="text-gray-400 mt-4">Feel free to reach out!</p>
         <motion.a
-          href="mailto:your.email@example.com"
+          href="mailto:kirankalluri888@gmail.com"
           className="mt-4 inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
           whileHover={{ scale: 1.1 }}
         >
