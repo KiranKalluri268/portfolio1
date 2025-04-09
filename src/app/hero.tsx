@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 export default function Hero() {
   const staticText = "NAMASTE ! I'M";
-  const words = ["SAIKIRAN..", "MERN FULL STACK DEVELOPER...", "PYTHON DEVELOPER....","AND TOO LAZY TO COMPLETE THIS...."];
+  const words = ["SAIKIRAN..", "MERN FULL STACK DEVELOPER...", "PYTHON DEVELOPER....","TOO LAZY TO COMPLETE THIS...."];
   const typingSpeed = 50;
   const deleteSpeed = 100;
   const delayBeforeDeletingCurrent = 2000;
