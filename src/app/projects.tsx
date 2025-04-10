@@ -28,13 +28,6 @@ const projects = [
     description: "A brief description of Project 4.",
     image: "/images/project4.jpg",
   },
-  {
-    id: 5,
-    title: "Project 5",
-    description: "A brief description of Project 5.",
-    image: "/images/project5.jpg",
-    github: "https://github.com/yourusername/project5",
-  },
 ];
 
 export default function ProjectsSection() {
