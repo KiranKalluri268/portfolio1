@@ -1,6 +1,6 @@
 "use client";
+import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
 
 const projects = [
   {
@@ -38,73 +38,74 @@ const projects = [
   },
 ];
 
-export default function Carousel({ isVisible }: { isVisible: boolean }) {
-  const [index, setIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+export default function Carousel() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [allowScroll, setAllowScroll] = useState(false);
 
+  // Convert vertical scroll to horizontal
   useEffect(() => {
-    if (!isVisible || isPaused) return; // Stop when section is not visible OR hovered
+    const container = containerRef.current;
+    const scrollArea = scrollRef.current;
+    if (!container || !scrollArea) return;
 
-    console.log("🚀 Carousel started after scrolling!");
+    const handleWheel = (e: WheelEvent) => {
+      if (allowScroll) return; // allow normal scroll after full horizontal scroll
+      e.preventDefault();
+      scrollArea.scrollBy({ left: e.deltaY, behavior: "smooth" });
 
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % projects.length);
-    }, 2000);
+      // if reached end of horizontal scroll, unlock vertical scroll
+      const atEnd =
+        Math.round(scrollArea.scrollLeft + scrollArea.clientWidth) >=
+        scrollArea.scrollWidth;
 
-    return () => clearInterval(interval);
-  }, [isVisible, isPaused]); // ✅ Stop scrolling when `isPaused` is true
+      if (atEnd) {
+        setAllowScroll(true);
+      }
+    };
+
+    container.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => container.removeEventListener("wheel", handleWheel);
+  }, [allowScroll]);
 
   return (
     <motion.section
-      className="h-screen w-full flex flex-col justify-center items-center text-white overflow-hidden relative mt-[-15rem]"
+      ref={containerRef}
+      className={`h-screen w-full sticky top-0 bg-black text-white z-10 ${
+        allowScroll ? "overflow-y-auto" : "overflow-hidden"
+      }`}
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 1 }}
     >
-      <h2 className="text-5xl font-bold text-center mb-16 relative z-10">Projects</h2>
+      <h2 className="text-5xl font-bold text-center pt-16">Projects</h2>
 
-      <div className="relative w-full flex justify-center items-center h-[60vh]">
-        {projects.map((project, i) => {
-          const offset = (i - index + projects.length) % projects.length;
-
-          const xTranslate =
-            offset === 0 ? "0%"
-            : offset === 1 ? "34vw"
-            : offset === projects.length - 1 ? "-34vw"
-            : "-34vw";
-
-          const scale = offset === 0 ? 1.15 : 1;
-          const opacity = offset === 0 || offset === 1 ? 1 : offset === projects.length - 1 ? 1 : 0;
-          const zIndex = offset === 0 ? 10 : offset === 1 ? 2 : offset === projects.length - 1 ? 3 : 1;
-
-          return (
-            <motion.a
-              key={project.id}
-              href={project.github ? project.github : "#"}
-              target={project.github ? "_blank" : "_self"}
-              rel="noopener noreferrer"
-              className={`absolute transition-transform duration-[600ms] ease-in-out w-[30vw] min-h-[55vh] p-10 bg-gray-900 rounded-xl text-center shadow-xl ${
-                project.github ? "hover:shadow-[0_0_20px_white]" : ""
-              }`}
-              animate={{ opacity, scale, x: xTranslate }}
-              style={{
-                zIndex,
-                backgroundImage: `url(${project.image})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
-              }}
-              onMouseEnter={() => setIsPaused(true)}  // ✅ Pause on hover
-              onMouseLeave={() => setIsPaused(false)} // ✅ Resume when leaving
-            >
-
-              <div className="relative z-10 p-5 text-white">
-                <h3 className="text-3xl font-semibold drop-shadow-md">{project.title}</h3>
-                <p className="mt-4 drop-shadow-md">{project.description}</p>
-              </div>
-            </motion.a>
-          );
-        })}
+      <div
+        ref={scrollRef}
+        className="flex h-[calc(100vh-6rem)] mt-6 space-x-10 overflow-x-auto overflow-y-hidden scroll-smooth px-10"
+        style={{ scrollSnapType: "x mandatory" }}
+      >
+        {projects.map((project) => (
+          <a
+            key={project.id}
+            href={project.github || "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-shrink-0 w-[80vw] h-[70vh] snap-center rounded-xl bg-gray-900 text-white p-8 shadow-xl"
+            style={{
+              backgroundImage: `url(${project.image})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          >
+            <div className="relative z-10 p-5 bg-black bg-opacity-50 rounded-xl h-full flex flex-col justify-end">
+              <h3 className="text-3xl font-bold">{project.title}</h3>
+              <p className="mt-2">{project.description}</p>
+            </div>
+          </a>
+        ))}
       </div>
     </motion.section>
   );

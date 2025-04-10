@@ -1,16 +1,41 @@
 "use client";
 import { motion } from "framer-motion";
-import { useInView } from "react-intersection-observer";
+import { useRef, useEffect } from "react";
 import Hero from "./hero";
-import Carousel from "./carousel";
+import ProjectsSection from "./projects";
 
 export default function Home() {
-  const { ref, inView } = useInView({
-    triggerOnce: false, // ✅ Keeps checking until user actually sees the section
-    threshold: 0.5, // ✅ Triggers only when at least 50% of the section is visible
-  });
+  const projectsRef = useRef<HTMLDivElement>(null);
 
-  console.log("Projects Section Visible:", inView); // ✅ Debugging log
+  useEffect(() => {
+    const container = projectsRef.current;
+    if (!container) return;
+  
+    const handleWheel = (e: WheelEvent) => {
+      const rect = container.getBoundingClientRect();
+      const fullyInView = rect.top <= 0 && Math.abs(rect.top) < rect.height;
+  
+      if (fullyInView) {
+        const atStart = container.scrollLeft === 0;
+        const atEnd =
+          container.scrollLeft + container.clientWidth >= container.scrollWidth;
+  
+        // Allow vertical scroll if already at start or end
+        if ((e.deltaY < 0 && atStart) || (e.deltaY > 0 && atEnd)) {
+          return; // Let page scroll
+        }
+  
+        // Prevent default vertical scroll, scroll horizontally
+        e.preventDefault();
+        container.scrollLeft += e.deltaY;
+      }
+    };
+  
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+    };
+  }, []);  
 
   return (
     <div className="bg-black text-white flex flex-col min-h-screen">
@@ -25,13 +50,19 @@ export default function Home() {
         <nav>
           <ul className="flex space-x-6 text-lg">
             <motion.li whileHover={{ scale: 1.1 }}>
-              <a href="#about" className="hover:text-gray-400">About</a>
+              <a href="#about" className="hover:text-gray-400">
+                About
+              </a>
             </motion.li>
             <motion.li whileHover={{ scale: 1.1 }}>
-              <a href="#projects" className="hover:text-gray-400">Projects</a>
+              <a href="#projects" className="hover:text-gray-400">
+                Projects
+              </a>
             </motion.li>
             <motion.li whileHover={{ scale: 1.1 }}>
-              <a href="#contact" className="hover:text-gray-400">Contact</a>
+              <a href="#contact" className="hover:text-gray-400">
+                Contact
+              </a>
             </motion.li>
           </ul>
         </nav>
@@ -40,10 +71,14 @@ export default function Home() {
       {/* Hero Section */}
       <Hero />
 
-      {/* Projects Section (Only Appears When Scrolled) */}
-      <div ref={ref} id="projects" className="min-h-screen flex items-center justify-center">
-        {inView && <Carousel isVisible={inView} />} {/* ✅ Starts only when inView is true */}
-      </div>
+      {/* Projects Section */}
+<div id="projects">
+  <ProjectsSection />
+</div>
+
+
+      {/* Scroll buffer after horizontal scroll */}
+      <div style={{ height: "100vh" }}></div>
 
       {/* Contact Section */}
       <motion.section

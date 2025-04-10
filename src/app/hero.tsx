@@ -62,8 +62,8 @@ export default function Hero() {
 
   // 📌 Add scroll animation
   const { scrollYProgress } = useScroll();
-  const opacity = useTransform(scrollYProgress, [0, 0.4, 0.5, 1], [1, 0.9, 0, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.4, 0.5, 1], [1, 0.95, 0.7, 0.6]);
+  const opacity = useTransform(scrollYProgress, [0, 0.02, 0.04, 1], [1, 0.5, 0, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.02, 0.04, 1], [1, 0.9, 0.7, 0]);
 
   return (
     <>
