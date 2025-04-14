@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Foldit, Tektur } from "next/font/google";
 import "./globals.css";
-import { Foldit, Tektur } from "next/font/google"; // ✅ Import Foldit from Next.js
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,14 +16,15 @@ const geistMono = Geist_Mono({
 const foldit = Foldit({
   variable: "--font-foldit",
   subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"], // ✅ Include all weights
+  display: 'swap',
+  weight: ["400", "700"], // Only specify available weights
 });
 
-// ✅ Define Tektur with all weights
 const tektur = Tektur({
   variable: "--font-tektur",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  display: 'swap',
+  weight: "400", // Or specify exact weights needed
 });
 
 export const metadata: Metadata = {
@@ -37,10 +38,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${foldit.variable} ${tektur.variable} antialiased`}
-      >
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${foldit.variable} ${tektur.variable}`}>
+      <body className="antialiased">
         {children}
       </body>
     </html>

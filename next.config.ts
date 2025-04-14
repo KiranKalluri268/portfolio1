@@ -1,8 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  optimizeFonts: false, // ✅ Disable Next.js font optimization
   devIndicators: false,
+  reactStrictMode: true,
+  
+  // Optional modern configurations:
+  compiler: {
+    // removeConsole: true, // Uncomment to remove console logs in production
+    // styledComponents: true, // If using styled-components
+  },
+  experimental: {
+    // disableOptimizedLoading: true, // Only if you need to disable optimizations
+    // serverActions: true, // If using Next.js server actions
+  }
 };
 
 export default nextConfig;
