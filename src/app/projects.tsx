@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import Image from 'next/image';
 
 const projects = [
@@ -34,147 +34,166 @@ const projects = [
 
 export default function ProjectsSection() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isSectionActive, setIsSectionActive] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1); // -1 for title, 0+ for projects, projects.length for "See all"
+  const [scrollDirection, setScrollDirection] = useState<'down' | 'up'>('down');
+  const [prevScroll, setPrevScroll] = useState(0);
+  const sectionHeight = `${(projects.length + 2) * 100}vh`;
 
+  // Scroll progress tracking
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
+
+  // Track scroll direction
   useEffect(() => {
     const handleScroll = () => {
-      if (!containerRef.current) return;
-      
-      const { top, height } = containerRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const sectionStart = viewportHeight / 2;
-      const sectionEnd = viewportHeight / 2 + height;
-
-      setIsSectionActive(top <= sectionStart && top + height >= sectionStart);
-
-      if (top <= sectionStart && top + height >= sectionStart) {
-        const progress = (sectionStart - top) / height;
-        const newIndex = Math.min(
-          projects.length - 1,
-          Math.floor(progress * projects.length)
-        );
-        setActiveIndex(newIndex);
-      }
+      const currentScroll = window.scrollY;
+      setScrollDirection(currentScroll > prevScroll ? 'down' : 'up');
+      setPrevScroll(currentScroll);
     };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [prevScroll]);
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // Update active index based on scroll
+  useEffect(() => {
+    const unsubscribe = scrollYProgress.on("change", (progress) => {
+      const totalSteps = projects.length + 2;
+      const step = Math.min(
+        totalSteps - 1,
+        Math.floor(progress * totalSteps)
+      );
+      setActiveIndex(step - 1);
+    });
 
-  const getProjectStyle = (index: number) => {
+    return () => unsubscribe();
+  }, [scrollYProgress]);
+
+  // Get style for each item
+  const getItemStyle = (index: number) => {
     const distance = index - activeIndex;
     const absDistance = Math.abs(distance);
-    
+
     return {
       x: `${distance * 100}%`,
-      scale: 1 - absDistance * 0.2,
-      opacity: 1 - absDistance * 0.3, // Reduced opacity fade
-      zIndex: projects.length - absDistance,
+      opacity: 1 - absDistance * 0.5,
+      scale: 1 - absDistance * 0.1,
+      zIndex: projects.length + 2 - absDistance,
     };
+  };
+
+  // Special animation for title when scrolling back up
+  const getTitleAnimation = () => {
+    if (scrollDirection === 'up' && activeIndex === -1) {
+      return {
+        x: '0%',
+        opacity: 1,
+        scale: 1,
+        transition: { 
+          type: "spring", 
+          damping: 30, 
+          stiffness: 100 
+        }
+      };
+    }
+    return getItemStyle(-1);
   };
 
   return (
     <section 
-      ref={containerRef} 
-      id="projects" 
-      className="relative h-[400vh] bg-black"
+      ref={containerRef}
+      id="projects"
+      className="relative bg-black text-white"
+      style={{ height: sectionHeight }}
     >
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center">
-        <motion.h2 
-          className="text-5xl font-bold text-center absolute top-20 left-0 right-0 z-10"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ 
-            opacity: isSectionActive ? 1 : 0.5,
-            y: isSectionActive ? 0 : -20
-          }}
-          transition={{ duration: 0.5 }}
-        >
-          Projects
-        </motion.h2>
+      {/* Sticky container */}
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
+        <AnimatePresence>
+          {/* Title Screen - now with custom scroll-back behavior */}
+          {activeIndex === -1 && (
+            <motion.div
+              className="absolute w-full text-center"
+              initial={{ 
+                x: scrollDirection === 'down' ? "100%" : "-100%",
+                opacity: 0,
+                scale: 0.8 
+              }}
+              animate={getTitleAnimation()}
+              exit={{ 
+                x: scrollDirection === 'down' ? "-100%" : "100%",
+                opacity: 0 
+              }}
+              transition={{ type: "spring", damping: 30, stiffness: 100 }}
+              key="title"
+            >
+              <h2 className="text-8xl font-bold mb-8">Projects</h2>
+              <p className="text-xl text-gray-400">Scroll to view my work</p>
+            </motion.div>
+          )}
 
-        <div className="relative w-full h-[70vh] mx-auto">
-          <AnimatePresence>
-            {projects.map((project, index) => {
-              const style = getProjectStyle(index);
-              const isActive = index === activeIndex;
-              
-              return (
-                <motion.div
-                  key={project.id}
-                  className={`absolute top-0 left-0 right-0 mx-auto w-full max-w-4xl h-full ${
-                    isActive ? "cursor-default" : "cursor-pointer"
-                  }`}
-                  initial={{ x: "0%", opacity: 0 }}
-                  animate={{
-                    x: style.x,
-                    scale: style.scale,
-                    opacity: style.opacity,
-                  }}
-                  transition={{
-                    type: "spring",
-                    damping: 30,
-                    stiffness: 100
-                  }}
-                  style={{ zIndex: style.zIndex }}
-                  onClick={() => !isActive && setActiveIndex(index)}
-                >
-                  <a
-                    href={project.github || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full h-full"
-                  >
-                    <div className="w-full h-full rounded-2xl shadow-2xl overflow-hidden relative">
-                      {/* Image with optimized loading */}
-                      {project.image ? (
-                        <Image
-                          src={project.image}
-                          alt={project.title}
-                          fill
-                          className="object-cover"
-                          quality={80}
-                          priority={index < 2} // Prioritize first two images
-                        />
-                      ) : (
-                        <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
-                          <span className="text-gray-400">No image available</span>
-                        </div>
-                      )}
-                      
-                      {/* Text overlay with reduced opacity */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-6">
-                        <motion.div
-                          className="bg-black bg-opacity-60 p-6 rounded-xl"
-                          initial={{ y: 20, opacity: 0 }}
-                          animate={{ 
-                            y: isActive ? 0 : 20,
-                            opacity: isActive ? 1 : 0.8
-                          }}
-                        >
-                          <h3 className="text-3xl font-semibold">{project.title}</h3>
-                          <p className="mt-2 text-gray-300">{project.description}</p>
-                          {project.github && (
-                            <p className="mt-4 text-blue-400 hover:text-blue-300 transition-colors">
-                              View on GitHub →
-                            </p>
-                          )}
-                        </motion.div>
-                      </div>
+          {/* Projects (unchanged) */}
+          {projects.map((project, index) => (
+            <motion.div
+              key={project.id}
+              className="absolute w-full h-full flex items-center justify-center"
+              initial={{ x: "100%", opacity: 0 }}
+              animate={getItemStyle(index)}
+              transition={{ type: "spring", damping: 30, stiffness: 100 }}
+            >
+              <a
+                href={project.github || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full max-w-4xl h-[60vh]"
+              >
+                <div className="relative w-full h-full rounded-2xl shadow-2xl overflow-hidden">
+                  {project.image ? (
+                    <Image
+                      src={project.image}
+                      alt={project.title}
+                      fill
+                      className="object-cover"
+                      quality={90}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
+                      <span className="text-gray-400">No image available</span>
                     </div>
-                  </a>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
-
-        <motion.div 
-          className="absolute bottom-10 left-0 right-0 text-center text-gray-400 text-sm"
-          animate={{ opacity: isSectionActive ? 1 : 0 }}
-        >
-          Scroll vertically to navigate projects
-        </motion.div>
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-8">
+                    <div className="bg-black/60 p-6 rounded-xl backdrop-blur-sm">
+                      <h3 className="text-3xl font-bold">{project.title}</h3>
+                      <p className="mt-3 text-gray-300">{project.description}</p>
+                      {project.github && (
+                        <p className="mt-4 text-blue-400">View on GitHub →</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </motion.div>
+          ))}
+          
+          {/* See All Projects (unchanged) */}
+          {activeIndex >= projects.length - 1 && (
+            <motion.div
+              className="absolute w-full text-center"
+              initial={{ x: "100%", opacity: 0 }}
+              animate={getItemStyle(projects.length)}
+              transition={{ type: "spring", damping: 30, stiffness: 100 }}
+              key="see-all"
+            >
+              <h2 className="text-7xl font-bold mb-8">See All Projects</h2>
+              <a
+                href="#projects"
+                className="text-xl text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Explore more →
+              </a>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );
