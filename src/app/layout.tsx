@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Foldit, Tektur } from "next/font/google";
 import "./globals.css";
+import CometsInBackground from '@/components/CometsInBackground';
+import BlackholeEffect from '@/components/BlackholeEffect';
+import StarfieldBackground from '@/components/StarfieldBackground';
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,8 +43,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${foldit.variable} ${tektur.variable}`}>
-      <body className="antialiased">
-        {children}
+      <body className="relative">
+        {/* Starfield: Background stars */}
+        <StarfieldBackground />
+
+        {/* Comets: Particle layer */}
+        <CometsInBackground />
+
+        {/* Blackhole: Interactive gravity field */}
+        <BlackholeEffect />
+        <div className="relative z-10">
+          {children}
+        </div>
       </body>
     </html>
   );

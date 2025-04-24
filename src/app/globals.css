@@ -5,8 +5,22 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
 body {
   font-family: "Tektur", sans-serif; /* Default font */
+}
+
+/* Ensure canvas is visible */
+canvas {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
 }
 
 @keyframes fadeIn {
@@ -22,4 +36,18 @@ body {
 
 .animate-fade-in {
   animation: fadeIn 2s ease-out;
+}
+
+@keyframes loop {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-loop {
+  animation: loop linear infinite;
+  width: max-content;
 }

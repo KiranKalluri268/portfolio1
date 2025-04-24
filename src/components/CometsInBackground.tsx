@@ -1,0 +1,193 @@
+"use client";
+import { useEffect, useRef, useCallback } from "react";
+
+class Particle {
+  trail: { x: number; y: number }[] = [];
+
+  constructor(
+    public x: number,
+    public y: number,
+    public size: number,
+    public speedX: number,
+    public speedY: number,
+    public z: number,
+    public canvasWidth: number,
+    public canvasHeight: number
+  ) {}
+
+  update(center: { x: number; y: number }, blackholeRadius: number) {
+    // Save current position to trail
+    this.trail.push({ x: this.x, y: this.y });
+    if (this.trail.length > 10) this.trail.shift(); // limit trail length
+
+    const zSpeedMultiplier = 0.5 + this.z * 4;
+    this.x += this.speedX * zSpeedMultiplier;
+    this.y += this.speedY * zSpeedMultiplier;
+
+    const dx = center.x - this.x;
+    const dy = center.y - this.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist < blackholeRadius * 4) {
+      const pull = 1 / (dist + 0.01);
+      const gravityStrength = pull * 0.1;
+
+      const normDx = dx / dist;
+      const normDy = dy / dist;
+
+      const tangentX = -normDy;
+      const tangentY = normDx;
+
+      this.speedX += dx * gravityStrength * 0.5 + tangentX * gravityStrength * 0.4;
+      this.speedY += dy * gravityStrength * 0.5 + tangentY * gravityStrength * 0.4;
+    }
+
+    if (dist < blackholeRadius * 4) {
+      const pullStrength = (1 / (dist + 0.01)) * 4;
+      this.speedX += dx * pullStrength * 0.005;
+      this.speedY += dy * pullStrength * 0.005;
+    }
+
+    if (dist < blackholeRadius * 0.5) {
+      this.reset();
+      return;
+    }
+
+    const buffer = 100;
+    if (
+      this.x < -buffer || this.x > this.canvasWidth + buffer ||
+      this.y < -buffer || this.y > this.canvasHeight + buffer
+    ) {
+      this.reset();
+    }
+  }
+
+  reset() {
+    const side = Math.floor(Math.random() * 4);
+    switch (side) {
+      case 0:
+        this.x = Math.random() * this.canvasWidth;
+        this.y = -50;
+        break;
+      case 1:
+        this.x = this.canvasWidth + 50;
+        this.y = Math.random() * this.canvasHeight;
+        break;
+      case 2:
+        this.x = Math.random() * this.canvasWidth;
+        this.y = this.canvasHeight + 50;
+        break;
+      default:
+        this.x = -50;
+        this.y = Math.random() * this.canvasHeight;
+    }
+
+    this.speedX = Math.random() * 2 - 1;
+    this.speedY = Math.random() * 2 - 1;
+    this.trail = [];
+  }
+}
+
+export default function CometsInBackground() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const particlesRef = useRef<Particle[]>([]);
+  const animationFrameRef = useRef<number | null>(null);
+
+  const initParticles = useCallback((width: number, height: number) => {
+    const particles: Particle[] = [];
+    const particleCount = Math.min(120, Math.floor(width / 40));
+
+    for (let i = 0; i < particleCount; i++) {
+      const z = Math.random() * 0.9 + 0.1;
+      particles.push(
+        new Particle(
+          Math.random() * width,
+          Math.random() * height,
+          z,
+          Math.random() * 2 - 1,
+          Math.random() * 2 - 1,
+          z,
+          width,
+          height
+        )
+      );
+    }
+
+    particlesRef.current = particles;
+  }, []);
+
+  const drawParticles = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const center = { x: (canvas.width * 4) / 5, y: canvas.height / 2 };
+    const blackholeRadius = 60;
+
+    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw blackhole
+    ctx.beginPath();
+    ctx.fillStyle = "black";
+    ctx.arc(center.x, center.y, blackholeRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    particlesRef.current.forEach((p) => {
+      p.update(center, blackholeRadius);
+
+      const zFactor = p.z;
+
+      // Draw trail as curved line
+      ctx.beginPath();
+      ctx.lineWidth = p.size * (1 + zFactor * 2);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${0.2 + 0.5 * zFactor})`;
+
+      if (p.trail.length > 1) {
+        ctx.moveTo(p.trail[0].x, p.trail[0].y);
+        for (let i = 1; i < p.trail.length - 1; i++) {
+          const midX = (p.trail[i].x + p.trail[i + 1].x) / 2;
+          const midY = (p.trail[i].y + p.trail[i + 1].y) / 2;
+          ctx.quadraticCurveTo(p.trail[i].x, p.trail[i].y, midX, midY);
+        }
+        ctx.stroke();
+      }
+
+      // Draw particle
+      ctx.beginPath();
+      ctx.fillStyle = "white";
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    animationFrameRef.current = requestAnimationFrame(drawParticles);
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initParticles(canvas.width, canvas.height);
+    };
+
+    resize();
+    drawParticles();
+    window.addEventListener("resize", resize);
+
+    return () => {
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      window.removeEventListener("resize", resize);
+    };
+  }, [drawParticles, initParticles]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed top-0 left-0 w-full h-full -z-20 pointer-events-none"
+    />
+  );
+}

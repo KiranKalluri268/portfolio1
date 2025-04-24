@@ -58,17 +58,18 @@ export default function ProjectsSection() {
 
   // Update active index based on scroll
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
     const unsubscribe = scrollYProgress.on("change", (progress) => {
-      const totalSteps = projects.length + 2;
-      const step = Math.min(
-        totalSteps - 1,
-        Math.floor(progress * totalSteps)
-      );
-      setActiveIndex(step - 1);
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        const totalSteps = projects.length + 2;
+        const step = Math.min(totalSteps - 1, Math.floor(progress * totalSteps));
+        setActiveIndex(step - 1);
+      }, 20); // Throttle updates every 20ms
     });
-
     return () => unsubscribe();
   }, [scrollYProgress]);
+  
 
   // Get style for each item
   const getItemStyle = (index: number) => {
@@ -104,7 +105,7 @@ export default function ProjectsSection() {
     <section 
       ref={containerRef}
       id="projects"
-      className="relative bg-black text-white"
+      className="relative text-silver"
       style={{ height: sectionHeight }}
     >
       {/* Sticky container */}
@@ -150,12 +151,13 @@ export default function ProjectsSection() {
                 <div className="relative w-full h-full rounded-2xl shadow-2xl overflow-hidden">
                   {project.image ? (
                     <Image
-                      src={project.image}
-                      alt={project.title}
-                      fill
-                      className="object-cover"
-                      quality={90}
-                    />
+                    src={project.image}
+                    alt={project.title}
+                    fill
+                    className="object-cover"
+                    quality={90}
+                    priority={index === activeIndex}
+                  />                  
                   ) : (
                     <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
                       <span className="text-gray-400">No image available</span>

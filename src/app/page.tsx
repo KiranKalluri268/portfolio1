@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { useRef, useEffect } from "react";
 import Hero from "./hero";
 import ProjectsSection from "./projects";
+import ExperienceTimeline from "@/components/ExperienceTimeline";
+import SkillsCarousel from "@/components/SkillsCarousel";
 
 export default function Home() {
   const projectsRef = useRef<HTMLDivElement>(null);
@@ -38,10 +40,10 @@ export default function Home() {
   }, []);  
 
   return (
-    <div className="bg-black text-white flex flex-col min-h-screen">
+    <div className=" text-white flex flex-col min-h-screen">
       {/* Header */}
       <motion.header
-        className="w-full bg-black text-white pt-6 pb-0 px-6 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-lg"
+        className="w-full text-white pt-6 pb-0 px-6 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-lg"
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
@@ -71,6 +73,8 @@ export default function Home() {
       {/* Hero Section */}
       <Hero />
 
+      
+
       {/* Projects Section */}
 <div id="projects">
   <ProjectsSection />
@@ -78,8 +82,10 @@ export default function Home() {
 
 
       {/* Scroll buffer after horizontal scroll */}
-      <div style={{ height: "100vh" }}></div>
-
+      <div style={{ height: "10vh" }}></div>
+      
+      <ExperienceTimeline />
+      <SkillsCarousel />
       {/* Contact Section */}
       <motion.section
         id="contact"

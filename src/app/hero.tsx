@@ -9,7 +9,7 @@ export default function Hero() {
     "MERN FULL STACK DEVELOPER...",
     "PYTHON DEVELOPER....",
     "TOO LAZY TO COMPLETE THIS...."
-  ], []); // Empty dependency array means it only creates once
+  ], []);
 
   const typingSpeed = 50;
   const deleteSpeed = 100;
@@ -46,7 +46,7 @@ export default function Hero() {
 
   useEffect(() => {
     if (!isFirstLineDone) return;
-  
+
     let timeout: NodeJS.Timeout;
     if (!isDeleting && secondLine.length < words[currentWordIndex].length) {
       timeout = setTimeout(() => {
@@ -62,32 +62,41 @@ export default function Hero() {
       setIsDeleting(false);
       setCurrentWordIndex((prev) => (prev + 1) % words.length);
     }
-  
-    return () => clearTimeout(timeout);
-  }, [secondLine, isDeleting, isFirstLineDone, currentWordIndex, words]); // ✅ Added missing dependencies  
 
-  // 📌 Add scroll animation
+    return () => clearTimeout(timeout);
+  }, [secondLine, isDeleting, isFirstLineDone, currentWordIndex, words]);
+
   const { scrollYProgress } = useScroll();
   const opacity = useTransform(scrollYProgress, [0, 0.02, 0.04, 1], [1, 0.5, 0, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.02, 0.04, 1], [1, 0.9, 0.7, 0]);
 
   return (
     <>
-      {/* 🚀 Spacer to push projects down */}
       <div className="h-screen w-full"></div>
 
-      {/* 🚀 Hero Section */}
       <motion.section
-        className="fixed top-0 left-0 w-full h-screen flex items-center justify-center bg-black text-white z-10"
+        className="fixed top-0 left-0 w-full h-screen flex items-center justify-center text-white z-[-2]"
         style={{ opacity, scale }}
       >
         <div className="max-w-4xl w-full text-left">
-          <h2 className="text-5xl sm:text-6xl md:text-9xl font-bold font-['Foldit']">
+          <h2
+            className="text-5xl sm:text-6xl md:text-9xl font-bold font-['Foldit']"
+            style={{
+              textShadow: "-0.3rem -0.2rem 0.2rem rgba(221, 219, 219, 0.87), -0.3rem -0.3rem 0.2rem rgb(18, 33, 163, 0.5)",
+            }}
+          >
             {displayText}
-            {displayText.length < staticText.length && <span className="text-blue-500 animate-blink">|</span>}
+            {displayText.length < staticText.length && (
+              <span className="text-blue-500 animate-blink">|</span>
+            )}
           </h2>
 
-          <h2 className="text-4xl sm:text-5xl md:text-9xl font-bold mt-4 font-['Foldit']">
+          <h2
+            className="text-4xl sm:text-5xl md:text-9xl font-bold mt-4 font-['Foldit']"
+            style={{
+              textShadow: "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
+            }}
+          >
             <span className="text-blue-500">{secondLine}</span>
             {showSecondCursor && <span className="text-red-500 animate-blink">|</span>}
           </h2>
