@@ -1,15 +1,6 @@
 "use client";
 import { useRef, useEffect } from "react";
 
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  size: number;
-  orbiting: boolean;
-}
-
 export default function Blackhole() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);

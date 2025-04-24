@@ -93,7 +93,7 @@ export default function BackgroundCanvas() {
     particlesRef.current.forEach((particle) => {
       particle.update();
   
-      const speed = Math.sqrt(particle.speedX ** 2 + particle.speedY ** 2);
+      //const speed = Math.sqrt(particle.speedX ** 2 + particle.speedY ** 2);
       const zFactor = particle.z; // 0 (far) to 1 (close)
   
       const tailLength = 20 + 60 * zFactor; // longer for near particles
