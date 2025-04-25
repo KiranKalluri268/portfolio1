@@ -95,7 +95,7 @@ export default function CometsInBackground() {
 
   const initParticles = useCallback((width: number, height: number) => {
     const particles: Particle[] = [];
-    const particleCount = Math.min(120, Math.floor(width / 40));
+    const particleCount = Math.min(120, Math.floor(width / 60));
 
     for (let i = 0; i < particleCount; i++) {
       const z = Math.random() * 0.9 + 0.1;

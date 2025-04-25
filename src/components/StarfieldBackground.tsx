@@ -3,21 +3,75 @@ import { useRef, useEffect } from "react";
 
 export default function StarfieldBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const starsRef = useRef<{ x: number; y: number; size: number; speed: number; direction: number; isStatic: boolean }[]>([]);
+  const starsRef = useRef<{
+    x: number;
+    y: number;
+    size: number;
+    speed: number;
+    direction: number;
+    isStatic: boolean;
+    twinkleOffset: number;
+    color: string;
+    shape: "circle" | "spike"
+  }[]>([]);  
   const animationRef = useRef<number | null>(null);
-
+  const hexToRgb = (hex: string): string => {
+    const bigint = parseInt(hex.replace("#", ""), 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `${r}, ${g}, ${b}`;
+  };
+  
+  // function drawSpikyStar(
+  //   ctx: CanvasRenderingContext2D,
+  //   x: number,
+  //   y: number,
+  //   spikes: number,
+  //   innerRadius: number,
+  //   outerRadius: number
+  // ) {
+  //   let rot = (Math.PI / 2) * 3;
+  //   let step = Math.PI / spikes;
+  
+  //   ctx.moveTo(x, y - outerRadius);
+  //   for (let i = 0; i < spikes; i++) {
+  //     ctx.lineTo(x + Math.cos(rot) * outerRadius, y + Math.sin(rot) * outerRadius);
+  //     rot += step;
+  
+  //     ctx.lineTo(x + Math.cos(rot) * innerRadius, y + Math.sin(rot) * innerRadius);
+  //     rot += step;
+  //   }
+  //   ctx.lineTo(x, y - outerRadius);
+  //   ctx.closePath();
+  //   ctx.fill();
+  // }
+  
   const initStars = (w: number, h: number) => {
-    starsRef.current = Array.from({ length: 250 }).map((_, index) => {
-      const isStatic = Math.random() < 0.1; // 10% of the stars will be static
-      const direction = index < 200 ? 1 : -1; // Half move down, half move up
+    starsRef.current = Array.from({ length: 200 }).map((_, index) => {
+      const isStatic = Math.random() < 0.3; // 10% of the stars will be static
+      const direction = index < 150 ? 1 : -1; // Half move down, half move up
+      const size = (() => {
+        const rand = Math.random();
+        if (rand < 0.8) {
+          return Math.random() * 1.5 + 0.5; // Small stars (60%)
+        } else if (rand < 0.95) {
+          return Math.random() * 2 + 1;   // Medium stars (30%)
+        } else {
+          return Math.random() * 3 + 2;     // Big stars (10%)
+        }
+      })();
       return {
         x: Math.random() * w,
         y: Math.random() * h,
-        size: Math.random() * 1.5 + 0.5,
-        speed: isStatic ? 0 : (Math.random() * 0.5 + 0.2) * (direction === 1 ? 1 : 0.5), // Static stars have no speed, moving stars adjust speed based on direction
-        direction, // 1 = down, -1 = up
+        size,
+        speed: isStatic ? 0 : (Math.random() * 0.5 + 0.2) * (direction === 1 ? 0.2 : 0.1),
+        direction,
         isStatic,
-      };
+        twinkleOffset: Math.random() * Math.PI * 2,
+        color: ["#ffffff", "#ffe9c4", "#d4fbff"][Math.floor(Math.random() * 3)], // white, warm yellow, cool blue
+        shape: Math.random() < 0.15 ? "spike" : "circle",
+      };      
     });
   };
 
@@ -32,19 +86,20 @@ export default function StarfieldBackground() {
 
     for (const star of starsRef.current) {
       if (!star.isStatic) {
-        star.y += star.speed * star.direction; // Move stars based on their direction
-        if (star.y > canvas.height) star.y = 0; // Reset stars that move downward
-        if (star.y < 0) star.y = canvas.height; // Reset stars that move upward
+        star.y += star.speed * star.direction;
+        if (star.y > canvas.height) star.y = 0;
+        if (star.y < 0) star.y = canvas.height;
       }
-
-      // Twinkling effect for static stars
-      if (star.isStatic) {
-        const twinkle = Math.sin(Date.now() * 0.005 + star.x * 0.5) * 0.5 + 2; // This creates a twinkling effect
-        ctx.fillStyle = `rgba(255, 255, 255, ${twinkle})`;
-      } else {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-      }
-
+    
+      // Twinkling opacity for static stars
+      const twinkle = star.isStatic
+        ? Math.sin(Date.now() * 0.005 + star.twinkleOffset) * 0.4 + 0.6
+        : 0.8;
+    
+      ctx.fillStyle = `rgba(${hexToRgb(star.color)}, ${twinkle})`;
+      ctx.shadowBlur = star.shape === "spike" ? star.size * 3 : star.size * 1.5;
+      ctx.shadowColor = star.color;
+    
       ctx.beginPath();
       ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
       ctx.fill();
