@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Foldit, Tektur } from "next/font/google";
 import "./globals.css";
-import CometsInBackground from '@/components/CometsInBackground';
-import BlackholeEffect from '@/components/BlackholeEffect';
-import StarfieldBackground from '@/components/StarfieldBackground';
+import CometsInBackground from '@/background/CometsInBackground';
+import BlackholeEffect from '@/background/BlackholeEffect';
+import StarfieldBackground from '@/background/StarfieldBackground';
 
 
 const geistSans = Geist({

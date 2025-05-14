@@ -1,8 +1,8 @@
 "use client";
 import { motion } from "framer-motion";
 import { useRef, useEffect } from "react";
-import Hero from "./hero";
-import ProjectsSection from "./projects";
+import Hero from "../components/hero";
+import ProjectsSection from "../components/projects";
 import ExperienceTimeline from "@/components/ExperienceTimeline";
 import SkillsCarousel from "@/components/SkillsCarousel";
 
