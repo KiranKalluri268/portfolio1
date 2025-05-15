@@ -82,7 +82,7 @@ export default function Hero() {
           <h2
             className="text-5xl sm:text-6xl md:text-9xl font-bold font-['Foldit']"
             style={{
-              textShadow: "-0.3rem -0.2rem 0.2rem rgba(221, 219, 219, 0.87), -0.3rem -0.3rem 0.2rem rgb(18, 33, 163, 0.5)",
+              textShadow: "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
             }}
           >
             {displayText}

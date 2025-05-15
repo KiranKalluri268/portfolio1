@@ -1,7 +1,7 @@
 "use client";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 
-export default function StarfieldBackground() {
+export default function StarfieldBackground({ starCount = 200 }: { starCount?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const starsRef = useRef<{
     x: number;
@@ -12,9 +12,13 @@ export default function StarfieldBackground() {
     isStatic: boolean;
     twinkleOffset: number;
     color: string;
-    shape: "circle" | "spike"
+    shape: "circle" | "spike";
+    spikes?: number;
+    lengths?: number[];
   }[]>([]);  
+
   const animationRef = useRef<number | null>(null);
+
   const hexToRgb = (hex: string): string => {
     const bigint = parseInt(hex.replace("#", ""), 16);
     const r = (bigint >> 16) & 255;
@@ -22,45 +26,34 @@ export default function StarfieldBackground() {
     const b = bigint & 255;
     return `${r}, ${g}, ${b}`;
   };
-  
-  // function drawSpikyStar(
-  //   ctx: CanvasRenderingContext2D,
-  //   x: number,
-  //   y: number,
-  //   spikes: number,
-  //   innerRadius: number,
-  //   outerRadius: number
-  // ) {
-  //   let rot = (Math.PI / 2) * 3;
-  //   let step = Math.PI / spikes;
-  
-  //   ctx.moveTo(x, y - outerRadius);
-  //   for (let i = 0; i < spikes; i++) {
-  //     ctx.lineTo(x + Math.cos(rot) * outerRadius, y + Math.sin(rot) * outerRadius);
-  //     rot += step;
-  
-  //     ctx.lineTo(x + Math.cos(rot) * innerRadius, y + Math.sin(rot) * innerRadius);
-  //     rot += step;
-  //   }
-  //   ctx.lineTo(x, y - outerRadius);
-  //   ctx.closePath();
-  //   ctx.fill();
-  // }
-  
-  const initStars = (w: number, h: number) => {
-    starsRef.current = Array.from({ length: 200 }).map((_, index) => {
-      const isStatic = Math.random() < 0.3; // 10% of the stars will be static
-      const direction = index < 150 ? 1 : -1; // Half move down, half move up
+
+  const initStars = useCallback((w: number, h: number) => {
+    starsRef.current = Array.from({ length: starCount }).map((_, index) => {
+      const isStatic = Math.random() < 0.3;
+      const direction = index < 150 ? 1 : -1;
+
       const size = (() => {
         const rand = Math.random();
-        if (rand < 0.8) {
-          return Math.random() * 1.5 + 0.5; // Small stars (60%)
-        } else if (rand < 0.95) {
-          return Math.random() * 2 + 1;   // Medium stars (30%)
-        } else {
-          return Math.random() * 3 + 2;     // Big stars (10%)
-        }
+        if (rand < 0.8) return Math.random() * 1.5 + 0.5;
+        if (rand < 0.95) return Math.random() * 1.5 + 1;
+        return Math.random() * 2 + 1.5;
       })();
+ 
+      const shape = "spike";
+
+      let spikes = 0;
+      let lengths: number[] = [];
+
+      if (shape === "spike") {
+        spikes = Math.floor(Math.random() * 5 + 4); // 4–8 spikes
+        const half = Math.floor(spikes / 2);
+        //const base = Math.random() * 0.4 + 0.8;
+        const variation = () => Math.random() * 0.5 + 1;
+        lengths = Array.from({ length: half }, variation);
+        lengths = lengths.concat(lengths.slice().reverse()); // mirror symmetry
+        if (spikes % 2 !== 0) lengths.splice(half, 0, variation());
+      }
+
       return {
         x: Math.random() * w,
         y: Math.random() * h,
@@ -69,53 +62,113 @@ export default function StarfieldBackground() {
         direction,
         isStatic,
         twinkleOffset: Math.random() * Math.PI * 2,
-        color: ["#ffffff", "#ffe9c4", "#d4fbff"][Math.floor(Math.random() * 3)], // white, warm yellow, cool blue
-        shape: Math.random() < 0.15 ? "spike" : "circle",
-      };      
+        color: ["#ffffff", "#ffe9c4", "#d4fbff"][Math.floor(Math.random() * 3)],
+        shape,
+        spikes,
+        lengths,
+      };
     });
-  };
+  }, [starCount]);
 
-  const drawStars = () => {
+  function drawSpikyStar(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  spikes: number,
+  innerRadius: number,
+  outerRadius: number
+) {
+  let rot = Math.PI / 2 * 3;
+  const step = Math.PI / spikes;
+
+  ctx.beginPath();
+  ctx.moveTo(x, y - outerRadius);
+  for (let i = 0; i < spikes; i++) {
+    ctx.lineTo(x + Math.cos(rot) * outerRadius, y + Math.sin(rot) * outerRadius);
+    rot += step;
+
+    ctx.lineTo(x + Math.cos(rot) * innerRadius, y + Math.sin(rot) * innerRadius);
+    rot += step;
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+
+  const drawStars = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let lastFrameTime = 0;
+    const desiredFPS = 30;
+    const frameDuration = 1000 / desiredFPS;
 
-    for (const star of starsRef.current) {
-      if (!star.isStatic) {
-        star.y += star.speed * star.direction;
-        if (star.y > canvas.height) star.y = 0;
-        if (star.y < 0) star.y = canvas.height;
+    const render = (time: number) => {
+      if (time - lastFrameTime >= frameDuration) {
+        lastFrameTime = time;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (const star of starsRef.current) {
+          if (!star.isStatic) {
+            star.y += star.speed * star.direction;
+            if (star.y > canvas.height) star.y = 0;
+            if (star.y < 0) star.y = canvas.height;
+          }
+
+          const twinkle = star.isStatic
+            ? Math.sin(Date.now() * 0.003 + star.twinkleOffset) * 0.5 + 0.5
+            : 1;
+
+          ctx.fillStyle = `rgba(${hexToRgb(star.color)}, ${twinkle})`;
+          ctx.shadowColor = star.color;
+          ctx.shadowBlur = star.shape === "spike"
+            ? star.size * 3 * twinkle
+            : star.size * 1.5 * twinkle;
+
+          if (star.shape === "circle") {
+  ctx.beginPath();
+  ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+  ctx.fill();
+} else {
+  // Calculate inner and outer spike lengths
+  const spikes = star.spikes ?? 6;
+  const innerRadius = star.size * 0.4;
+  const outerRadius = star.size * 2.5; // long spike effect
+
+  drawSpikyStar(ctx, star.x, star.y, spikes, innerRadius, outerRadius);
+}
+
+        }
       }
-    
-      // Twinkling opacity for static stars
-      const twinkle = star.isStatic
-        ? Math.sin(Date.now() * 0.005 + star.twinkleOffset) * 0.4 + 0.6
-        : 0.8;
-    
-      ctx.fillStyle = `rgba(${hexToRgb(star.color)}, ${twinkle})`;
-      ctx.shadowBlur = star.shape === "spike" ? star.size * 3 : star.size * 1.5;
-      ctx.shadowColor = star.color;
-    
-      ctx.beginPath();
-      ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-      ctx.fill();
-    }
 
-    animationRef.current = requestAnimationFrame(drawStars);
-  };
+      animationRef.current = requestAnimationFrame(render);
+    };
+
+    animationRef.current = requestAnimationFrame(render);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      initStars(canvas.width, canvas.height);
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+
+      ctx.scale(dpr, dpr);
+      initStars(canvas.width / dpr, canvas.height / dpr);
     };
 
     resize();
@@ -126,7 +179,7 @@ export default function StarfieldBackground() {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
       window.removeEventListener("resize", resize);
     };
-  }, [drawStars]);
+  }, [drawStars, initStars]);
 
-  return <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full z-10 pointer-events-none" />;
+  return <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full -z-19 pointer-events-none" />;
 }
