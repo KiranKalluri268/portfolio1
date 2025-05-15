@@ -117,52 +117,57 @@ export default function CometsInBackground() {
   }, []);
 
   const drawParticles = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
 
-    const center = { x: (canvas.width * 4) / 5, y: canvas.height / 2 };
-    const blackholeRadius = 60;
+  const center = { x: (canvas.width * 4) / 5, y: canvas.height / 2 };
+  const blackholeRadius = 50;
 
-    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw blackhole
-    ctx.beginPath();
-    ctx.fillStyle = "black";
-    ctx.arc(center.x, center.y, blackholeRadius, 0, Math.PI * 2);
-    ctx.fill();
+  // Draw blackhole
+  ctx.beginPath();
+  ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+  ctx.arc(center.x, center.y, blackholeRadius, 0, Math.PI * 2);
+  ctx.fill();
 
-    particlesRef.current.forEach((p) => {
-      p.update(center, blackholeRadius);
+  particlesRef.current.forEach((p) => {
+    p.update(center, blackholeRadius);
 
-      const zFactor = p.z;
+    const zFactor = p.z;
 
-      // Draw trail as curved line
+    // Draw trail as curved line only if enough trail points exist
+    if (p.trail.length > 1) {
+      const start = p.trail[0];
       ctx.beginPath();
-      ctx.lineWidth = p.size * (1 + zFactor * 2);
-      ctx.strokeStyle = `rgba(255, 255, 255, ${0.2 + 0.5 * zFactor})`;
+      ctx.lineWidth = p.size * (1 + zFactor * 1.5);
 
-      if (p.trail.length > 1) {
-        ctx.moveTo(p.trail[0].x, p.trail[0].y);
-        for (let i = 1; i < p.trail.length - 1; i++) {
-          const midX = (p.trail[i].x + p.trail[i + 1].x) / 2;
-          const midY = (p.trail[i].y + p.trail[i + 1].y) / 2;
-          ctx.quadraticCurveTo(p.trail[i].x, p.trail[i].y, midX, midY);
-        }
-        ctx.stroke();
+      const gradientTrail = ctx.createLinearGradient(start.x, start.y, p.x, p.y);
+      gradientTrail.addColorStop(0, `rgba(255, 255, 255, 0)`);
+      gradientTrail.addColorStop(1, `rgba(255, 255, 255, ${0.3 + 0.4 * zFactor})`);
+      ctx.strokeStyle = gradientTrail;
+
+      ctx.moveTo(start.x, start.y);
+      for (let i = 1; i < p.trail.length - 1; i++) {
+        const midX = (p.trail[i].x + p.trail[i + 1].x) / 2;
+        const midY = (p.trail[i].y + p.trail[i + 1].y) / 2;
+        ctx.quadraticCurveTo(p.trail[i].x, p.trail[i].y, midX, midY);
       }
+      ctx.stroke();
+    }
 
-      // Draw particle
-      ctx.beginPath();
-      ctx.fillStyle = "white";
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
-    });
+    // Draw comet head (smaller than tail)
+    ctx.beginPath();
+    ctx.fillStyle = "white";
+    ctx.arc(p.x, p.y, p.size * (0.5 + zFactor), 0, Math.PI * 2);
+    ctx.fill();
+  });
 
-    animationFrameRef.current = requestAnimationFrame(drawParticles);
-  }, []);
+  animationFrameRef.current = requestAnimationFrame(drawParticles);
+}, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
