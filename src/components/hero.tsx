@@ -8,7 +8,7 @@ export default function Hero() {
     "SAIKIRAN..",
     "MERN FULL STACK DEVELOPER...",
     "PYTHON DEVELOPER....",
-    "TOO LAZY TO COMPLETE THIS...."
+    "WORKING ON THIS...."
   ], []);
 
   const typingSpeed = 50;
