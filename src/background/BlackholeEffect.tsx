@@ -5,7 +5,7 @@ export default function Blackhole() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
   const centerRef = useRef({ x: 0, y: 0 });
-  const blackholeRadius = 30;
+  const blackholeRadius = 60;
 
 
   const draw = useCallback(() => {
@@ -19,8 +19,38 @@ export default function Blackhole() {
 
     const glowRadius = blackholeRadius * 4;
     const grad = ctx.createRadialGradient(center.x, center.y, blackholeRadius * 0.2, center.x, center.y, glowRadius);
-    grad.addColorStop(0, "rgba(126, 38, 9, 0.6)");
+    grad.addColorStop(0, "rgba(0, 0, 0, 0)");
+    grad.addColorStop(0.25, "rgba(126, 38, 9, 0.6)");
     grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+    ctx.save();
+
+// Move to center and compensate for Y scaling
+ctx.translate(center.x, center.y );
+
+// Rotate -20 degrees around Z (in radians)
+ctx.rotate((-20 * Math.PI) / 180);
+
+// Scale Y to squash vertically into an ellipse
+ctx.scale(1, 0.4);
+
+// Create elliptical radial gradient centered at (0, 0)
+const ellipseGrad = ctx.createRadialGradient(
+  0, 0, blackholeRadius * 1,
+  0, 0, glowRadius*1.15
+);
+
+ellipseGrad.addColorStop(0, "rgba(0, 0, 0, 0)");
+ellipseGrad.addColorStop(0.25, "rgba(126, 38, 9, 0.6)");
+ellipseGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+ctx.fillStyle = ellipseGrad;
+ctx.beginPath();
+ctx.arc(0, 0, glowRadius, 0, Math.PI * 2);
+ctx.fill();
+
+ctx.restore();
+
 
     ctx.beginPath();
     ctx.fillStyle = grad;
@@ -62,10 +92,13 @@ export default function Blackhole() {
       ref={canvasRef}
       className="fixed top-0 left-0 w-full h-full -z-18 pointer-events-none"
     />
-    <img
-  src="/images/blackhole.png"
-  alt="Black Hole"
-  className="fixed top-1/2 left-[80%] w-60 h-37.5 object-contain -z-10 transform -translate-x-1/2 -translate-y-1/2 [transform-style:preserve-3d]"
+    <video
+  src="/images/blackhole.webm"
+  autoPlay
+  loop
+  muted
+  playsInline
+  className="fixed top-1/2 left-[80%] w-210 h-210 object-contain -z-10 transform -translate-x-1/2 -translate-y-1/2 [transform-style:preserve-3d]"
   style={{
     transform: 'rotateX(0deg) rotateY(0deg) rotateZ(-20deg)',
   }}

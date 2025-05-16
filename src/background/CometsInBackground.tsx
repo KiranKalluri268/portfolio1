@@ -28,7 +28,7 @@ class Particle {
     const dy = center.y - this.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (dist < blackholeRadius * 4) {
+    if (dist < blackholeRadius * 8) {
       const pull = 1 / (dist + 0.01);
       const gravityStrength = pull * 0.1;
 
@@ -42,13 +42,19 @@ class Particle {
       this.speedY += dy * gravityStrength * 0.5 + tangentY * gravityStrength * 0.4;
     }
 
-    if (dist < blackholeRadius * 4) {
+    if (dist < blackholeRadius * 3) {
       const pullStrength = (1 / (dist + 0.01)) * 4;
       this.speedX += dx * pullStrength * 0.005;
       this.speedY += dy * pullStrength * 0.005;
     }
 
-    if (dist < blackholeRadius * 0.5) {
+    if (dist < blackholeRadius * 2) {
+      const pullStrength = (1 / (dist + 0.01)) * 8;
+      this.speedX += dx * pullStrength * 0.01;
+      this.speedY += dy * pullStrength * 0.01;
+    }
+
+    if (dist < blackholeRadius * 0.8) {
       this.reset();
       return;
     }
