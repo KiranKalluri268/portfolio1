@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useScroll } from "framer-motion";
-import Image from 'next/image';
+
+import { useEffect, useRef, useState, useCallback } from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
 
 const projects = [
   {
@@ -32,171 +33,215 @@ const projects = [
   },
 ];
 
-export default function ProjectsSection() {
+const ProjectsSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(-1); // -1 for title, 0+ for projects, projects.length for "See all"
-  const [scrollDirection, setScrollDirection] = useState<'down' | 'up'>('down');
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [scrollDirection, setScrollDirection] = useState<"up" | "down">("down");
   const [prevScroll, setPrevScroll] = useState(0);
-  const sectionHeight = `${(projects.length + 2) * 100}vh`;
+  const [isInView, setIsInView] = useState(false);
+  const prevInViewRef = useRef(false);
+  const autoScrolledRef = useRef(false);
 
-  // Scroll progress tracking
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
-
-  // Track scroll direction
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScroll = window.scrollY;
-      setScrollDirection(currentScroll > prevScroll ? 'down' : 'up');
-      setPrevScroll(currentScroll);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [prevScroll]);
-
-  // Update active index based on scroll
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    const unsubscribe = scrollYProgress.on("change", (progress) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        const totalSteps = projects.length + 2;
-        const step = Math.min(totalSteps - 1, Math.floor(progress * totalSteps));
-        setActiveIndex(step - 1);
-      }, 20); // Throttle updates every 20ms
-    });
-    return () => unsubscribe();
-  }, [scrollYProgress]);
-  
-
-  // Get style for each item
-  const getItemStyle = (index: number) => {
-    const distance = index - activeIndex;
-    const absDistance = Math.abs(distance);
-
-    return {
-      x: `${distance * 100}%`,
-      opacity: 1 - absDistance * 0.5,
-      scale: 1 - absDistance * 0.1,
-      zIndex: projects.length + 2 - absDistance,
-    };
-  };
-
-  // Special animation for title when scrolling back up
-  const getTitleAnimation = () => {
-    if (scrollDirection === 'up' && activeIndex === -1) {
+  const getItemStyle = useCallback(
+    (index: number) => {
+      const distance = index - activeIndex;
+      const absDistance = Math.abs(distance);
       return {
-        x: '0%',
-        opacity: 1,
-        scale: 1,
-        transition: { 
-          type: "spring", 
-          damping: 30, 
-          stiffness: 100 
-        }
+        x: `${distance * 100}%`,
+        opacity: 1 - absDistance * 0.5,
+        scale: 1 - absDistance * 0.1,
+        zIndex: projects.length + 2 - absDistance,
       };
-    }
-    return getItemStyle(-1);
-  };
+    },
+    [activeIndex]
+  );
+
+  const checkIfInView = useCallback(() => {
+    if (!containerRef.current) return false;
+    const rect = containerRef.current.getBoundingClientRect();
+    const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
+    const containerHeight = rect.height;
+    return visibleHeight / containerHeight > 0.2;
+  }, []);
+
+  const handleWheel = useCallback(
+    (event: WheelEvent) => {
+      if (isAnimating || !isInView) return;
+
+      // SCROLLING DOWN
+      if (event.deltaY > 0) {
+        if (activeIndex < projects.length) {
+          setIsAnimating(true);
+          setActiveIndex((prev) => prev + 1);
+          setTimeout(() => setIsAnimating(false), 700);
+        } else {
+          // Reached end, scroll to next section
+          window.scrollTo({ top: window.scrollY + window.innerHeight, behavior: "smooth" });
+        }
+      }
+
+      // SCROLLING UP
+      else if (event.deltaY < 0) {
+        if (activeIndex > -1) {
+          setIsAnimating(true);
+          setActiveIndex((prev) => prev - 1);
+          setTimeout(() => setIsAnimating(false), 700);
+        } else {
+          // Reached top, scroll to previous section
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }
+    },
+    [activeIndex, isAnimating, isInView]
+  );
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+
+    const onScroll = () => {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        const currentScroll = window.scrollY;
+        const currentInView = checkIfInView();
+
+        setScrollDirection(currentScroll > prevScroll ? "down" : "up");
+        setPrevScroll(currentScroll);
+        setIsInView(currentInView);
+
+        // Auto scroll into Projects section if entering it for the first time
+        // if (
+        //   currentInView &&
+        //   !prevInViewRef.current &&
+        //   containerRef.current &&
+        //   !autoScrolledRef.current
+        // ) {
+        //   autoScrolledRef.current = true;
+        //   containerRef.current.scrollIntoView({
+        //     behavior: "smooth",
+        //     block: "start",
+        //   });
+        // }
+
+        if (!currentInView) {
+          autoScrolledRef.current = false;
+        }
+
+        prevInViewRef.current = currentInView;
+      }, 50);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [prevScroll, checkIfInView]);
+
+  useEffect(() => {
+    const shouldLock =
+      isInView
+
+    document.body.style.overflow = shouldLock ? "hidden" : "";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [activeIndex, scrollDirection, isInView]);
+
+  useEffect(() => {
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+    };
+  }, [handleWheel]);
 
   return (
-    <section 
+    <section
       ref={containerRef}
       id="projects"
-      className="relative text-silver"
-      style={{ height: sectionHeight }}
+      className="relative text-silver h-[110vh] overflow-hidden"
     >
-      {/* Sticky container */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
-        <AnimatePresence>
-          {/* Title Screen - now with custom scroll-back behavior */}
-          {activeIndex === -1 && (
-            <motion.div
-              className="absolute w-full text-center"
-              initial={{ 
-                x: scrollDirection === 'down' ? "100%" : "-100%",
-                opacity: 0,
-                scale: 0.8 
-              }}
-              animate={getTitleAnimation()}
-              exit={{ 
-                x: scrollDirection === 'down' ? "-100%" : "100%",
-                opacity: 0 
-              }}
-              transition={{ type: "spring", damping: 30, stiffness: 100 }}
-              key="title"
-            >
-              <h2 className="text-8xl font-bold mb-8">Projects</h2>
-              <p className="text-xl text-gray-400">Scroll to view my work</p>
-            </motion.div>
-          )}
+      {/* Animated Title */}
+      <motion.h1
+  initial={{ y: "100%", opacity: 0 }}
+  animate={{
+    y: activeIndex >= 0 ? "-300%" : "0%",
+    x: activeIndex === projects.length
+      ? "-600%" // move completely off screen when at "See All"
+      : activeIndex >= 0
+        ? "-40vw" // move to left for project view
+        : "0%",   // center when no project is active
+    opacity: 1,
+  }}
+  transition={{ duration: 0.7, ease: "easeInOut" }}
+  className="text-6xl font-bold tracking-tight text-center absolute top-3/8 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap z-[999]"
+>
+  Projects
+</motion.h1>
 
-          {/* Projects (unchanged) */}
-          {projects.map((project, index) => (
+      {/* Animated See All */}
+      <motion.h1
+        initial={{ x: "100%", opacity: 0 }}
+        animate={{
+          x: activeIndex === projects.length ? "0%" : "100%",
+          opacity: activeIndex === projects.length ? 1 : 0,
+        }}
+        transition={{ duration: 0.7, ease: "easeInOut" }}
+        className="text-5xl font-bold tracking-tight text-center absolute top-3/8 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap z-[999]"
+      >
+        See all projects
+      </motion.h1>
+
+      {/* Projects Carousel */}
+      <div className="flex items-center justify-center h-full w-full">
+        <div className="relative w-full h-full">
+          {projects.map((project, index: number) => (
             <motion.div
-              key={project.id}
-              className="absolute w-full h-full flex items-center justify-center"
-              initial={{ x: "100%", opacity: 0 }}
+              key={index}
+              className="absolute w-full h-full p-12 flex flex-col justify-center items-center text-center"
               animate={getItemStyle(index)}
-              transition={{ type: "spring", damping: 30, stiffness: 100 }}
+              transition={{ duration: 0.7, ease: "easeInOut" }}
             >
-              <a
-                href={project.github || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full max-w-4xl h-[60vh]"
-              >
-                <div className="relative w-full h-full rounded-2xl shadow-2xl overflow-hidden">
-                  {project.image ? (
-                    <Image
-                    src={project.image}
-                    alt={project.title}
-                    fill
-                    className="object-cover"
-                    quality={90}
-                    priority={index === activeIndex}
-                  />                  
-                  ) : (
-                    <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
-                      <span className="text-gray-400">No image available</span>
-                    </div>
-                  )}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-8">
-                    <div className="bg-black/60 p-6 rounded-xl backdrop-blur-sm">
-                      <h3 className="text-3xl font-bold">{project.title}</h3>
-                      <p className="mt-3 text-gray-300">{project.description}</p>
-                      {project.github && (
-                        <p className="mt-4 text-blue-400">View on GitHub →</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </a>
+              <div className="text-3xl font-semibold mb-4">{project.title}</div>
+              <div className="relative w-full h-[300px] max-w-3xl mb-4">
+                <Image
+                  src={project.image}
+                  alt={project.title}
+                  fill
+                  className="object-cover rounded-xl shadow-lg"
+                  quality={90}
+                  priority={index === activeIndex}
+                />
+              </div>
+              <p className="text-lg max-w-xl mb-6">{project.description}</p>
+              <div className="space-x-4">
+                {project.github && (
+                  <>
+                    <a
+                      href={project.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                      aria-label={`Visit ${project.title} GitHub`}
+                    >
+                      GitHub
+                    </a>
+                    <a
+                      href={project.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                      aria-label={`Visit ${project.title} live site`}
+                    >
+                      Live Site
+                    </a>
+                  </>
+                )}
+              </div>
             </motion.div>
           ))}
-          
-          {/* See All Projects (unchanged) */}
-          {activeIndex >= projects.length - 1 && (
-            <motion.div
-              className="absolute w-full text-center"
-              initial={{ x: "100%", opacity: 0 }}
-              animate={getItemStyle(projects.length)}
-              transition={{ type: "spring", damping: 30, stiffness: 100 }}
-              key="see-all"
-            >
-              <h2 className="text-7xl font-bold mb-8">See All Projects</h2>
-              <a
-                href="#projects"
-                className="text-xl text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                Explore more →
-              </a>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        </div>
       </div>
     </section>
   );
-}
+};
+
+export default ProjectsSection;

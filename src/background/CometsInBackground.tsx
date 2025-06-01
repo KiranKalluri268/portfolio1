@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useRef, useCallback } from "react";
+import { useAudio } from "@/components/AudioContextProvider";
 
 class Particle {
   trail: { x: number; y: number }[] = [];
+  private playSound: () => void;
 
   constructor(
     public x: number,
@@ -12,13 +14,15 @@ class Particle {
     public speedY: number,
     public z: number,
     public canvasWidth: number,
-    public canvasHeight: number
-  ) {}
+    public canvasHeight: number,
+    playSound: () => void
+  ) {
+    this.playSound = playSound;
+  }
 
   update(center: { x: number; y: number }, blackholeRadius: number) {
-    // Save current position to trail
     this.trail.push({ x: this.x, y: this.y });
-    if (this.trail.length > 10) this.trail.shift(); // limit trail length
+    if (this.trail.length > 10) this.trail.shift();
 
     const zSpeedMultiplier = 0.5 + this.z * 4;
     this.x += this.speedX * zSpeedMultiplier;
@@ -29,35 +33,54 @@ class Particle {
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     if (dist < blackholeRadius * 8) {
-      const pull = 1 / (dist + 0.01);
-      const gravityStrength = pull * 0.1;
+  const pull = 1 / (dist + 0.01);
+  const gravityStrength = pull * 0.05;
 
-      const normDx = dx / dist;
-      const normDy = dy / dist;
+  const normDx = dx / dist;
+  const normDy = dy / dist;
+  const tangentX = -normDy;
+  const tangentY = normDx;
 
-      const tangentX = -normDy;
-      const tangentY = normDx;
+  this.speedX += dx * gravityStrength * 0.2 + tangentX * gravityStrength * 0.1;
+  this.speedY += dy * gravityStrength * 0.2 + tangentY * gravityStrength * 0.1;
+}
 
-      this.speedX += dx * gravityStrength * 0.5 + tangentX * gravityStrength * 0.4;
-      this.speedY += dy * gravityStrength * 0.5 + tangentY * gravityStrength * 0.4;
-    }
+if (dist < blackholeRadius * 5) {
+  const pullStrength = (1 / (dist + 0.01)) * 2;
+  this.speedX += dx * pullStrength * 0.002;
+  this.speedY += dy * pullStrength * 0.002;
+}
 
-    if (dist < blackholeRadius * 3) {
-      const pullStrength = (1 / (dist + 0.01)) * 4;
-      this.speedX += dx * pullStrength * 0.005;
-      this.speedY += dy * pullStrength * 0.005;
-    }
+if (dist < blackholeRadius * 4) {
+  const pullStrength = (1 / (dist + 0.01)) * 3.5;
+  this.speedX += dx * pullStrength * 0.004;
+  this.speedY += dy * pullStrength * 0.004;
+}
 
-    if (dist < blackholeRadius * 2) {
-      const pullStrength = (1 / (dist + 0.01)) * 8;
-      this.speedX += dx * pullStrength * 0.01;
-      this.speedY += dy * pullStrength * 0.01;
-    }
+if (dist < blackholeRadius * 3) {
+  const pullStrength = (1 / (dist + 0.01)) * 5;
+  this.speedX += dx * pullStrength * 0.006;
+  this.speedY += dy * pullStrength * 0.006;
+}
 
-    if (dist < blackholeRadius * 0.8) {
-      this.reset();
-      return;
-    }
+if (dist < blackholeRadius * 2) {
+  const pullStrength = (1 / (dist + 0.01)) * 6.5;
+  this.speedX += dx * pullStrength * 0.008;
+  this.speedY += dy * pullStrength * 0.008;
+}
+
+if (dist < blackholeRadius * 1.2) {
+  const pullStrength = (1 / (dist + 0.01)) * 8;
+  this.speedX += dx * pullStrength * 0.01;
+  this.speedY += dy * pullStrength * 0.01;
+}
+
+if (dist < blackholeRadius * 1) {
+  this.playSound(); // 🔊 Particle is absorbed
+  this.reset();
+  return;
+}
+
 
     const buffer = 100;
     if (
@@ -98,6 +121,16 @@ export default function CometsInBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animationFrameRef = useRef<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const { audioEnabled } = useAudio();
+
+  const playSound = () => {
+    if (audioEnabled && audioRef.current) { 
+      console.log("audioEnabled:",)
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+    }
+  };
 
   const initParticles = useCallback((width: number, height: number) => {
     const particles: Particle[] = [];
@@ -114,7 +147,8 @@ export default function CometsInBackground() {
           Math.random() * 2 - 1,
           z,
           width,
-          height
+          height,
+          playSound // Pass sound handler
         )
       );
     }
@@ -123,57 +157,54 @@ export default function CometsInBackground() {
   }, []);
 
   const drawParticles = useCallback(() => {
-  const canvas = canvasRef.current;
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-  const center = { x: (canvas.width * 4) / 5, y: canvas.height / 2 };
-  const blackholeRadius = 50;
+    const center = { x: (canvas.width * 4) / 5, y: canvas.height / 2 };
+    const blackholeRadius = 50;
 
-  ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw blackhole
-  ctx.beginPath();
-  ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-  ctx.arc(center.x, center.y, blackholeRadius, 0, Math.PI * 2);
-  ctx.fill();
-
-  particlesRef.current.forEach((p) => {
-    p.update(center, blackholeRadius);
-
-    const zFactor = p.z;
-
-    // Draw trail as curved line only if enough trail points exist
-    if (p.trail.length > 1) {
-      const start = p.trail[0];
-      ctx.beginPath();
-      ctx.lineWidth = p.size * (1 + zFactor * 1.5);
-
-      const gradientTrail = ctx.createLinearGradient(start.x, start.y, p.x, p.y);
-      gradientTrail.addColorStop(0, `rgba(255, 255, 255, 0)`);
-      gradientTrail.addColorStop(1, `rgba(255, 255, 255, ${0.3 + 0.4 * zFactor})`);
-      ctx.strokeStyle = gradientTrail;
-
-      ctx.moveTo(start.x, start.y);
-      for (let i = 1; i < p.trail.length - 1; i++) {
-        const midX = (p.trail[i].x + p.trail[i + 1].x) / 2;
-        const midY = (p.trail[i].y + p.trail[i + 1].y) / 2;
-        ctx.quadraticCurveTo(p.trail[i].x, p.trail[i].y, midX, midY);
-      }
-      ctx.stroke();
-    }
-
-    // Draw comet head (smaller than tail)
     ctx.beginPath();
-    ctx.fillStyle = "white";
-    ctx.arc(p.x, p.y, p.size * (0.5 + zFactor), 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+    ctx.arc(center.x, center.y, blackholeRadius, 0, Math.PI * 2);
     ctx.fill();
-  });
 
-  animationFrameRef.current = requestAnimationFrame(drawParticles);
-}, []);
+    particlesRef.current.forEach((p) => {
+      p.update(center, blackholeRadius);
+
+      const zFactor = p.z;
+
+      if (p.trail.length > 1) {
+        const start = p.trail[0];
+        ctx.beginPath();
+        ctx.lineWidth = p.size * (1 + zFactor * 1.5);
+
+        const gradientTrail = ctx.createLinearGradient(start.x, start.y, p.x, p.y);
+        gradientTrail.addColorStop(0, `rgba(255, 255, 255, 0)`);
+        gradientTrail.addColorStop(1, `rgba(255, 255, 255, ${0.3 + 0.4 * zFactor})`);
+        ctx.strokeStyle = gradientTrail;
+
+        ctx.moveTo(start.x, start.y);
+        for (let i = 1; i < p.trail.length - 1; i++) {
+          const midX = (p.trail[i].x + p.trail[i + 1].x) / 2;
+          const midY = (p.trail[i].y + p.trail[i + 1].y) / 2;
+          ctx.quadraticCurveTo(p.trail[i].x, p.trail[i].y, midX, midY);
+        }
+        ctx.stroke();
+      }
+
+      ctx.beginPath();
+      ctx.fillStyle = "white";
+      ctx.arc(p.x, p.y, p.size * (0.5 + zFactor), 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    animationFrameRef.current = requestAnimationFrame(drawParticles);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -196,9 +227,12 @@ export default function CometsInBackground() {
   }, [drawParticles, initParticles]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed top-0 left-0 w-full h-full -z-20 pointer-events-none"
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        className="fixed top-0 left-0 w-full h-full -z-20 pointer-events-none"
+      />
+      <audio ref={audioRef} src="/sounds/absorbtion.mp3" preload="auto" />
+    </>
   );
 }

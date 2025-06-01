@@ -5,6 +5,7 @@ import "./globals.css";
 import CometsInBackground from '@/background/CometsInBackground';
 import BlackholeEffect from '@/background/BlackholeEffect';
 import StarfieldBackground from '@/background/StarfieldBackground';
+import { AudioProvider } from "@/components/AudioContextProvider";
 
 
 const geistSans = Geist({
@@ -44,17 +45,21 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${foldit.variable} ${tektur.variable}`}>
       <body className="relative">
-        {/* Starfield: Background stars */}
-        <StarfieldBackground />
+        <AudioProvider>
+          {/* Starfield: Background stars */}
+          <StarfieldBackground />
 
-        {/* Comets: Particle layer */}
-        <CometsInBackground />
+          {/* Comets: Particle layer */}
+          <CometsInBackground />
 
-        {/* Blackhole: Interactive gravity field */}
-        <BlackholeEffect />
-        <div className="relative z-10">
-          {children}
-        </div>
+          {/* Blackhole: Interactive gravity field */}
+          <BlackholeEffect />
+
+          {/* Your main content */}
+          <div className="relative z-10">
+            {children}
+          </div>
+        </AudioProvider>
       </body>
     </html>
   );

@@ -1,15 +1,18 @@
 "use client";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 
 export default function Hero() {
   const staticText = "NAMASTE ! I'M";
-  const words = useMemo(() => [
-    "SAIKIRAN..",
-    "MERN FULL STACK DEVELOPER...",
-    "PYTHON DEVELOPER....",
-    "WORKING ON THIS...."
-  ], []);
+  const words = useMemo(
+    () => [
+      "SAIKIRAN..",
+      "MERN FULL STACK DEVELOPER...",
+      "PYTHON DEVELOPER....",
+      "WORKING ON THIS....",
+    ],
+    []
+  );
 
   const typingSpeed = 50;
   const deleteSpeed = 100;
@@ -22,28 +25,25 @@ export default function Hero() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isFirstLineDone, setIsFirstLineDone] = useState(false);
   const [showSecondCursor, setShowSecondCursor] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [shouldRender, setShouldRender] = useState(true);
 
+  // Typing effect for first line
   useEffect(() => {
     if (displayText.length < staticText.length) {
-      let timeout: NodeJS.Timeout;
-
-      if (displayText === "NAMASTE !") {
-        timeout = setTimeout(() => {
-          setDisplayText(staticText.slice(0, displayText.length + 1));
-        }, 2000);
-      } else {
-        timeout = setTimeout(() => {
-          setDisplayText(staticText.slice(0, displayText.length + 1));
-        }, typingSpeed);
-      }
+      const timeout = setTimeout(() => {
+        setDisplayText(staticText.slice(0, displayText.length + 1));
+      }, displayText === "NAMASTE !" ? 2000 : typingSpeed);
 
       return () => clearTimeout(timeout);
-    } else {
+    } else if (!isFirstLineDone) {
       setIsFirstLineDone(true);
-      setTimeout(() => setShowSecondCursor(true), delayBetweenLines);
+      const cursorTimeout = setTimeout(() => setShowSecondCursor(true), delayBetweenLines);
+      return () => clearTimeout(cursorTimeout);
     }
-  }, [displayText]);
+  }, [displayText, isFirstLineDone, staticText]);
 
+  // Typing effect for second line
   useEffect(() => {
     if (!isFirstLineDone) return;
 
@@ -70,19 +70,82 @@ export default function Hero() {
   const opacity = useTransform(scrollYProgress, [0, 0.02, 0.04, 1], [1, 0.5, 0, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.02, 0.04, 1], [1, 0.9, 0.7, 0]);
 
-  return (
-    <>
-      <div className="h-screen w-full"></div>
+  useEffect(() => {
+  const unsubscribe = scrollYProgress.on("change", (latest) => {
+    if (latest >= 0.04) {
+      setShouldRender(false);
+    } else {
+      setShouldRender(true);
+    }
+  });
 
+  return () => unsubscribe();
+}, [scrollYProgress]);
+
+  // Scroll detection + auto-scroll to next section
+  useEffect(() => {
+    const handleScroll = (e: WheelEvent) => {
+      const currentY = window.scrollY;
+      const scrollingDown = e.deltaY > 0;
+
+      if (scrollingDown && heroRef.current) {
+        const heroHeight = heroRef.current.clientHeight;
+        if (currentY < heroHeight - 100) {
+          window.scrollTo({
+            top: heroHeight,
+            behavior: "smooth",
+          });
+        }
+      }
+    };
+
+    window.addEventListener("wheel", handleScroll, { passive: false });
+    return () => window.removeEventListener("wheel", handleScroll);
+  }, []);
+
+  // Disable scroll when hero in view
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // Hero is in view — disable scroll
+          document.body.style.overflow = "hidden";
+        } else {
+          // Hero is out of view — enable scroll
+          document.body.style.overflow = "auto";
+        }
+      },
+      {
+        root: null,
+        threshold: 0.9, // Trigger when 90% of hero is visible
+      }
+    );
+
+    if (heroRef.current) {
+      observer.observe(heroRef.current);
+    }
+
+    return () => {
+      if (heroRef.current) {
+        observer.unobserve(heroRef.current);
+      }
+      document.body.style.overflow = "auto"; // Reset on cleanup
+    };
+  }, []);
+
+  return (
+    <div ref={heroRef} className="h-screen w-full relative">
+      {shouldRender && (
       <motion.section
-        className="fixed top-0 left-0 w-full h-screen flex items-center justify-center text-white z-[-2]"
+        className="fixed top-0 left-[-180] w-full h-screen flex items-center justify-center text-white z-[-2]"
         style={{ opacity, scale }}
       >
         <div className="max-w-4xl w-full text-left">
           <h2
             className="text-5xl sm:text-6xl md:text-9xl font-bold font-['Foldit']"
             style={{
-              textShadow: "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
+              textShadow:
+                "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
             }}
           >
             {displayText}
@@ -94,7 +157,8 @@ export default function Hero() {
           <h2
             className="text-4xl sm:text-5xl md:text-9xl font-bold mt-4 font-['Foldit']"
             style={{
-              textShadow: "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
+              textShadow:
+                "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
             }}
           >
             <span className="text-blue-500">{secondLine}</span>
@@ -102,6 +166,7 @@ export default function Hero() {
           </h2>
         </div>
       </motion.section>
-    </>
+      )}
+    </div>
   );
 }

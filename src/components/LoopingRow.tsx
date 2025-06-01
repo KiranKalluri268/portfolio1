@@ -9,21 +9,23 @@ export default function LoopingRow({
   skills,
   variant = "withName",
   speed = 20, // lower is faster
+  style = {},
 }: {
   skills: Skill[];
   variant?: "withName" | "iconOnly";
   speed?: number;
+  style?: React.CSSProperties;
 }) {
-  const animationDuration = `${speed * skills.length*5}s`;
+  const animationDuration = `${speed * skills.length * 5}s`;
 
   return (
-    <div className="w-full overflow-hidden">
+    <div className="w-full overflow-hidden" style={style}>
       <div className="relative">
         <div
           className="flex animate-loop min-w-max"
           style={{ animationDuration }}
         >
-          {[...skills, ...skills].map((skill, idx) => (
+          {[...skills, ...skills, ...skills, ...skills, ...skills, ...skills, ...skills, ...skills].map((skill, idx) => (
             <div
               key={idx}
               className={`flex items-center justify-center shrink-0 mx-4 ${

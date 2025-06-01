@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 const experiences = [
   {
@@ -34,8 +34,58 @@ const fadeInUpVariant = {
 };
 
 const ExperienceTimeline = () => {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const isScrolling = useRef(false);
+  // Use framer-motion's useInView to detect if section is in viewport
+  const isInView = useInView(sectionRef, { margin: "-100px" }); 
+
+  useEffect(() => {
+    if (!sectionRef.current) return;
+
+    const handleWheel = (e: WheelEvent) => {
+  if (!isInView || isScrolling.current) return;
+
+  const sections = Array.from(document.querySelectorAll("section"));
+  const currentIndex = sections.findIndex((s) => s === sectionRef.current);
+  const scrollingDown = e.deltaY > 0;
+  const scrollingUp = !scrollingDown;
+
+  const scrollToSection = (index: number) => {
+    const target = sections[index];
+    if (target) {
+      isScrolling.current = true;
+      target.scrollIntoView({ behavior: "smooth" });
+      e.preventDefault();
+      setTimeout(() => {
+        isScrolling.current = false;
+      }, 700);
+    }
+  };
+
+  if (scrollingUp && currentIndex > 0) {
+    scrollToSection(currentIndex - 1);
+  }
+
+  if (scrollingDown && currentIndex < sections.length - 1) {
+    scrollToSection(currentIndex + 1);
+  }
+};
+
+
+    window.addEventListener("wheel", handleWheel, { passive: false });
+
+    // Cleanup listener
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+    };
+  }, [isInView]); // re-run effect when isInView changes
+
   return (
-    <section id="experience" className="py-20 px-4 text-white">
+    <section
+      id="experience"
+      ref={sectionRef}
+      className="py-20 px-4 text-white"
+    >
       <h2 className="text-4xl font-bold text-center mb-16">Experience Timeline</h2>
       <div className="relative border-l-4 border-blue-500 max-w-3xl mx-auto">
         {experiences.map((exp, index) => (

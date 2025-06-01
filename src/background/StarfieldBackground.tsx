@@ -28,47 +28,48 @@ export default function StarfieldBackground({ starCount = 200 }: { starCount?: n
   };
 
   const initStars = useCallback((w: number, h: number) => {
-    starsRef.current = Array.from({ length: starCount }).map((_, index) => {
-      const isStatic = Math.random() < 0.3;
-      const direction = index < 150 ? 1 : -1;
+  const possibleSpikes = [4, 6, 8];
 
-      const size = (() => {
-        const rand = Math.random();
-        if (rand < 0.8) return Math.random() * 1.5 + 0.5;
-        if (rand < 0.95) return Math.random() * 1.5 + 1;
-        return Math.random() * 2 + 1.5;
-      })();
- 
-      const shape = "spike";
+  starsRef.current = Array.from({ length: starCount }).map((_, index) => {
+    const isStatic = Math.random() < 0.3;
+    const direction = index < 150 ? 1 : -1;
 
-      let spikes = 0;
-      let lengths: number[] = [];
+    const size = (() => {
+      const rand = Math.random();
+      if (rand < 0.8) return Math.random() * 1.5 + 0.5;
+      if (rand < 0.95) return Math.random() * 1.5 + 1;
+      return Math.random() * 2 + 1.5;
+    })();
 
-      if (shape === "spike") {
-        spikes = Math.floor(Math.random() * 5 + 4); // 4–8 spikes
-        const half = Math.floor(spikes / 2);
-        //const base = Math.random() * 0.4 + 0.8;
-        const variation = () => Math.random() * 0.5 + 1;
-        lengths = Array.from({ length: half }, variation);
-        lengths = lengths.concat(lengths.slice().reverse()); // mirror symmetry
-        if (spikes % 2 !== 0) lengths.splice(half, 0, variation());
-      }
+    const shape = "spike";
 
-      return {
-        x: Math.random() * w,
-        y: Math.random() * h,
-        size,
-        speed: isStatic ? 0 : (Math.random() * 0.5 + 0.2) * (direction === 1 ? 0.2 : 0.1),
-        direction,
-        isStatic,
-        twinkleOffset: Math.random() * Math.PI * 2,
-        color: ["#ffffff", "#ffe9c4", "#d4fbff"][Math.floor(Math.random() * 3)],
-        shape,
-        spikes,
-        lengths,
-      };
-    });
-  }, [starCount]);
+    let spikes = 0;
+    let lengths: number[] = [];
+
+    if (shape === "spike") {
+      spikes = possibleSpikes[Math.floor(Math.random() * possibleSpikes.length)];
+      const half = Math.floor(spikes / 2);
+      const variation = () => Math.random() * 0.5 + 1;
+      lengths = Array.from({ length: half }, variation);
+      lengths = lengths.concat(lengths.slice().reverse()); // mirror symmetry
+      if (spikes % 2 !== 0) lengths.splice(half, 0, variation());
+    }
+
+    return {
+      x: Math.random() * w,
+      y: Math.random() * h,
+      size,
+      speed: isStatic ? 0 : (Math.random() * 0.5 + 0.2) * (direction === 1 ? 0.2 : 0.1),
+      direction,
+      isStatic,
+      twinkleOffset: Math.random() * Math.PI * 2,
+      color: ["#ffffff", "#ffe9c4", "#d4fbff"][Math.floor(Math.random() * 3)],
+      shape,
+      spikes,
+      lengths,
+    };
+  });
+}, [starCount]);
 
   function drawSpikyStar(
   ctx: CanvasRenderingContext2D,
@@ -135,8 +136,8 @@ export default function StarfieldBackground({ starCount = 200 }: { starCount?: n
 } else {
   // Calculate inner and outer spike lengths
   const spikes = star.spikes ?? 6;
-  const innerRadius = star.size * 0.4;
-  const outerRadius = star.size * 2.5; // long spike effect
+  const innerRadius = star.size * 0.2;
+  const outerRadius = star.size * 3; // long spike effect
 
   drawSpikyStar(ctx, star.x, star.y, spikes, innerRadius, outerRadius);
 }
