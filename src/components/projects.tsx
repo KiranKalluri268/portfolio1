@@ -7,31 +7,35 @@ import Image from "next/image";
 const projects = [
   {
     id: 1,
-    title: "Project 1",
-    description: "A brief description of Project 1.",
+    title: "CertiSafet (Certificate Management System)",
+    description: "A web app built with React, Node.js, Express, DynamoDB, and Cloudinary that allows students to securely upload and manage their certificates while enabling institutes to access them directly and generate Excel reports.",
     image: "/images/project1.png",
-    github: "https://cms-pro-kiran-kalluris-projects.vercel.app/",
+    github: "https://github.com/KiranKalluri268/CMS_PRO",
+    live: "https://cms-pro-kiran-kalluris-projects.vercel.app/",
   },
   {
     id: 2,
-    title: "Project 2",
-    description: "A brief description of Project 2.",
-    image: "/images/project2.jpg",
+    title: "IPL Score Predictor AI",
+    description: "A Deep Neural Network model built with Keras to predict the final score of ongoing IPL matches using live inputs such as current runs, wickets, overs, recent performance, and team info. Provides real-time insights to broadcasters, fans, and analysts.",
+    image: "/images/project2.png",
+    github: "https://github.com/KiranKalluri268/MS_AI_IPL-Score-Predictor",
   },
   {
     id: 3,
-    title: "Project 3",
-    description: "A brief description of Project 3.",
-    image: "/images/project3.jpg",
-    github: "https://github.com/yourusername/project3",
+    title: "ResumeByAI (₹10 ATS Resume Generator)",
+    description: "A Next.js web app integrated with GPT-4 turbo and Razorpay that generates ATS-friendly resumes for users at a low cost, providing an easy way to create professional resumes tailored for applicant tracking systems.",
+    image: "/images/project4.webp",
+    github: "https://github.com/KiranKalluri268",
   },
   {
     id: 4,
-    title: "Project 4",
-    description: "A brief description of Project 4.",
-    image: "/images/project4.jpg",
+    title: "MindPlan",
+    description: "A Flutter-based productivity app that helps users manage short-term and long-term goals, prioritize tasks using the Eisenhower Matrix, and track daily productivity by classifying days as good, bad, or awesome.",
+    image: "/images/project4.webp",
+    github: "https://github.com/KiranKalluri268",
   },
-];
+]
+;
 
 const ProjectsSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -225,13 +229,13 @@ const ProjectsSection = () => {
                       GitHub
                     </a>
                     <a
-                      href={project.github}
+                      href={project.live ? project.live : project.github}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="underline"
                       aria-label={`Visit ${project.title} live site`}
                     >
-                      Live Site
+                      Live Demo
                     </a>
                   </>
                 )}

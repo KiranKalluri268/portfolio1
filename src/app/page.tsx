@@ -7,6 +7,7 @@ import ProjectsSection from "../components/projects";
 import ExperienceTimeline from "@/components/ExperienceTimeline";
 import SkillsCarousel from "@/components/SkillsCarousel";
 import AudioPermissionPrompt from "@/components/AudioPermissionPrompt";
+import ContactSection from "../components/Contact";
 
 export default function Home() {
   // Create refs for each section
@@ -18,7 +19,8 @@ export default function Home() {
   ];
 
   const isScrolling = useRef(false);
-
+  
+// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       if (isScrolling.current) return;
@@ -153,9 +155,6 @@ export default function Home() {
         <ProjectsSection />
       </section>
 
-      {/* Scroll buffer after horizontal scroll */}
-      <div style={{ height: "10vh" }}></div>
-
       {/* Experience Timeline */}
       <section ref={sectionsRefs[1]} id="experience">
         <ExperienceTimeline />
@@ -167,23 +166,8 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section ref={sectionsRefs[3]} id="contact" className="mt-16 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1 }}
-        >
-          <h2 className="text-3xl font-bold">Contact Me</h2>
-          <p className="text-gray-400 mt-4">Feel free to reach out!</p>
-          <motion.a
-            href="mailto:kirankalluri888@gmail.com"
-            className="mt-4 inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
-            whileHover={{ scale: 1.1 }}
-          >
-            Say Hello 👋
-          </motion.a>
-        </motion.div>
+      <section ref={sectionsRefs[3]} id="contact">
+        <ContactSection />
       </section>
 
       {/* Footer */}

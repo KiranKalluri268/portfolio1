@@ -5,22 +5,22 @@ import { useRef, useEffect } from "react";
 
 const experiences = [
   {
-    title: "Frontend Intern",
-    company: "XYZ Tech",
-    date: "Jan 2024 - Mar 2024",
-    description: "Built responsive dashboards using React, Tailwind, and Chart.js.",
+    title: "AI Intern",
+    company: "Edunet Foundation",
+    date: "April 2025 - May 2025",
+    description: "Gained foundational understanding of AI principles including machine learning, neural networks, and real-world applications.Collaborated in a Microsoft-led initiative implemented by Edunet Foundation and AICTE.",
   },
   {
-    title: "Bachelor of Computer Science",
-    company: "ABC University",
-    date: "2021 - 2025",
-    description: "Pursuing B.Tech in Computer Science with a focus on full-stack development.",
+    title: "MERN Full Stack Developer",
+    company: "Edunet Foundation",
+    date: "Ded 2024 -jan 2025",
+    description: "Learned and applied full-stack development using the MERN stack. Built basic web applications with user interfaces in React, backend services in Node/Express, and data storage in MongoDB.",
   },
   {
-    title: "Web Dev Trainee",
-    company: "CodeCamp",
-    date: "Summer 2023",
-    description: "Completed a 6-week bootcamp on web technologies and REST APIs.",
+    title: "AWS Cloud Virtual Internship",
+    company: "Eduskills Foundation",
+    date: "April 2024 -june 2024",
+    description: "Completed a 3-month virtual internship focused on AWS Cloud technologies in collaboration with Eduskills and AWS Academy.",
   },
 ];
 
@@ -36,61 +36,57 @@ const fadeInUpVariant = {
 const ExperienceTimeline = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isScrolling = useRef(false);
-  // Use framer-motion's useInView to detect if section is in viewport
-  const isInView = useInView(sectionRef, { margin: "-100px" }); 
+  const isInView = useInView(sectionRef, { margin: "-100px" });
 
   useEffect(() => {
     if (!sectionRef.current) return;
 
     const handleWheel = (e: WheelEvent) => {
-  if (!isInView || isScrolling.current) return;
+      if (!isInView || isScrolling.current) return;
 
-  const sections = Array.from(document.querySelectorAll("section"));
-  const currentIndex = sections.findIndex((s) => s === sectionRef.current);
-  const scrollingDown = e.deltaY > 0;
-  const scrollingUp = !scrollingDown;
+      const sections = Array.from(document.querySelectorAll("section"));
+      const currentIndex = sections.findIndex((s) => s === sectionRef.current);
+      const scrollingDown = e.deltaY > 0;
+      const scrollingUp = !scrollingDown;
 
-  const scrollToSection = (index: number) => {
-    const target = sections[index];
-    if (target) {
-      isScrolling.current = true;
-      target.scrollIntoView({ behavior: "smooth" });
-      e.preventDefault();
-      setTimeout(() => {
-        isScrolling.current = false;
-      }, 700);
-    }
-  };
+      const scrollToSection = (index: number) => {
+        const target = sections[index];
+        if (target) {
+          isScrolling.current = true;
+          target.scrollIntoView({ behavior: "smooth" });
+          e.preventDefault();
+          setTimeout(() => {
+            isScrolling.current = false;
+          }, 700);
+        }
+      };
 
-  if (scrollingUp && currentIndex > 0) {
-    scrollToSection(currentIndex - 1);
-  }
+      if (scrollingUp && currentIndex > 0) {
+        scrollToSection(currentIndex - 1);
+      }
 
-  if (scrollingDown && currentIndex < sections.length - 1) {
-    scrollToSection(currentIndex + 1);
-  }
-};
-
+      if (scrollingDown && currentIndex < sections.length - 1) {
+        scrollToSection(currentIndex + 1);
+      }
+    };
 
     window.addEventListener("wheel", handleWheel, { passive: false });
-
-    // Cleanup listener
-    return () => {
-      window.removeEventListener("wheel", handleWheel);
-    };
-  }, [isInView]); // re-run effect when isInView changes
+    return () => window.removeEventListener("wheel", handleWheel);
+  }, [isInView]);
 
   return (
     <section
       id="experience"
       ref={sectionRef}
-      className="py-20 px-4 text-white"
+      className="min-h-screen flex items-center justify-center px-4 text-white"
     >
-      <h2 className="text-4xl font-bold text-center mb-16">Experience Timeline</h2>
-      <div className="relative border-l-4 border-blue-500 max-w-3xl mx-auto">
-        {experiences.map((exp, index) => (
-          <TimelineItem key={index} experience={exp} />
-        ))}
+      <div className="w-full max-w-4xl">
+        <h2 className="text-4xl font-bold text-center mb-16">Experience Timeline</h2>
+        <div className="relative border-l-4 border-blue-500 max-w-3xl mx-auto">
+          {experiences.map((exp, index) => (
+            <TimelineItem key={index} experience={exp} />
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState } from "react";
 
 const AudioContext = createContext({
   audioEnabled: false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setAudioEnabled: (_: boolean) => {},
 });
 

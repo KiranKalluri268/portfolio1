@@ -132,6 +132,7 @@ export default function CometsInBackground() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const initParticles = useCallback((width: number, height: number) => {
     const particles: Particle[] = [];
     const particleCount = Math.min(120, Math.floor(width / 60));

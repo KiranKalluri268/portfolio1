@@ -105,33 +105,33 @@ export default function Hero() {
 
   // Disable scroll when hero in view
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          // Hero is in view — disable scroll
-          document.body.style.overflow = "hidden";
-        } else {
-          // Hero is out of view — enable scroll
-          document.body.style.overflow = "auto";
-        }
-      },
-      {
-        root: null,
-        threshold: 0.9, // Trigger when 90% of hero is visible
-      }
-    );
+  const element = heroRef.current;
 
-    if (heroRef.current) {
-      observer.observe(heroRef.current);
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        document.body.style.overflow = "hidden";
+      } else {
+        document.body.style.overflow = "auto";
+      }
+    },
+    {
+      root: null,
+      threshold: 0.9,
     }
+  );
 
-    return () => {
-      if (heroRef.current) {
-        observer.unobserve(heroRef.current);
-      }
-      document.body.style.overflow = "auto"; // Reset on cleanup
-    };
-  }, []);
+  if (element) {
+    observer.observe(element);
+  }
+
+  return () => {
+    if (element) {
+      observer.unobserve(element);
+    }
+    document.body.style.overflow = "auto";
+  };
+}, []);
 
   return (
     <div ref={heroRef} className="h-screen w-full relative">

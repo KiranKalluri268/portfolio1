@@ -60,47 +60,64 @@ const BASE_DURATION = 20;
 export default function SkillsCarousel() {
   return (
     <section
-      id="skills"
-      className="w-full sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[60%] mx-auto space-y-12 overflow-hidden py-20 px-4 text-white"
-    >
-      <h1 className="text-4xl font-bold text-center mb-4">Tech Stack</h1>
-      {skillCategories.map((category, idx) => {
-        const duration = BASE_DURATION - idx * 3;
-        const repeatedSkills = Array(4).fill(category.skills).flat(); // repeat 4x
+  id="skills"
+  className="min-h-screen flex items-center justify-start px-4 text-white"
+>
+      <div className="w-full sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[70%] space-y-12 overflow-hidden py-20">
+        <h1 className="text-4xl font-bold text-center mb-20">Tech Stack</h1>
 
-        return (
-          <div
-            key={category.title}
-            className="overflow-hidden whitespace-nowrap"
-            aria-label={category.title}
-          >
-            <motion.div
-              key={category.title}
-              className="inline-flex gap-8 items-center"
-              animate={{ x: ["0%", "-33.3333%"] }}
-              transition={{
-                repeat: Infinity,
-                ease: "linear",
-                duration,
-              }}
+        {skillCategories.map((category, idx) => {
+  const duration = BASE_DURATION - idx * 3;
+  const repeatedSkills = Array(4).fill(category.skills).flat();
+
+  return (
+    <div
+      key={category.title}
+      className="relative w-full"
+      style={{
+        maskImage:
+          'linear-gradient(to right, transparent, black 20%, black 80%, transparent)',
+        WebkitMaskImage:
+          'linear-gradient(to right, transparent, black 20%, black 80%, transparent)',
+      }}
+    >
+      <div
+        className="relative overflow-hidden"
+        aria-label={category.title}
+      >
+        <motion.div
+          className="inline-flex gap-8 items-center whitespace-nowrap"
+          animate={{ x: ["0%", "-25%"] }}
+          transition={{
+            repeat: Infinity,
+            ease: "linear",
+            duration,
+          }}
+        >
+          {repeatedSkills.map((skill, i) => (
+            <div
+              key={`${category.title}-${skill.name}-${i}`}
+              className="flex flex-col items-center justify-center text-gray-300
+                hover:text-orange hover:scale-120 transition-transform duration-300
+                focus:outline-none focus:ring-2 focus:ring-orange rounded"
+              style={{ width: 80, minWidth: 80, height: 100 }}
+              title={skill.name}
+              role="img"
+              aria-label={skill.name}
+              tabIndex={0}
             >
-              {repeatedSkills.map((skill, i) => (
-                <div
-                  key={skill.name + i}
-                  className="flex flex-col items-center justify-center text-4xl text-gray-300"
-                  title={skill.name}
-                  style={{ minWidth: 80 }}
-                  role="img"
-                  aria-label={skill.name}
-                >
-                  {skill.icon}
-                  <span className="text-xs mt-1 select-none">{skill.name}</span>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-        );
-      })}
+              <div className="text-3xl md:text-4xl select-none">
+                {skill.icon}
+              </div>
+              <span className="text-xs mt-1 select-none">{skill.name}</span>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    </div>
+  );
+})}
+      </div>
     </section>
   );
 }
