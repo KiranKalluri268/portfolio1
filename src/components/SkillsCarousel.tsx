@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { motion, useMotionValue, useTransform, useAnimationFrame } from "framer-motion";
 import {
   FaReact, FaHtml5, FaCss3Alt, FaPython, FaJava,
   FaDatabase, FaGitAlt, FaJs, FaCode, FaLaptopCode,
@@ -67,8 +68,22 @@ export default function SkillsCarousel() {
         <h1 className="text-4xl font-bold text-center mb-20">Tech Stack</h1>
 
         {skillCategories.map((category, idx) => {
-  const duration = BASE_DURATION - idx * 3;
-  const repeatedSkills = Array(4).fill(category.skills).flat();
+  const baseSpeed = 40 - idx * 5; // pixels per second
+  const repeatedSkills = Array(6).fill(category.skills).flat();
+
+  const x = useMotionValue(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+
+  useAnimationFrame((t, delta) => {
+  if (!isHovered && containerRef.current) {
+    const deltaX = (baseSpeed * delta) / 1000;
+    const currentX = x.get();
+    const totalWidth = containerRef.current.scrollWidth;
+    x.set((currentX - deltaX) % totalWidth);
+  }
+});
+
 
   return (
     <div
@@ -84,15 +99,13 @@ export default function SkillsCarousel() {
       <div
         className="relative overflow-hidden"
         aria-label={category.title}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <motion.div
           className="inline-flex gap-8 items-center whitespace-nowrap"
-          animate={{ x: ["0%", "-25%"] }}
-          transition={{
-            repeat: Infinity,
-            ease: "linear",
-            duration,
-          }}
+          ref={containerRef}
+          style={{ x }}
         >
           {repeatedSkills.map((skill, i) => (
             <div
@@ -117,6 +130,7 @@ export default function SkillsCarousel() {
     </div>
   );
 })}
+
       </div>
     </section>
   );

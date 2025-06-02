@@ -142,7 +142,7 @@ export default function Hero() {
       >
         <div className="max-w-4xl w-full text-left">
           <h2
-            className="text-5xl sm:text-6xl md:text-9xl font-bold font-['Foldit']"
+            className="text-4xl sm:text-5xl md:text-9xl font-bold font-['Foldit']"
             style={{
               textShadow:
                 "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",

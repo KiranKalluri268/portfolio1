@@ -120,7 +120,7 @@ export default function Home() {
 
       {/* Header */}
       <motion.header
-        className="w-full text-white pt-6 pb-0 px-6 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-lg"
+        className="w-full text-white pt-15 pb-0 px-20 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-lg"
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
