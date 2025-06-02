@@ -22,9 +22,9 @@ const projects = [
   },
   {
     id: 3,
-    title: "ResumeByAI (₹10 ATS Resume Generator)",
+    title: "ResumeByAI",
     description: "A Next.js web app integrated with GPT-4 turbo and Razorpay that generates ATS-friendly resumes for users at a low cost, providing an easy way to create professional resumes tailored for applicant tracking systems.",
-    image: "/images/project4.webp",
+    image: "/images/KS Logo.png",
     github: "https://github.com/KiranKalluri268",
   },
   {
