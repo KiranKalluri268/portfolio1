@@ -113,20 +113,6 @@ const ProjectsSection = () => {
         setPrevScroll(currentScroll);
         setIsInView(currentInView);
 
-        // Auto scroll into Projects section if entering it for the first time
-        // if (
-        //   currentInView &&
-        //   !prevInViewRef.current &&
-        //   containerRef.current &&
-        //   !autoScrolledRef.current
-        // ) {
-        //   autoScrolledRef.current = true;
-        //   containerRef.current.scrollIntoView({
-        //     behavior: "smooth",
-        //     block: "start",
-        //   });
-        // }
-
         if (!currentInView) {
           autoScrolledRef.current = false;
         }
@@ -149,6 +135,55 @@ const ProjectsSection = () => {
       document.body.style.overflow = "";
     };
   }, [activeIndex, scrollDirection, isInView]);
+
+  useEffect(() => {
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (!isInView || isAnimating) return;
+
+    // Navigate Right (next project)
+    if (event.key === "ArrowRight") {
+      if (activeIndex < projects.length) {
+        setIsAnimating(true);
+        setActiveIndex((prev) => prev + 1);
+        setTimeout(() => setIsAnimating(false), 700);
+      }
+    }
+
+    // Navigate Left (previous project)
+    if (event.key === "ArrowLeft") {
+      if (activeIndex > -1) {
+        setIsAnimating(true);
+        setActiveIndex((prev) => prev - 1);
+        setTimeout(() => setIsAnimating(false), 700);
+      }
+    }
+
+    // Exit Up
+    if (event.key === "ArrowUp") {
+      if (activeIndex <= -1) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        setIsAnimating(true);
+        setActiveIndex((prev) => prev - 1);
+        setTimeout(() => setIsAnimating(false), 700);
+      }
+    }
+
+    // Exit Down
+    if (event.key === "ArrowDown") {
+      if (activeIndex >= projects.length) {
+        window.scrollTo({ top: window.scrollY + window.innerHeight, behavior: "smooth" });
+      } else {
+        setIsAnimating(true);
+        setActiveIndex((prev) => prev + 1);
+        setTimeout(() => setIsAnimating(false), 700);
+      }
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [activeIndex, isAnimating, isInView]);
 
   useEffect(() => {
     window.addEventListener("wheel", handleWheel, { passive: false });

@@ -84,24 +84,45 @@ export default function Hero() {
 
   // Scroll detection + auto-scroll to next section
   useEffect(() => {
-    const handleScroll = (e: WheelEvent) => {
-      const currentY = window.scrollY;
-      const scrollingDown = e.deltaY > 0;
+  const handleScroll = (e: WheelEvent) => {
+    const currentY = window.scrollY;
+    const scrollingDown = e.deltaY > 0;
 
-      if (scrollingDown && heroRef.current) {
-        const heroHeight = heroRef.current.clientHeight;
-        if (currentY < heroHeight - 100) {
-          window.scrollTo({
-            top: heroHeight,
-            behavior: "smooth",
-          });
-        }
+    if (scrollingDown && heroRef.current) {
+      const heroHeight = heroRef.current.clientHeight;
+      if (currentY < heroHeight - 100) {
+        e.preventDefault();
+        window.scrollTo({
+          top: heroHeight,
+          behavior: "smooth",
+        });
       }
-    };
+    }
+  };
 
-    window.addEventListener("wheel", handleScroll, { passive: false });
-    return () => window.removeEventListener("wheel", handleScroll);
-  }, []);
+  const handleKeyScroll = (e: KeyboardEvent) => {
+    if (e.key !== "ArrowDown") return;
+
+    const currentY = window.scrollY;
+    if (heroRef.current) {
+      const heroHeight = heroRef.current.clientHeight;
+      if (currentY < heroHeight - 100) {
+        e.preventDefault();
+        window.scrollTo({
+          top: heroHeight,
+          behavior: "smooth",
+        });
+      }
+    }
+  };
+
+  window.addEventListener("wheel", handleScroll, { passive: false });
+  window.addEventListener("keydown", handleKeyScroll);
+  return () => {
+    window.removeEventListener("wheel", handleScroll);
+    window.removeEventListener("keydown", handleKeyScroll);
+  };
+}, []);
 
   // Disable scroll when hero in view
   useEffect(() => {
