@@ -35,7 +35,6 @@ export default function Home() {
       if (currentIndex === -1) return;
 
       const currentSection = sectionsRefs[currentIndex].current!;
-      const rect = currentSection.getBoundingClientRect();
 
       const scrollableHeight = currentSection.scrollHeight - window.innerHeight;
       const scrollTopRelative = window.pageYOffset - (currentSection.offsetTop || 0);

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { useAudio } from "./AudioContextProvider"; // <-- import your context hook
+import { useAudio } from "../components/AudioContextProvider"; // <-- import your context hook
 
 interface ParticleProps {
   radius: number;
@@ -71,6 +71,7 @@ export default function AudioPermissionPrompt({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<LoadingParticle[]>([]);
   const animationFrameRef = useRef<number | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Audio context from your old component
   const { audioEnabled, setAudioEnabled } = useAudio();
@@ -196,6 +197,17 @@ export default function AudioPermissionPrompt({
     };
   }, [canvasSize, color, thickness, speed, numParticles, orbitRadii, particleRadius, tailLength, visible]);
 
+  useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Enter" && visible && buttonRef.current) {
+      buttonRef.current.click(); // triggers the full click lifecycle
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [visible]);
+
   const handleEnableAudio = () => {
     setAudioEnabled(true);
     setVisible(false);
@@ -230,6 +242,7 @@ export default function AudioPermissionPrompt({
         }}
       />
       <button
+        ref={buttonRef}
         onClick={handleEnableAudio}
         style={{
           position: "relative",
