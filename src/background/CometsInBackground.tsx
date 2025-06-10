@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useCallback } from "react";
-import { useAudio } from "@/components/AudioContextProvider";
+import { useAudio } from "@/context/AudioContextProvider";
 
 class Particle {
   trail: { x: number; y: number }[] = [];

@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import React, { forwardRef, useState } from "react";
+import React, { forwardRef, useState, useEffect } from "react";
+import { useGlobalContext } from "@/context/GlobalContext";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ContactSectionProps {}
@@ -36,33 +37,55 @@ const socialLinks = [
     ),
   },
   {
-  name: "X",
-  url: "https://x.com/KiranKalluri_08",
-  svg: (
-    <svg
-      className="w-8 h-8"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 50 50"
-      fill="currentColor"
-    >
-      <path d="M 5.9199219 6 L 20.582031 27.375 L 6.2304688 44 L 9.4101562 44 L 21.986328 29.421875 L 31.986328 44 L 44 44 L 28.681641 21.669922 L 42.199219 6 L 39.029297 6 L 27.275391 19.617188 L 17.933594 6 L 5.9199219 6 z M 9.7167969 8 L 16.880859 8 L 40.203125 42 L 33.039062 42 L 9.7167969 8 z" />
-    </svg>
-  ),
-}
+    name: "X",
+    url: "https://x.com/KiranKalluri_08",
+    svg: (
+      <svg
+        className="w-8 h-8"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 50 50"
+        fill="currentColor"
+      >
+        <path d="M 5.9199219 6 L 20.582031 27.375 L 6.2304688 44 L 9.4101562 44 L 21.986328 29.421875 L 31.986328 44 L 44 44 L 28.681641 21.669922 L 42.199219 6 L 39.029297 6 L 27.275391 19.617188 L 17.933594 6 L 5.9199219 6 z M 9.7167969 8 L 16.880859 8 L 40.203125 42 L 33.039062 42 L 9.7167969 8 z" />
+      </svg>
+    ),
+  },
 ];
 
 const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref) => {
+  const { setCurrentScene } = useGlobalContext();
+
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowUp") {
+        setCurrentScene(3);
+      }
+    };
+
+    const handleScroll = (e: WheelEvent) => {
+      if (e.deltaY < -20) {
+        setCurrentScene(3);
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    window.addEventListener("wheel", handleScroll);
+
+    return () => {
+      window.removeEventListener("keydown", handleKey);
+      window.removeEventListener("wheel", handleScroll);
+    };
+  }, [setCurrentScene]);
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
     if (!form.name.trim()) newErrors.name = "Name is required";
     if (!form.email.trim()) newErrors.email = "Email is required";
-    else if (
-      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(form.email.trim())
-    )
+    else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(form.email.trim()))
       newErrors.email = "Invalid email address";
     if (!form.message.trim()) newErrors.message = "Message is required";
     setErrors(newErrors);
@@ -76,7 +99,6 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    // For demo: just mark as submitted. Replace with API call or email service.
     setSubmitted(true);
     setForm({ name: "", email: "", message: "" });
   };
@@ -85,14 +107,14 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
     <section
       ref={ref}
       id="contact"
-      className="min-h-screen mt-16 text-center flex flex-col justify-center px-4 sm:px-6 lg:px-8"
+      className="h-screen text-center flex flex-col justify-between px-4 sm:px-6 lg:px-8 overflow-hidden"
     >
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 1 }}
-        className="max-w-xl ml-95"
+        className="max-w-xl mx-auto mt-12"
       >
         <h2 className="text-3xl font-bold mb-4">Contact Me</h2>
         <p className="text-gray-400 mb-8">Feel free to reach out!</p>
@@ -161,24 +183,23 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
               {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
             </div>
 
-            <div className="flex items-center justify-center gap-x-25">
-  <motion.button
-    type="submit"
-    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500"
-    whileHover={{ scale: 1.05 }}
-  >
-    Send Message
-  </motion.button>
+            <div className="flex items-center justify-center gap-x-10">
+              <motion.button
+                type="submit"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500"
+                whileHover={{ scale: 1.05 }}
+              >
+                Send Message
+              </motion.button>
 
-  <motion.a
-    href="mailto:kirankalluri@gmail.com"
-    className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500"
-    whileHover={{ scale: 1.05 }}
-  >
-    Say Hello 👋
-  </motion.a>
-</div>
-
+              <motion.a
+                href="mailto:kirankalluri@gmail.com"
+                className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500"
+                whileHover={{ scale: 1.05 }}
+              >
+                Say Hello 👋
+              </motion.a>
+            </div>
           </form>
         )}
 
@@ -197,6 +218,15 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
           ))}
         </div>
       </motion.div>
+
+      <motion.footer
+        className="w-full text-gray-500 text-sm py-4 text-center"
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      >
+        © {new Date().getFullYear()} Kiran. All Rights Reserved.
+      </motion.footer>
     </section>
   );
 });

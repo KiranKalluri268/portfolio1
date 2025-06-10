@@ -13,6 +13,12 @@ html, body {
 
 body {
   font-family: "Tektur", sans-serif; /* Default font */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+body::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
 }
 
 /* Ensure canvas is visible */

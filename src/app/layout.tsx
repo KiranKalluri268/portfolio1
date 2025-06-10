@@ -5,7 +5,11 @@ import "./globals.css";
 import CometsInBackground from '@/background/CometsInBackground';
 import BlackholeEffect from '@/background/BlackholeEffect';
 import StarfieldBackground from '@/background/StarfieldBackground';
-import { AudioProvider } from "@/components/AudioContextProvider";
+import { AudioProvider } from "@/context/AudioContextProvider";
+import { ScrollProvider } from "@/context/ScrollManager";
+import { ProjectViewProvider } from "@/context/ProjectViewContext";
+import { ScrollManagerProvider } from "@/context/ScrollManagerContext";
+import { GlobalProvider } from "@/context/GlobalContext";
 
 
 const geistSans = Geist({
@@ -45,6 +49,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${foldit.variable} ${tektur.variable}`}>
       <body className="relative">
+        <GlobalProvider>
+        <ScrollManagerProvider>
+        <ScrollProvider>
+        <ProjectViewProvider>
         <AudioProvider>
           {/* Starfield: Background stars */}
           <StarfieldBackground />
@@ -60,6 +68,10 @@ export default function RootLayout({
             {children}
           </div>
         </AudioProvider>
+        </ProjectViewProvider>
+        </ScrollProvider>
+        </ScrollManagerProvider>
+        </GlobalProvider>
       </body>
     </html>
   );

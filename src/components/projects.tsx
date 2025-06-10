@@ -3,12 +3,15 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useProjectView } from "@/context/ProjectViewContext";
+import { useGlobalContext } from "@/context/GlobalContext";
 
 const projects = [
   {
     id: 1,
-    title: "CertiSafet (Certificate Management System)",
-    description: "A web app built with React, Node.js, Express, DynamoDB, and Cloudinary that allows students to securely upload and manage their certificates while enabling institutes to access them directly and generate Excel reports.",
+    title: "CertiSafe (A Certificate Management System)",
+    description:
+      "A web app built with React, Node.js, Express, DynamoDB, and Cloudinary that allows students to securely upload and manage their certificates while enabling institutes to access them directly and generate Excel reports.",
     image: "/images/project1.png",
     github: "https://github.com/KiranKalluri268/CMS_PRO",
     live: "https://cms-pro-kiran-kalluris-projects.vercel.app/",
@@ -16,36 +19,36 @@ const projects = [
   {
     id: 2,
     title: "IPL Score Predictor AI",
-    description: "A Deep Neural Network model built with Keras to predict the final score of ongoing IPL matches using live inputs such as current runs, wickets, overs, recent performance, and team info. Provides real-time insights to broadcasters, fans, and analysts.",
+    description:
+      "A Deep Neural Network model built with Keras to predict the final score of ongoing IPL matches using live inputs such as current runs, wickets, overs, recent performance, and team info. Provides real-time insights to broadcasters, fans, and analysts.",
     image: "/images/project2.png",
     github: "https://github.com/KiranKalluri268/MS_AI_IPL-Score-Predictor",
   },
   {
     id: 3,
     title: "ResumeByAI",
-    description: "A Next.js web app integrated with GPT-4 turbo and Razorpay that generates ATS-friendly resumes for users at a low cost, providing an easy way to create professional resumes tailored for applicant tracking systems.",
+    description:
+      "A Next.js web app integrated with GPT-4 turbo and Razorpay that generates ATS-friendly resumes for users at a low cost, providing an easy way to create professional resumes tailored for applicant tracking systems.",
     image: "/images/KS Logo.png",
     github: "https://github.com/KiranKalluri268",
   },
   {
     id: 4,
     title: "MindPlan",
-    description: "A Flutter-based productivity app that helps users manage short-term and long-term goals, prioritize tasks using the Eisenhower Matrix, and track daily productivity by classifying days as good, bad, or awesome.",
+    description:
+      "A Flutter-based productivity app that helps users manage short-term and long-term goals, prioritize tasks using the Eisenhower Matrix, and track daily productivity by classifying days as good, bad, or awesome.",
     image: "/images/project4.webp",
     github: "https://github.com/KiranKalluri268",
   },
-]
-;
+];
 
 const ProjectsSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [scrollDirection, setScrollDirection] = useState<"up" | "down">("down");
-  const [prevScroll, setPrevScroll] = useState(0);
   const [isInView, setIsInView] = useState(false);
-  const prevInViewRef = useRef(false);
-  const autoScrolledRef = useRef(false);
+  const { setCurrentView } = useProjectView();
+  const { setCurrentScene } = useGlobalContext();
 
   const getItemStyle = useCallback(
     (index: number) => {
@@ -69,152 +72,127 @@ const ProjectsSection = () => {
     return visibleHeight / containerHeight > 0.2;
   }, []);
 
+  const updateSceneOnBoundary = useCallback(
+    (direction: "up" | "down") => {
+      if (isAnimating) return;
+      if (activeIndex === -1 && direction === "up") {
+        setCurrentScene(0);
+      }
+      if (activeIndex === projects.length && direction === "down") {
+        setCurrentScene(2);
+      }
+    },
+    [activeIndex, isAnimating, setCurrentScene]
+  );
+
   const handleWheel = useCallback(
     (event: WheelEvent) => {
       if (isAnimating || !isInView) return;
 
-      // SCROLLING DOWN
-      if (event.deltaY > 0) {
-        if (activeIndex < projects.length) {
-          setIsAnimating(true);
-          setActiveIndex((prev) => prev + 1);
-          setTimeout(() => setIsAnimating(false), 700);
-        } else {
-          // Reached end, scroll to next section
-          window.scrollTo({ top: window.scrollY + window.innerHeight, behavior: "smooth" });
-        }
-      }
+      const direction = event.deltaY > 0 ? "down" : "up";
+      updateSceneOnBoundary(direction);
 
-      // SCROLLING UP
-      else if (event.deltaY < 0) {
-        if (activeIndex > -1) {
-          setIsAnimating(true);
-          setActiveIndex((prev) => prev - 1);
-          setTimeout(() => setIsAnimating(false), 700);
-        } else {
-          // Reached top, scroll to previous section
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
+      if (direction === "down" && activeIndex < projects.length) {
+        setIsAnimating(true);
+        setActiveIndex((prev) => prev + 1);
+        setTimeout(() => setIsAnimating(false), 700);
+      } else if (direction === "up" && activeIndex > -1) {
+        setIsAnimating(true);
+        setActiveIndex((prev) => prev - 1);
+        setTimeout(() => setIsAnimating(false), 700);
+      } else if (direction === "down") {
+        window.scrollTo({ top: window.scrollY + window.innerHeight, behavior: "smooth" });
+      } else if (direction === "up") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
     },
-    [activeIndex, isAnimating, isInView]
+    [activeIndex, isAnimating, isInView, updateSceneOnBoundary]
+  );
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (!isInView || isAnimating) return;
+
+      const direction = (event.key === "ArrowDown" || event.key === "ArrowRight") ? "down"
+                      : (event.key === "ArrowUp" || event.key === "ArrowLeft") ? "up"
+                      : null;
+
+      if (!direction) return;
+      updateSceneOnBoundary(direction);
+
+      if (direction === "down" && activeIndex < projects.length) {
+        setIsAnimating(true);
+        setActiveIndex((prev) => prev + 1);
+        setTimeout(() => setIsAnimating(false), 700);
+      } else if (direction === "up" && activeIndex > -1) {
+        setIsAnimating(true);
+        setActiveIndex((prev) => prev - 1);
+        setTimeout(() => setIsAnimating(false), 700);
+      } else if (direction === "down") {
+        window.scrollTo({ top: window.scrollY + window.innerHeight, behavior: "smooth" });
+      } else if (direction === "up") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    },
+    [activeIndex, isAnimating, isInView, updateSceneOnBoundary]
   );
 
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
+    if (activeIndex === -1) {
+      setCurrentView("title");
+    } else if (activeIndex === projects.length) {
+      setCurrentView("seeAll");
+    } else {
+      setCurrentView("project");
+    }
+  }, [activeIndex, setCurrentView]);
 
+  useEffect(() => {
     const onScroll = () => {
-      if (timeout) clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        const currentScroll = window.scrollY;
-        const currentInView = checkIfInView();
-
-        setScrollDirection(currentScroll > prevScroll ? "down" : "up");
-        setPrevScroll(currentScroll);
-        setIsInView(currentInView);
-
-        if (!currentInView) {
-          autoScrolledRef.current = false;
-        }
-
-        prevInViewRef.current = currentInView;
-      }, 50);
+      setIsInView(checkIfInView());
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [prevScroll, checkIfInView]);
+  }, [checkIfInView]);
 
   useEffect(() => {
-    const shouldLock =
-      isInView
-
+    const shouldLock = isInView;
     document.body.style.overflow = shouldLock ? "hidden" : "";
-
     return () => {
       document.body.style.overflow = "";
     };
-  }, [activeIndex, scrollDirection, isInView]);
+  }, [isInView]);
 
   useEffect(() => {
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (!isInView || isAnimating) return;
-
-    // Navigate Right (next project)
-    if (event.key === "ArrowRight") {
-      if (activeIndex < projects.length) {
-        setIsAnimating(true);
-        setActiveIndex((prev) => prev + 1);
-        setTimeout(() => setIsAnimating(false), 700);
-      }
-    }
-
-    // Navigate Left (previous project)
-    if (event.key === "ArrowLeft") {
-      if (activeIndex > -1) {
-        setIsAnimating(true);
-        setActiveIndex((prev) => prev - 1);
-        setTimeout(() => setIsAnimating(false), 700);
-      }
-    }
-
-    // Exit Up
-    if (event.key === "ArrowUp") {
-      if (activeIndex <= -1) {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        setIsAnimating(true);
-        setActiveIndex((prev) => prev - 1);
-        setTimeout(() => setIsAnimating(false), 700);
-      }
-    }
-
-    // Exit Down
-    if (event.key === "ArrowDown") {
-      if (activeIndex >= projects.length) {
-        window.scrollTo({ top: window.scrollY + window.innerHeight, behavior: "smooth" });
-      } else {
-        setIsAnimating(true);
-        setActiveIndex((prev) => prev + 1);
-        setTimeout(() => setIsAnimating(false), 700);
-      }
-    }
-  };
-
-  window.addEventListener("keydown", handleKeyDown);
-  return () => window.removeEventListener("keydown", handleKeyDown);
-}, [activeIndex, isAnimating, isInView]);
-
-  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("wheel", handleWheel, { passive: false });
+
     return () => {
+      window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("wheel", handleWheel);
     };
-  }, [handleWheel]);
+  }, [handleWheel, handleKeyDown]);
 
   return (
     <section
       ref={containerRef}
       id="projects"
-      className="relative text-silver h-[110vh] overflow-hidden"
+      className="relative text-white h-[101vh] overflow-hidden"
     >
       {/* Animated Title */}
       <motion.h1
-  initial={{ y: "100%", opacity: 0 }}
-  animate={{
-    y: activeIndex >= 0 ? "-300%" : "0%",
-    x: activeIndex === projects.length
-      ? "-600%" // move completely off screen when at "See All"
-      : activeIndex >= 0
-        ? "-40vw" // move to left for project view
-        : "0%",   // center when no project is active
-    opacity: 1,
-  }}
-  transition={{ duration: 0.7, ease: "easeInOut" }}
-  className="text-6xl font-bold tracking-tight text-center absolute top-3/8 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap z-[999]"
->
-  Projects
-</motion.h1>
+        initial={{ y: "100%", opacity: 0 }}
+        animate={{
+          y: activeIndex >= 0 ? "-300%" : "0%",
+          x: activeIndex === projects.length ? "-600%" : activeIndex >= 0 ? "-40vw" : "0%",
+          opacity: 1,
+        }}
+        transition={{ duration: 0.7, ease: "easeInOut" }}
+        className="text-6xl font-bold tracking-tight text-center absolute top-3/8 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap z-[999]"
+      >
+        Projects
+      </motion.h1>
 
       {/* Animated See All */}
       <motion.h1

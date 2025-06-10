@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, useMotionValue, useAnimationFrame } from "framer-motion";
 import {
   FaReact,
@@ -26,6 +26,7 @@ import {
 import { TbBrandVscode } from "react-icons/tb";
 import { DiPostgresql } from "react-icons/di";
 import { BsFiletypeSql } from "react-icons/bs";
+import { useGlobalContext } from "@/context/GlobalContext";
 
 const skillCategories = [
   {
@@ -79,20 +80,15 @@ function SkillRow({
   speed: number;
   direction: 1 | -1;
 }) {
-  // Repeat skills multiple times for seamless looping
   const repeatedSkills = Array(5).fill(category.skills).flat();
-
   const containerRef = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Initialize position on mount to the middle repetition for seamless loop
   useEffect(() => {
     const container = containerRef.current;
     if (container) {
       const width = container.scrollWidth / 5;
-      // For direction=1, start from -width to show middle copy,
-      // For direction=-1, start from -width * 3 (near the right end copy)
       x.set(direction === 1 ? -width : -width * 3);
     }
   }, [x, direction]);
@@ -103,13 +99,10 @@ function SkillRow({
       const currentX = x.get();
       const fullWidth = containerRef.current.scrollWidth / 5;
 
-      // Loop condition differs by direction:
       if (direction === 1 && currentX >= 0) {
-        // Reset to -fullWidth (middle copy)
         x.set(-fullWidth);
       } else if (direction === -1 && currentX <= -2 * fullWidth) {
-        // Reset to -fullWidth * 3 (middle-right copy)
-        x.set(-fullWidth );
+        x.set(-fullWidth);
       } else {
         x.set(currentX + moveBy);
       }
@@ -159,20 +152,65 @@ function SkillRow({
 }
 
 export default function SkillsCarousel() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const { setCurrentScene } = useGlobalContext();
+
+  const handleWheel = useCallback(
+    (e: WheelEvent) => {
+      const rect = sectionRef.current?.getBoundingClientRect();
+      if (!rect || rect.top > window.innerHeight || rect.bottom < 0) return;
+
+      if (e.deltaY > 0) {
+        setCurrentScene(4); // Scroll down
+      } else {
+        setCurrentScene(2); // Scroll up
+      }
+    },
+    [setCurrentScene]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      const rect = sectionRef.current?.getBoundingClientRect();
+      if (!rect || rect.top > window.innerHeight || rect.bottom < 0) return;
+
+      if (e.key === "ArrowDown") {
+        setCurrentScene(4);
+      } else if (e.key === "ArrowUp") {
+        setCurrentScene(2);
+      }
+    },
+    [setCurrentScene]
+  );
+
+  useEffect(() => {
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleWheel, handleKeyDown]);
+
   return (
     <section
       id="skills"
+      ref={sectionRef}
       className="min-h-screen flex items-center justify-start px-4 text-white"
     >
       <div className="w-full sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[70%] space-y-12 overflow-hidden py-20">
         <h1 className="text-4xl font-bold text-center mb-20">Tech Stack</h1>
-
         {skillCategories.map((category, idx) => {
-          // Alternate direction each row (1 = left to right, -1 = right to left)
           const direction = idx % 2 === 0 ? 1 : -1;
-          const speed = 40 - idx * 5; // Adjust speed per row if you want
-
-          return <SkillRow key={category.title} category={category} speed={speed} direction={direction} />;
+          const speed = 40 - idx * 5;
+          return (
+            <SkillRow
+              key={category.title}
+              category={category}
+              speed={speed}
+              direction={direction}
+            />
+          );
         })}
       </div>
     </section>
