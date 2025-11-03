@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
-import { useAudio } from "../context/AudioContextProvider"; // <-- import your context hook
+import { useEffect, useRef, useState } from "react";
+import { useAudio } from "../context/AudioContextProvider";
 
 interface ParticleProps {
   radius: number;
@@ -59,6 +59,27 @@ interface LoadingScreenProps {
   particleRadius?: number;
 }
 
+function hexToRgb(hex: string) {
+  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+  hex = hex.replace(shorthandRegex, (_, r, g, b) => r + r + g + g + b + b);
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : null;
+}
+
+function colorToRgba(color: string, alpha: number) {
+  const rgb = hexToRgb(color);
+  if (rgb) {
+    return `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})`;
+  }
+  return `rgba(255,255,255,${alpha})`;
+}
+
 export default function AudioPermissionPrompt({
   tailLength = 100,
   thickness = 2.2,
@@ -72,7 +93,6 @@ export default function AudioPermissionPrompt({
   const particlesRef = useRef<LoadingParticle[]>([]);
   const animationFrameRef = useRef<number | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Audio context from your old component
   const { audioEnabled, setAudioEnabled } = useAudio();
@@ -82,26 +102,6 @@ export default function AudioPermissionPrompt({
 
   // Responsive canvas size
   const [canvasSize, setCanvasSize] = useState({ width: 300, height: 300 });
-
-  function hexToRgb(hex: string) {
-    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    hex = hex.replace(shorthandRegex, (_, r, g, b) => r + r + g + g + b + b);
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
-        }
-      : null;
-  }
-  function colorToRgba(color: string, alpha: number) {
-    const rgb = hexToRgb(color);
-    if (rgb) {
-      return `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})`;
-    }
-    return `rgba(255,255,255,${alpha})`;
-  }
 
   useEffect(() => {
     function updateCanvasSize() {
@@ -199,26 +199,15 @@ export default function AudioPermissionPrompt({
   }, [canvasSize, color, thickness, speed, numParticles, orbitRadii, particleRadius, tailLength, visible]);
 
   useEffect(() => {
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Enter" && visible && buttonRef.current) {
-      buttonRef.current.click(); // triggers the full click lifecycle
-    }
-  };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && visible && buttonRef.current) {
+        buttonRef.current.click(); // triggers the full click lifecycle
+      }
+    };
 
-  window.addEventListener("keydown", handleKeyDown);
-  return () => window.removeEventListener("keydown", handleKeyDown);
-}, [visible]);
-
-  useEffect(() => {
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Enter" && visible && buttonRef.current) {
-      buttonRef.current.click(); // triggers the full click lifecycle
-    }
-  };
-
-  window.addEventListener("keydown", handleKeyDown);
-  return () => window.removeEventListener("keydown", handleKeyDown);
-}, [visible]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [visible]);
 
   const handleEnableAudio = () => {
     setAudioEnabled(true);
@@ -254,7 +243,6 @@ export default function AudioPermissionPrompt({
         }}
       />
       <button
-        ref={buttonRef}
         ref={buttonRef}
         onClick={handleEnableAudio}
         style={{

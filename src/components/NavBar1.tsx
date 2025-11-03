@@ -2,11 +2,9 @@
 
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
-import { useGlobalContext } from '@/context/GlobalContext';
 import AudioToggle from './AudioToggle';
 
 export default function NavBar() {
-  const { currentScene } = useGlobalContext();
 
   const projectsRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLElement>(null);

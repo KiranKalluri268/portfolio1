@@ -1,11 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import React, { forwardRef, useState, useEffect } from "react";
-import { useGlobalContext } from "@/context/GlobalContext";
+import { forwardRef, useState } from "react";
 import type { ContactForm, FormErrors, SocialLink } from "@/types";
 
-interface ContactSectionProps {}
+type ContactSectionProps = Record<string, never>;
 
 const socialLinks: SocialLink[] = [
   {
@@ -53,7 +52,6 @@ const socialLinks: SocialLink[] = [
 ];
 
 const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref) => {
-  const { currentScene, setCurrentScene, setPrevScene} = useGlobalContext();
 
   const [form, setForm] = useState<ContactForm>({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<FormErrors>({});

@@ -46,7 +46,7 @@ const projects: Project[] = [
 
 const ProjectsSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { currentScene, setCurrentScene, prevScene, setPrevScene } = useGlobalContext();
+  const { currentScene, prevScene } = useGlobalContext();
   const [activeIndex, setActiveIndex] = useState(() => {
   return prevScene === 2 ? projects.length : -1;
 });
@@ -65,7 +65,7 @@ const ProjectsSection = () => {
   }, []);
 
   // Import UnifiedScrollManager for scene navigation
-  const { navigateToScene, setScrollEnabled, registerNavigationGuard, unregisterNavigationGuard, registerCarouselAdvance, unregisterCarouselAdvance } = useUnifiedScroll();
+  const { setScrollEnabled, registerNavigationGuard, unregisterNavigationGuard, registerCarouselAdvance, unregisterCarouselAdvance } = useUnifiedScroll();
 
   // Handle internal carousel navigation (projects within scene)
   const navigateCarousel = useCallback(

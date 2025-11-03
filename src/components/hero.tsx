@@ -3,9 +3,6 @@
 import { motion, useMotionValue, animate } from "framer-motion";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useGlobalContext } from "@/context/GlobalContext";
-import type { AnimationDirection } from "@/types";
-
-const ANIMATION_DURATION_MS = 300;
 
 export default function Hero() {
   const staticText = "NAMASTE ! I'M";
@@ -36,14 +33,7 @@ export default function Hero() {
   const opacity = useMotionValue(1);
   const scale = useMotionValue(1);
 
-  const {
-    currentScene,
-    setCurrentScene,
-    prevScene,
-    setPrevScene,
-    isAnimating,
-    setIsAnimating,
-  } = useGlobalContext();
+  const { currentScene, prevScene } = useGlobalContext();
 
   // First line typing
   useEffect(() => {

@@ -1,8 +1,7 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef, useEffect, useCallback } from "react";
-import { useGlobalContext } from "@/context/GlobalContext";
+import { useRef } from "react";
 import type { Experience } from "@/types";
 
 const experiences: Experience[] = [
@@ -40,7 +39,6 @@ const fadeInUpVariant = {
 
 const ExperienceTimeline = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const { currentScene } = useGlobalContext();
 
   // Scene lifecycle: No special handlers needed - UnifiedScrollManager handles navigation
 
@@ -69,7 +67,7 @@ interface TimelineItemProps {
 }
 
 const TimelineItem = ({ experience, index }: TimelineItemProps) => {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLLIElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-300px" });
 
   return (

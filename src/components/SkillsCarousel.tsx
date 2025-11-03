@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useAnimationFrame } from "framer-motion";
 import type { SkillCategory } from "@/types";
 import {
@@ -27,7 +27,6 @@ import {
 import { TbBrandVscode } from "react-icons/tb";
 import { DiPostgresql } from "react-icons/di";
 import { BsFiletypeSql } from "react-icons/bs";
-import { useGlobalContext } from "@/context/GlobalContext";
 
 const skillCategories: SkillCategory[] = [
   {
@@ -152,7 +151,6 @@ function SkillRow({ category, speed, direction }: SkillRowProps) {
 
 export default function SkillsCarousel() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const { currentScene } = useGlobalContext();
 
   // Scene lifecycle: No special handlers needed - UnifiedScrollManager handles navigation
 
