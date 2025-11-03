@@ -3,9 +3,10 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from "react";
 
 // Constants for scroll behavior
-const SCROLL_THRESHOLD = 100; // Accumulated delta needed to trigger transition
+const SCROLL_THRESHOLD = 100; // Accumulated delta needed to trigger transition (lowered for better responsiveness)
 const SCROLL_RESET_TIME = 150; // Reset accumulator after this many ms of inactivity
-const TRANSITION_DURATION = 500; // Milliseconds for each scene transition
+const TRANSITION_DURATION = 1000; // Milliseconds to wait at each scene before transitioning (allows time to see scene content)
+const SCENE_DISPLAY_TIME = 100; // Minimum time to display each scene before allowing transition
 const TOTAL_SCENES = 5; // 0-4 scenes
 
 interface UnifiedScrollManagerType {
@@ -39,6 +40,10 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
   const lastScrollTimeRef = useRef(Date.now());
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const scrollEnabledRef = useRef(true); // Allow components to disable scroll handling
+  
+  // Animation blocking: tracks when we're in the middle of a visual animation
+  // This extends beyond isTransitioning to cover the full animation duration
+  const animationBlockUntilRef = useRef<number>(0); // Timestamp when animation blocking ends
   
   // Navigation guards: Map<sceneNumber, guardFunction>
   // Guard function takes direction ("forward" | "backward") and returns false to block, true to allow
@@ -137,7 +142,20 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
     const isBlocked = guard && !guard(direction);
     
     if (!isBlocked) {
+      // Guard allows - we're at a boundary state, wait to show it before transitioning
+      // This ensures users see "Projects" title and "See all projects" states
+      const isAtBoundary = true; // Guard allows means we're at boundary
+      
+      if (isAtBoundary) {
+        // Wait to display the boundary state before transitioning
+        // This applies especially to Projects scene (Scene 1)
+        await new Promise(resolve => setTimeout(resolve, SCENE_DISPLAY_TIME));
+      }
+      
       // Guard allows - proceed with transition
+      // Set animation blocking period
+      animationBlockUntilRef.current = Date.now() + TRANSITION_DURATION;
+      
       setCurrentScene(nextScene);
       setTransitionQueue(prev => {
         const newQueue = prev.slice(1);
@@ -168,10 +186,10 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
     // Advance carousel
     try {
       await advance(direction);
-      // Wait for state to update
-      await new Promise(resolve => setTimeout(resolve, 150));
+      // Small delay for state to update after advance
+      await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Recursively retry
+      // Recursively retry (will check guard again and wait at boundary if guard allows)
       return await attemptTransitionWithAutoAdvance(nextScene, direction, maxRetries - 1);
     } catch {
       // If advance fails, skip
@@ -209,7 +227,11 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
         return; // Don't proceed with normal transition
       }
       
-      // No guard blocking - proceed with transition after transition duration
+      // No guard blocking - proceed with transition after scene display time
+      // Set animation blocking period to ensure no input during visual animation
+      // Use TRANSITION_DURATION (1000ms) to ensure scene is visible before transitioning
+      animationBlockUntilRef.current = Date.now() + TRANSITION_DURATION;
+      
       const transitionTimer = setTimeout(() => {
         setCurrentScene(nextScene);
         setTransitionQueue(prev => prev.slice(1));
@@ -275,11 +297,19 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
   /**
    * Unified scroll handler for both mouse wheel and touchpad
    * Accumulates small deltas and triggers transition when threshold is reached
+   * Blocks all input during scene animations to ensure visible transitions
    */
   const handleScroll = useCallback((e: WheelEvent) => {
     // If scroll is disabled by a component (e.g., projects carousel), let it through
     if (!scrollEnabledRef.current) {
       return; // Don't prevent default, let component handle it
+    }
+
+    // Check if we're in animation blocking period (visual animations still playing)
+    const now = Date.now();
+    if (animationBlockUntilRef.current > now) {
+      e.preventDefault();
+      return; // Block all input during animation
     }
 
     // If currently transitioning, prevent default and ignore
@@ -288,7 +318,7 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const now = Date.now();
+    // Use the now variable we already checked
     const timeDelta = now - lastScrollTimeRef.current;
 
     // Reset accumulator if too much time passed (new gesture started)
@@ -312,15 +342,25 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
 
       // Validate bounds
       if (nextScene >= 0 && nextScene < TOTAL_SCENES) {
+        // Immediately reset accumulator and block input for this transition
+        // This ensures only ONE transition happens per scroll gesture
+        accumulatedDeltaRef.current = 0;
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
+          scrollTimeoutRef.current = null;
+        }
+        
+        // Trigger navigation (will set isTransitioning and animation blocking)
         if (direction > 0) {
           navigateNext();
         } else {
           navigatePrev();
         }
+      } else {
+        // Out of bounds - just reset accumulator
+        accumulatedDeltaRef.current = 0;
       }
 
-      // Reset accumulator
-      accumulatedDeltaRef.current = 0;
       e.preventDefault();
     } else {
       // Set timeout to reset accumulator after inactivity
@@ -332,8 +372,16 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
 
   /**
    * Keyboard navigation handler
+   * Also respects animation blocking period
    */
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Check if we're in animation blocking period
+    const now = Date.now();
+    if (animationBlockUntilRef.current > now) {
+      e.preventDefault();
+      return; // Block keyboard input during animation
+    }
+
     if (isTransitioning) {
       e.preventDefault();
       return;

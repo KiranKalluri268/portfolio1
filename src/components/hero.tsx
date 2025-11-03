@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useMotionValue, animate } from "framer-motion";
+import { motion } from "framer-motion";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useGlobalContext } from "@/context/GlobalContext";
 
@@ -27,13 +27,14 @@ export default function Hero() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isFirstLineDone, setIsFirstLineDone] = useState(false);
   const [showSecondCursor, setShowSecondCursor] = useState(false);
-  const [shouldRender, setShouldRender] = useState(true);
 
   const heroRef = useRef<HTMLDivElement>(null);
-  const opacity = useMotionValue(1);
-  const scale = useMotionValue(1);
-
   const { currentScene, prevScene } = useGlobalContext();
+  
+  // Determine navigation direction
+  // Forward: prevScene < currentScene (moving down, e.g., initial load or 0→1)
+  // Backward: prevScene > currentScene (moving up, e.g., 1→0)
+  const isForward = prevScene <= currentScene;
 
   // First line typing
   useEffect(() => {
@@ -72,64 +73,64 @@ export default function Hero() {
     return () => clearTimeout(timeout);
   }, [secondLine, isDeleting, isFirstLineDone, currentWordIndex, words]);
 
-  // Scene lifecycle: Handle scene enter/exit animations
-  useEffect(() => {
-    if (currentScene === 0) {
-      // Scene is active - ensure it's rendered and animate in
-      setShouldRender(true);
-      animate(opacity, 1, { duration: 0.3 });
-      animate(scale, 1, { duration: 0.3 });
-    } else if (prevScene === 0 && currentScene !== 0) {
-      // Scene is leaving - animate out
-      setShouldRender(true); // Keep rendered during exit animation
-      animate(opacity, 0, { duration: 0.3 });
-      animate(scale, 0.7, { duration: 0.3 }).then(() => {
-        setShouldRender(false);
-      });
-    }
-  }, [currentScene, prevScene, opacity, scale]);
-
   return (
     <section 
       ref={heroRef} 
-      className="h-screen w-full relative" 
+      className="h-screen w-full relative overflow-hidden" 
       id="hero"
       aria-label="Hero section - Introduction"
     >
-      {shouldRender && (
-        <motion.div
-          className="fixed top-0 left-0 w-full h-screen flex items-center justify-center text-white z-[-2]"
-          style={{ opacity, scale }}
-        >
-          <div className="max-w-4xl w-full text-left">
-            <h1
-              className="text-4xl sm:text-5xl md:text-9xl font-bold font-['Foldit']"
-              style={{
-                textShadow:
-                  "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
-              }}
-            >
-              {displayText}
-              {displayText.length < staticText.length && (
-                <span className="text-blue-500 animate-blink" aria-hidden="true">|</span>
-              )}
-            </h1>
+      <motion.div
+        className="fixed top-0 left-0 w-full h-screen flex items-center justify-center text-white z-[-2]"
+        initial={{
+          // Forward navigation (top→bottom): entry from bottom
+          // Backward navigation (bottom→top): entry from top
+          y: isForward ? "100%" : "-100%",
+          opacity: 0,
+        }}
+        animate={{
+          y: 0,
+          opacity: 1,
+        }}
+        exit={{
+          // Forward navigation: exit to top (moving up in viewport)
+          // Backward navigation: exit to bottom (moving down in viewport)
+          y: isForward ? "-100%" : "100%",
+          opacity: 0,
+        }}
+        transition={{
+          duration: 0.5,
+          ease: "easeInOut",
+        }}
+      >
+        <div className="max-w-4xl w-full text-left">
+          <h1
+            className="text-4xl sm:text-5xl md:text-9xl font-bold font-['Foldit']"
+            style={{
+              textShadow:
+                "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
+            }}
+          >
+            {displayText}
+            {displayText.length < staticText.length && (
+              <span className="text-blue-500 animate-blink" aria-hidden="true">|</span>
+            )}
+          </h1>
 
-            <h2
-              className="text-4xl sm:text-5xl md:text-9xl font-bold mt-4 font-['Foldit']"
-              style={{
-                textShadow:
-                  "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
-              }}
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              <span className="text-blue-500">{secondLine}</span>
-              {showSecondCursor && <span className="text-red-500 animate-blink" aria-hidden="true">|</span>}
-            </h2>
-          </div>
-        </motion.div>
-      )}
+          <h2
+            className="text-4xl sm:text-5xl md:text-9xl font-bold mt-4 font-['Foldit']"
+            style={{
+              textShadow:
+                "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
+            }}
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <span className="text-blue-500">{secondLine}</span>
+            {showSecondCursor && <span className="text-red-500 animate-blink" aria-hidden="true">|</span>}
+          </h2>
+        </div>
+      </motion.div>
     </section>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useAnimationFrame } from "framer-motion";
+import { useGlobalContext } from "@/context/GlobalContext";
 import type { SkillCategory } from "@/types";
 import {
   FaReact,
@@ -151,17 +152,43 @@ function SkillRow({ category, speed, direction }: SkillRowProps) {
 
 export default function SkillsCarousel() {
   const sectionRef = useRef<HTMLDivElement>(null);
-
-  // Scene lifecycle: No special handlers needed - UnifiedScrollManager handles navigation
+  const { currentScene, prevScene } = useGlobalContext();
+  
+  // Determine navigation direction
+  // Forward: prevScene < currentScene (moving down, e.g., 2→3 or 0→3)
+  // Backward: prevScene > currentScene (moving up, e.g., 4→3 or 2→3 backward)
+  const isForward = prevScene < currentScene;
 
   return (
     <section
       id="skills"
       ref={sectionRef}
-      className="min-h-screen flex items-center justify-start px-4 text-white"
+      className="min-h-screen flex items-center justify-start px-4 text-white overflow-hidden relative"
       aria-label="Technical skills section"
     >
-      <div className="w-full sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[70%] space-y-12 overflow-hidden py-20">
+      <motion.div
+        className="w-full sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[70%] space-y-12 py-20"
+        initial={{
+          // Forward navigation (top→bottom): entry from bottom
+          // Backward navigation (bottom→top): entry from top
+          y: isForward ? "100%" : "-100%",
+          opacity: 0,
+        }}
+        animate={{
+          y: 0,
+          opacity: 1,
+        }}
+        exit={{
+          // Forward navigation: exit to top (moving up in viewport)
+          // Backward navigation: exit to bottom (moving down in viewport)
+          y: isForward ? "-100%" : "100%",
+          opacity: 0,
+        }}
+        transition={{
+          duration: 0.5,
+          ease: "easeInOut",
+        }}
+      >
         <h1 className="text-4xl font-bold text-center mb-20">Tech Stack</h1>
         {skillCategories.map((category, idx) => {
           const direction = idx % 2 === 0 ? 1 : -1;
@@ -175,7 +202,7 @@ export default function SkillsCarousel() {
             />
           );
         })}
-      </div>
+      </motion.div>
     </section>
   );
 }

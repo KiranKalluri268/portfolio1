@@ -300,11 +300,15 @@ const ProjectsSection = () => {
           setPrevIndex(activeIndexRef.current);
           setActiveIndex(targetIndex);
 
-          // Wait for animation to complete
+          // Wait for animation to complete + extra time at boundary states
+          // Boundary states (title at -1, "See all" at projects.length) need more display time
+          const isBoundaryState = targetIndex === -1 || targetIndex === projects.length;
+          const waitTime = isBoundaryState ? 1000 : 700; // 1000ms at boundaries, 700ms otherwise
+          
           setTimeout(() => {
             setIsAnimating(false);
             resolve();
-          }, 700); // Match carousel animation duration
+          }, waitTime); // Longer wait at boundary states to show "Projects" title and "See all projects"
         };
 
         waitForAnimation();

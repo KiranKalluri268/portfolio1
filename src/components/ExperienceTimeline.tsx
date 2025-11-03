@@ -2,6 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { useGlobalContext } from "@/context/GlobalContext";
 import type { Experience } from "@/types";
 
 const experiences: Experience[] = [
@@ -39,24 +40,50 @@ const fadeInUpVariant = {
 
 const ExperienceTimeline = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
-
-  // Scene lifecycle: No special handlers needed - UnifiedScrollManager handles navigation
+  const { currentScene, prevScene } = useGlobalContext();
+  
+  // Determine navigation direction
+  // Forward: prevScene < currentScene (moving down, e.g., 1→2 or 0→2)
+  // Backward: prevScene > currentScene (moving up, e.g., 3→2 or 4→2)
+  const isForward = prevScene < currentScene;
 
   return (
     <section
       id="experience"
       ref={sectionRef}
-      className="min-h-screen flex items-center justify-center px-4 text-white"
+      className="min-h-screen flex items-center justify-center px-4 text-white overflow-hidden relative"
       aria-label="Experience timeline section"
     >
-      <div className="w-full max-w-4xl">
+      <motion.div
+        className="w-full max-w-4xl"
+        initial={{
+          // Forward navigation (top→bottom): entry from bottom
+          // Backward navigation (bottom→top): entry from top
+          y: isForward ? "100%" : "-100%",
+          opacity: 0,
+        }}
+        animate={{
+          y: 0,
+          opacity: 1,
+        }}
+        exit={{
+          // Forward navigation: exit to top (moving up in viewport)
+          // Backward navigation: exit to bottom (moving down in viewport)
+          y: isForward ? "-100%" : "100%",
+          opacity: 0,
+        }}
+        transition={{
+          duration: 0.5,
+          ease: "easeInOut",
+        }}
+      >
         <h2 className="text-4xl font-bold text-center mb-16">Experience Timeline</h2>
         <ol className="relative border-l-4 border-blue-500 max-w-3xl mx-auto" aria-label="Professional experience timeline">
           {experiences.map((exp, index) => (
             <TimelineItem key={index} experience={exp} index={index} />
           ))}
         </ol>
-      </div>
+      </motion.div>
     </section>
   );
 };
