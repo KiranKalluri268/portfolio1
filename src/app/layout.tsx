@@ -10,6 +10,7 @@ import { ScrollProvider } from "@/context/ScrollManager";
 import { ProjectViewProvider } from "@/context/ProjectViewContext";
 import { ScrollManagerProvider } from "@/context/ScrollManagerContext";
 import { GlobalProvider } from "@/context/GlobalContext";
+import { UnifiedScrollProvider } from "@/context/UnifiedScrollManager";
 
 
 const geistSans = Geist({
@@ -48,7 +49,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${foldit.variable} ${tektur.variable}`}>
-      <body className="relative">
+      <body className="relative bg-black">
+        <UnifiedScrollProvider>
         <GlobalProvider>
         <ScrollManagerProvider>
         <ScrollProvider>
@@ -72,6 +74,7 @@ export default function RootLayout({
         </ScrollProvider>
         </ScrollManagerProvider>
         </GlobalProvider>
+        </UnifiedScrollProvider>
       </body>
     </html>
   );

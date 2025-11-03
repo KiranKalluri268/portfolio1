@@ -3,6 +3,7 @@
 import { motion, useMotionValue, animate } from "framer-motion";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useGlobalContext } from "@/context/GlobalContext";
+import type { AnimationDirection } from "@/types";
 
 const ANIMATION_DURATION_MS = 300;
 
@@ -39,6 +40,7 @@ export default function Hero() {
     currentScene,
     setCurrentScene,
     prevScene,
+    setPrevScene,
     isAnimating,
     setIsAnimating,
   } = useGlobalContext();
@@ -80,93 +82,37 @@ export default function Hero() {
     return () => clearTimeout(timeout);
   }, [secondLine, isDeleting, isFirstLineDone, currentWordIndex, words]);
 
-  const handleTransition = (direction: "up" | "down") => {
-    if (!heroRef.current) return;
-
-    const heroHeight = heroRef.current.clientHeight;
-    const targetY = direction === "down" ? heroHeight : 0;
-    const startY = window.scrollY;
-    const startTime = performance.now();
-
-    setIsAnimating(true);
-    document.body.style.overflow = "hidden";
-
-    animate(opacity, direction === "down" ? 0 : 1, {
-      duration: ANIMATION_DURATION_MS / 1000,
-    });
-    animate(scale, direction === "down" ? 0.7 : 1, {
-      duration: ANIMATION_DURATION_MS / 1000,
-    });
-
-    if (direction === "up") setShouldRender(true);
-
-    const animateScroll = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / ANIMATION_DURATION_MS, 1);
-      window.scrollTo(0, startY + (targetY - startY) * progress);
-
-      if (progress < 1) {
-        requestAnimationFrame(animateScroll);
-      } else {
-        setIsAnimating(false);
-        document.body.style.overflow = "auto";
-
-        if (direction === "down") {
-          setCurrentScene(1);
-          setShouldRender(false);
-        } else {
-          setShouldRender(true);
-        }
-      }
-    };
-
-    requestAnimationFrame(animateScroll);
-  };
-
-  // Wheel + arrow key events
+  // Scene lifecycle: Handle scene enter/exit animations
   useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      if (isAnimating || currentScene !== 0) return;
-      const scrollingDown = e.deltaY > 0;
-      if (scrollingDown) {
-        e.preventDefault();
-        handleTransition("down");
-      }
-    };
-
-    const handleKey = (e: KeyboardEvent) => {
-      if (isAnimating || currentScene !== 0) return;
-      if (["ArrowDown", "PageDown"].includes(e.key)) {
-        e.preventDefault();
-        handleTransition("down");
-      }
-    };
-
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    window.addEventListener("keydown", handleKey);
-
-    return () => {
-      window.removeEventListener("wheel", handleWheel);
-      window.removeEventListener("keydown", handleKey);
-    };
-  }, [isAnimating, currentScene]);
-
-  // Reverse animation when returning from Scene 1
-  useEffect(() => {
-    if (prevScene === 1 && currentScene === 0 && !isAnimating) {
-      handleTransition("up");
+    if (currentScene === 0) {
+      // Scene is active - ensure it's rendered and animate in
+      setShouldRender(true);
+      animate(opacity, 1, { duration: 0.3 });
+      animate(scale, 1, { duration: 0.3 });
+    } else if (prevScene === 0 && currentScene !== 0) {
+      // Scene is leaving - animate out
+      setShouldRender(true); // Keep rendered during exit animation
+      animate(opacity, 0, { duration: 0.3 });
+      animate(scale, 0.7, { duration: 0.3 }).then(() => {
+        setShouldRender(false);
+      });
     }
-  }, [currentScene, prevScene, isAnimating]);
+  }, [currentScene, prevScene, opacity, scale]);
 
   return (
-    <div ref={heroRef} className="h-screen w-full relative">
+    <section 
+      ref={heroRef} 
+      className="h-screen w-full relative" 
+      id="hero"
+      aria-label="Hero section - Introduction"
+    >
       {shouldRender && (
-        <motion.section
+        <motion.div
           className="fixed top-0 left-0 w-full h-screen flex items-center justify-center text-white z-[-2]"
           style={{ opacity, scale }}
         >
           <div className="max-w-4xl w-full text-left">
-            <h2
+            <h1
               className="text-4xl sm:text-5xl md:text-9xl font-bold font-['Foldit']"
               style={{
                 textShadow:
@@ -175,9 +121,9 @@ export default function Hero() {
             >
               {displayText}
               {displayText.length < staticText.length && (
-                <span className="text-blue-500 animate-blink">|</span>
+                <span className="text-blue-500 animate-blink" aria-hidden="true">|</span>
               )}
-            </h2>
+            </h1>
 
             <h2
               className="text-4xl sm:text-5xl md:text-9xl font-bold mt-4 font-['Foldit']"
@@ -185,13 +131,15 @@ export default function Hero() {
                 textShadow:
                   "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
               }}
+              aria-live="polite"
+              aria-atomic="true"
             >
               <span className="text-blue-500">{secondLine}</span>
-              {showSecondCursor && <span className="text-red-500 animate-blink">|</span>}
+              {showSecondCursor && <span className="text-red-500 animate-blink" aria-hidden="true">|</span>}
             </h2>
           </div>
-        </motion.section>
+        </motion.div>
       )}
-    </div>
+    </section>
   );
 }

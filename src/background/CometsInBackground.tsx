@@ -24,7 +24,7 @@ class Particle {
     this.trail.push({ x: this.x, y: this.y });
     if (this.trail.length > 10) this.trail.shift();
 
-    const zSpeedMultiplier = 0.5 + this.z * 4;
+    const zSpeedMultiplier = 0.5 + this.z * 3;
     this.x += this.speedX * zSpeedMultiplier;
     this.y += this.speedY * zSpeedMultiplier;
 
@@ -126,9 +126,13 @@ export default function CometsInBackground() {
 
   const playSound = () => {
     if (audioEnabled && audioRef.current) { 
-      console.log("audioEnabled:",)
       audioRef.current.currentTime = 0;
-      audioRef.current.play();
+      audioRef.current.play().catch((error) => {
+        // Silently handle audio play errors (e.g., autoplay restrictions)
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error playing audio:", error);
+        }
+      });
     }
   };
 

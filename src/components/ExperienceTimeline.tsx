@@ -3,8 +3,9 @@
 import { motion, useInView } from "framer-motion";
 import { useRef, useEffect, useCallback } from "react";
 import { useGlobalContext } from "@/context/GlobalContext";
+import type { Experience } from "@/types";
 
-const experiences = [
+const experiences: Experience[] = [
   {
     title: "AI Intern",
     company: "Edunet Foundation",
@@ -39,94 +40,61 @@ const fadeInUpVariant = {
 
 const ExperienceTimeline = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const { setCurrentScene } = useGlobalContext();
+  const { currentScene } = useGlobalContext();
 
-  const handleWheel = useCallback(
-    (e: WheelEvent) => {
-      if (!sectionRef.current) return;
-
-      const rect = sectionRef.current.getBoundingClientRect();
-      const inView = rect.top <= window.innerHeight && rect.bottom >= 0;
-
-      if (!inView) return;
-
-      if (e.deltaY > 0) {
-        // Scroll Down
-        setCurrentScene(3);
-      } else if (e.deltaY < 0) {
-        // Scroll Up
-        setCurrentScene(1);
-      }
-    },
-    [setCurrentScene]
-  );
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (!sectionRef.current) return;
-
-      const rect = sectionRef.current.getBoundingClientRect();
-      const inView = rect.top <= window.innerHeight && rect.bottom >= 0;
-
-      if (!inView) return;
-
-      if (e.key === "ArrowDown") {
-        setCurrentScene(3);
-      } else if (e.key === "ArrowUp") {
-        setCurrentScene(1);
-      }
-    },
-    [setCurrentScene]
-  );
-
-  useEffect(() => {
-    window.addEventListener("wheel", handleWheel, { passive: true });
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("wheel", handleWheel);
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [handleWheel, handleKeyDown]);
+  // Scene lifecycle: No special handlers needed - UnifiedScrollManager handles navigation
 
   return (
     <section
       id="experience"
       ref={sectionRef}
       className="min-h-screen flex items-center justify-center px-4 text-white"
+      aria-label="Experience timeline section"
     >
       <div className="w-full max-w-4xl">
         <h2 className="text-4xl font-bold text-center mb-16">Experience Timeline</h2>
-        <div className="relative border-l-4 border-blue-500 max-w-3xl mx-auto">
+        <ol className="relative border-l-4 border-blue-500 max-w-3xl mx-auto" aria-label="Professional experience timeline">
           {experiences.map((exp, index) => (
-            <TimelineItem key={index} experience={exp} />
+            <TimelineItem key={index} experience={exp} index={index} />
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );
 };
 
-const TimelineItem = ({ experience }: { experience: typeof experiences[number] }) => {
-  const ref = useRef(null);
+interface TimelineItemProps {
+  experience: Experience;
+  index: number;
+}
+
+const TimelineItem = ({ experience, index }: TimelineItemProps) => {
+  const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-300px" });
 
   return (
-    <motion.div
+    <motion.li
       ref={ref}
       variants={fadeInUpVariant}
       initial="hidden"
       animate={isInView ? "visible" : "hidden"}
-      className="mb-12 ml-6 relative"
+      className="mb-12 ml-6 relative list-none"
+      role="listitem"
+      aria-label={`Experience ${index + 1}: ${experience.title} at ${experience.company}`}
     >
-      <span className="absolute -left-4 top-1.5 w-4 h-4 bg-gray-500 rounded-full shadow-md" />
-      <div className="bg-gray-550 p-6 rounded-xl shadow-lg">
+      <span 
+        className="absolute -left-4 top-1.5 w-4 h-4 bg-gray-500 rounded-full shadow-md" 
+        aria-hidden="true"
+      />
+      <article className="bg-gray-550 p-6 rounded-xl shadow-lg">
         <h3 className="text-xl font-semibold">{experience.title}</h3>
         <p className="text-sm text-gray-400">{experience.company}</p>
-        <p className="text-sm text-gray-500 mb-2">{experience.date}</p>
+        <time className="text-sm text-gray-500 mb-2" dateTime={experience.date}>
+          {experience.date}
+        </time>
         <p className="text-gray-300">{experience.description}</p>
-      </div>
-    </motion.div>
+      </article>
+    </motion.li>
   );
 };
 

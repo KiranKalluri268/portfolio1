@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, useMotionValue, useAnimationFrame } from "framer-motion";
+import type { SkillCategory } from "@/types";
 import {
   FaReact,
   FaHtml5,
@@ -28,7 +29,7 @@ import { DiPostgresql } from "react-icons/di";
 import { BsFiletypeSql } from "react-icons/bs";
 import { useGlobalContext } from "@/context/GlobalContext";
 
-const skillCategories = [
+const skillCategories: SkillCategory[] = [
   {
     title: "Frontend",
     skills: [
@@ -71,15 +72,13 @@ const skillCategories = [
   },
 ];
 
-function SkillRow({
-  category,
-  speed,
-  direction,
-}: {
-  category: { title: string; skills: { name: string; icon: React.ReactNode }[] };
+interface SkillRowProps {
+  category: SkillCategory;
   speed: number;
   direction: 1 | -1;
-}) {
+}
+
+function SkillRow({ category, speed, direction }: SkillRowProps) {
   const repeatedSkills = Array(5).fill(category.skills).flat();
   const containerRef = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
@@ -153,50 +152,16 @@ function SkillRow({
 
 export default function SkillsCarousel() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const { setCurrentScene } = useGlobalContext();
+  const { currentScene } = useGlobalContext();
 
-  const handleWheel = useCallback(
-    (e: WheelEvent) => {
-      const rect = sectionRef.current?.getBoundingClientRect();
-      if (!rect || rect.top > window.innerHeight || rect.bottom < 0) return;
-
-      if (e.deltaY > 0) {
-        setCurrentScene(4); // Scroll down
-      } else {
-        setCurrentScene(2); // Scroll up
-      }
-    },
-    [setCurrentScene]
-  );
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      const rect = sectionRef.current?.getBoundingClientRect();
-      if (!rect || rect.top > window.innerHeight || rect.bottom < 0) return;
-
-      if (e.key === "ArrowDown") {
-        setCurrentScene(4);
-      } else if (e.key === "ArrowUp") {
-        setCurrentScene(2);
-      }
-    },
-    [setCurrentScene]
-  );
-
-  useEffect(() => {
-    window.addEventListener("wheel", handleWheel, { passive: true });
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("wheel", handleWheel);
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [handleWheel, handleKeyDown]);
+  // Scene lifecycle: No special handlers needed - UnifiedScrollManager handles navigation
 
   return (
     <section
       id="skills"
       ref={sectionRef}
       className="min-h-screen flex items-center justify-start px-4 text-white"
+      aria-label="Technical skills section"
     >
       <div className="w-full sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[70%] space-y-12 overflow-hidden py-20">
         <h1 className="text-4xl font-bold text-center mb-20">Tech Stack</h1>

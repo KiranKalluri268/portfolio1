@@ -57,3 +57,41 @@ canvas {
   animation: loop linear infinite;
   width: max-content;
 }
+
+.indicator-line {
+  width: 2px;
+  height: 10px;
+  background: white;
+  animation: pulse 1s infinite ease-in-out;
+  opacity: 0.5;
+}
+
+.indicator-line.active {
+  opacity: 1;
+  animation-name: bounce;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(2); }
+}
+
+/* Remove all focus rings project-wide */
+*:focus,
+*:focus-visible,
+*:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+button:focus,
+button:focus-visible,
+a:focus,
+a:focus-visible,
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}

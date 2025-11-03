@@ -3,11 +3,11 @@
 import { motion } from "framer-motion";
 import React, { forwardRef, useState, useEffect } from "react";
 import { useGlobalContext } from "@/context/GlobalContext";
+import type { ContactForm, FormErrors, SocialLink } from "@/types";
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ContactSectionProps {}
 
-const socialLinks = [
+const socialLinks: SocialLink[] = [
   {
     name: "GitHub",
     url: "https://github.com/KiranKalluri268",
@@ -53,36 +53,16 @@ const socialLinks = [
 ];
 
 const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref) => {
-  const { setCurrentScene } = useGlobalContext();
+  const { currentScene, setCurrentScene, setPrevScene} = useGlobalContext();
 
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [form, setForm] = useState<ContactForm>({ name: "", email: "", message: "" });
+  const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
 
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowUp") {
-        setCurrentScene(3);
-      }
-    };
+  // Scene lifecycle: No special handlers needed - UnifiedScrollManager handles navigation
 
-    const handleScroll = (e: WheelEvent) => {
-      if (e.deltaY < -20) {
-        setCurrentScene(3);
-      }
-    };
-
-    window.addEventListener("keydown", handleKey);
-    window.addEventListener("wheel", handleScroll);
-
-    return () => {
-      window.removeEventListener("keydown", handleKey);
-      window.removeEventListener("wheel", handleScroll);
-    };
-  }, [setCurrentScene]);
-
-  const validate = () => {
-    const newErrors: { [key: string]: string } = {};
+  const validate = (): boolean => {
+    const newErrors: FormErrors = {};
     if (!form.name.trim()) newErrors.name = "Name is required";
     if (!form.email.trim()) newErrors.email = "Email is required";
     else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(form.email.trim()))
@@ -107,14 +87,14 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
     <section
       ref={ref}
       id="contact"
-      className="h-screen text-center flex flex-col justify-between px-4 sm:px-6 lg:px-8 overflow-hidden"
+      className="h-screen text-white text-center flex flex-col justify-end gap-25 px-4 sm:px-6 lg:px-8 overflow-hidden"
     >
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 1 }}
-        className="max-w-xl mx-auto mt-12"
+        className="absolute left-1/4 top-[20%] max-w-xl"
       >
         <h2 className="text-3xl font-bold mb-4">Contact Me</h2>
         <p className="text-gray-400 mb-8">Feel free to reach out!</p>
@@ -124,11 +104,13 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="mb-8 text-green-500 font-semibold"
+            role="status"
+            aria-live="polite"
           >
             Thanks for reaching out! I will get back to you soon.
           </motion.div>
         ) : (
-          <form onSubmit={handleSubmit} noValidate className="space-y-6 text-left">
+          <form onSubmit={handleSubmit} noValidate className="space-y-6 text-left" aria-label="Contact form">
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-1">
                 Name <span className="text-red-500">*</span>
@@ -183,23 +165,23 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
               {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
             </div>
 
-            <div className="flex items-center justify-center gap-x-10">
-              <motion.button
-                type="submit"
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500"
-                whileHover={{ scale: 1.05 }}
-              >
-                Send Message
-              </motion.button>
+            <div className="flex items-center justify-center gap-x-25">
+  <motion.button
+    type="submit"
+    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500"
+    whileHover={{ scale: 1.05 }}
+  >
+    Send Message
+  </motion.button>
 
-              <motion.a
-                href="mailto:kirankalluri@gmail.com"
-                className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500"
-                whileHover={{ scale: 1.05 }}
-              >
-                Say Hello 👋
-              </motion.a>
-            </div>
+  <motion.a
+    href="mailto:kirankalluri@gmail.com"
+    className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500"
+    whileHover={{ scale: 1.05 }}
+  >
+    Say Hello 👋
+  </motion.a>
+</div>
           </form>
         )}
 

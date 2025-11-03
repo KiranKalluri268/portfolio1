@@ -2,38 +2,56 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useUnifiedScroll } from "./UnifiedScrollManager";
 
 type GlobalContextType = {
   currentScene: number;
-  setCurrentScene: React.Dispatch<React.SetStateAction<number>>;
+  setCurrentScene: React.Dispatch<React.SetStateAction<number>>; // Deprecated - use navigateToScene from UnifiedScrollManager
   prevScene: number;
   setPrevScene: React.Dispatch<React.SetStateAction<number>>;
   isAnimating: boolean;
   setIsAnimating: (animating: boolean) => void;
-  audioEnabled: boolean;
-  setAudioEnabled: (audio: boolean) => void;
 };
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
+  // Sync with UnifiedScrollManager
+  const { currentScene: unifiedScene, isTransitioning, navigateToScene } = useUnifiedScroll();
   const [currentScene, setCurrentScene] = useState<number>(0);
   const [prevScene, setPrevScene] = useState<number>(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [audioEnabled, setAudioEnabled] = useState(false);
 
-  // ✅ Log values when they change
+  // Sync currentScene with UnifiedScrollManager
   useEffect(() => {
-    console.log("▶ currentScene:", currentScene);
-  }, [currentScene]);
+    if (unifiedScene !== currentScene) {
+      setPrevScene(currentScene);
+      setCurrentScene(unifiedScene);
+    }
+  }, [unifiedScene, currentScene]);
 
+  // Sync isAnimating with UnifiedScrollManager's isTransitioning
   useEffect(() => {
-    console.log("▶ isAnimating:", isAnimating);
-  }, [isAnimating]);
+    setIsAnimating(isTransitioning);
+  }, [isTransitioning]);
+
+  // Wrapper for setCurrentScene that routes through UnifiedScrollManager
+  // This maintains backward compatibility during migration
+  const setCurrentSceneWithUnified = (value: number | ((prev: number) => number)) => {
+    const target = typeof value === 'function' ? value(currentScene) : value;
+    navigateToScene(target);
+  };
 
   return (
     <GlobalContext.Provider
-      value={{ currentScene, setCurrentScene, isAnimating, setIsAnimating, audioEnabled, setAudioEnabled ,prevScene, setPrevScene}}
+      value={{ 
+        currentScene, 
+        setCurrentScene: setCurrentSceneWithUnified, 
+        isAnimating, 
+        setIsAnimating, 
+        prevScene, 
+        setPrevScene
+      }}
     >
       {children}
     </GlobalContext.Provider>
