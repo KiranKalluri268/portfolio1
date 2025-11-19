@@ -47,12 +47,16 @@ const ExperienceTimeline = () => {
   // Backward: prevScene > currentScene (moving up, e.g., 3→2 or 4→2)
   const isForward = prevScene < currentScene;
 
+  // Z-index: active scene on top, exiting scene below
+  const zIndex = currentScene === 2 ? 10 : 1;
+
   return (
     <section
       id="experience"
       ref={sectionRef}
       className="min-h-screen flex items-center justify-center px-4 text-white overflow-hidden relative"
       aria-label="Experience timeline section"
+      style={{ zIndex }}
     >
       <motion.div
         className="w-full max-w-4xl"

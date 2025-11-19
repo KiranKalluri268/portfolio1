@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { forwardRef, useState } from "react";
+import { useGlobalContext } from "@/context/GlobalContext";
 import type { ContactForm, FormErrors, SocialLink } from "@/types";
 
 type ContactSectionProps = Record<string, never>;
@@ -52,12 +53,16 @@ const socialLinks: SocialLink[] = [
 ];
 
 const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref) => {
+  const { currentScene, prevScene } = useGlobalContext();
+  
+  // Determine navigation direction
+  // Forward: prevScene < currentScene (moving down, e.g., 3→4 or 0→4)
+  // Backward: prevScene > currentScene (moving up, e.g., 4→3)
+  const isForward = prevScene < currentScene;
 
   const [form, setForm] = useState<ContactForm>({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
-
-  // Scene lifecycle: No special handlers needed - UnifiedScrollManager handles navigation
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
@@ -81,17 +86,37 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
     setForm({ name: "", email: "", message: "" });
   };
 
+  // Z-index: active scene on top, exiting scene below
+  const zIndex = currentScene === 4 ? 10 : 1;
+
   return (
     <section
       ref={ref}
       id="contact"
       className="h-screen text-white text-center flex flex-col justify-end gap-25 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      style={{ zIndex }}
     >
       <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1 }}
+        initial={{
+          // Forward navigation (top→bottom): entry from bottom
+          // Backward navigation (bottom→top): entry from top
+          y: isForward ? "100%" : "-100%",
+          opacity: 0,
+        }}
+        animate={{
+          y: 0,
+          opacity: 1,
+        }}
+        exit={{
+          // Forward navigation: exit to top (moving up in viewport)
+          // Backward navigation: exit to bottom (moving down in viewport)
+          y: isForward ? "-100%" : "100%",
+          opacity: 0,
+        }}
+        transition={{
+          duration: 0.5,
+          ease: "easeInOut",
+        }}
         className="absolute left-1/4 top-[20%] max-w-xl"
       >
         <h2 className="text-3xl font-bold mb-4">Contact Me</h2>

@@ -95,7 +95,7 @@ const ProjectsSection = () => {
   // Handle wheel events for internal carousel (when not at boundaries)
   const handleProjectsWheel = useCallback(
     (event: WheelEvent) => {
-      if (currentScene !== 1 || isAnimating || !isInView) return;
+      if (currentScene !== 1 || isAnimating) return;
 
       const isScrollingDown = event.deltaY > 0;
       const isScrollingUp = event.deltaY < 0;
@@ -158,7 +158,7 @@ const ProjectsSection = () => {
         projectsDeltaRef.current = 0; // Reset accumulator
       }, 200);
     },
-    [currentScene, isAnimating, isInView, activeIndex, projects.length, navigateCarousel, setScrollEnabled]
+    [currentScene, isAnimating, activeIndex, projects.length, navigateCarousel, setScrollEnabled]
   );
 
   // Register wheel handler for projects carousel
@@ -327,12 +327,16 @@ const ProjectsSection = () => {
     };
   }, [projects.length, registerNavigationGuard, unregisterNavigationGuard, registerCarouselAdvance, unregisterCarouselAdvance, currentScene]);
 
+  // Z-index: active scene on top, exiting scene below
+  const zIndex = currentScene === 1 ? 10 : 1;
+
   return (
     <section
       ref={containerRef}
       id="projects"
       className="relative text-white h-[110vh] overflow-hidden"
       aria-label="Projects section"
+      style={{ zIndex }}
     >
       {/* Animated Title */}
       <motion.h2

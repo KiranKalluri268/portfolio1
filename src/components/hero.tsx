@@ -73,15 +73,19 @@ export default function Hero() {
     return () => clearTimeout(timeout);
   }, [secondLine, isDeleting, isFirstLineDone, currentWordIndex, words]);
 
+  // Z-index: active scene on top, exiting scene below
+  const zIndex = currentScene === 0 ? 10 : 1;
+
   return (
     <section 
       ref={heroRef} 
       className="h-screen w-full relative overflow-hidden" 
       id="hero"
       aria-label="Hero section - Introduction"
+      style={{ zIndex }}
     >
       <motion.div
-        className="fixed top-0 left-0 w-full h-screen flex items-center justify-center text-white z-[-2]"
+        className="fixed top-0 left-0 w-full h-screen flex items-center justify-center text-white"
         initial={{
           // Forward navigation (top→bottom): entry from bottom
           // Backward navigation (bottom→top): entry from top

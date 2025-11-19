@@ -244,17 +244,27 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
       return transitionTimer;
     };
 
-    // Always wait a small amount to give components time to register guards/callbacks
-    // This is especially important when entering a scene from outside
-    const registrationTimer = setTimeout(() => {
-      const transitionTimer = checkAndTransition();
-      // Store timer for cleanup if needed (though attemptTransitionWithAutoAdvance handles its own timing)
-      if (!transitionTimer) {
-        // Guard blocked - auto-advance will handle timing
-      }
-    }, 150); // Give components time to mount and register
+    // With AnimatePresence mode="sync", components mount immediately
+    // Guards register right away, so we only need a tiny delay for React's render cycle
+    // Use requestAnimationFrame to ensure guards are registered after component mounts
+    let innerFrameId: number | null = null;
+    const registrationFrame = requestAnimationFrame(() => {
+      // Double RAF to ensure useEffect hooks have run
+      innerFrameId = requestAnimationFrame(() => {
+        const transitionTimer = checkAndTransition();
+        // Store timer for cleanup if needed (though attemptTransitionWithAutoAdvance handles its own timing)
+        if (!transitionTimer) {
+          // Guard blocked - auto-advance will handle timing
+        }
+      });
+    });
     
-    return () => clearTimeout(registrationTimer);
+    return () => {
+      cancelAnimationFrame(registrationFrame);
+      if (innerFrameId !== null) {
+        cancelAnimationFrame(innerFrameId);
+      }
+    };
   }, [transitionQueue, isTransitioning, currentScene, attemptTransitionWithAutoAdvance]);
 
   /**

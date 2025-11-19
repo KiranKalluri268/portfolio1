@@ -159,12 +159,16 @@ export default function SkillsCarousel() {
   // Backward: prevScene > currentScene (moving up, e.g., 4→3 or 2→3 backward)
   const isForward = prevScene < currentScene;
 
+  // Z-index: active scene on top, exiting scene below
+  const zIndex = currentScene === 3 ? 10 : 1;
+
   return (
     <section
       id="skills"
       ref={sectionRef}
       className="min-h-screen flex items-center justify-start px-4 text-white overflow-hidden relative"
       aria-label="Technical skills section"
+      style={{ zIndex }}
     >
       <motion.div
         className="w-full sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[70%] space-y-12 py-20"

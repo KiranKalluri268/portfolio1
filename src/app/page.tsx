@@ -12,6 +12,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import SkipLink from '@/components/SkipLink';
 import SceneIndicator from '@/components/SceneIndicator';
 import { useAudio } from '@/context/AudioContextProvider';
+import { AnimatePresence } from 'framer-motion';
 
 export default function Home() {
   const { currentScene } = useGlobalContext();
@@ -40,21 +41,33 @@ export default function Home() {
           </ErrorBoundary>
           
           <main id="main-content" aria-label="Main content">
-            <ErrorBoundary>
-              {currentScene === 0 && <Hero />}
-            </ErrorBoundary>
-            <ErrorBoundary>
-              {currentScene === 1 && <ProjectsSection />}
-            </ErrorBoundary>
-            <ErrorBoundary>
-              {currentScene === 2 && <ExperienceTimeline />}
-            </ErrorBoundary>
-            <ErrorBoundary>
-              {currentScene === 3 && <SkillsCarousel />}
-            </ErrorBoundary>
-            <ErrorBoundary>
-              {currentScene === 4 && <ContactSection />}
-            </ErrorBoundary>
+            <AnimatePresence mode="sync">
+              {currentScene === 0 && (
+                <ErrorBoundary key={0}>
+                  <Hero />
+                </ErrorBoundary>
+              )}
+              {currentScene === 1 && (
+                <ErrorBoundary key={1}>
+                  <ProjectsSection />
+                </ErrorBoundary>
+              )}
+              {currentScene === 2 && (
+                <ErrorBoundary key={2}>
+                  <ExperienceTimeline />
+                </ErrorBoundary>
+              )}
+              {currentScene === 3 && (
+                <ErrorBoundary key={3}>
+                  <SkillsCarousel />
+                </ErrorBoundary>
+              )}
+              {currentScene === 4 && (
+                <ErrorBoundary key={4}>
+                  <ContactSection />
+                </ErrorBoundary>
+              )}
+            </AnimatePresence>
           </main>
         </>
       )}
