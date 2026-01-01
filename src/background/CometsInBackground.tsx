@@ -1,10 +1,24 @@
 "use client";
 import { useEffect, useRef, useCallback } from "react";
-import { useAudio } from "@/context/AudioContextProvider";
+// import { useAudio } from "@/context/AudioContextProvider";
 
 class Particle {
   trail: { x: number; y: number }[] = [];
-  private playSound: () => void;
+  // private playSound: () => void;
+
+  // constructor(
+  //   public x: number,
+  //   public y: number,
+  //   public size: number,
+  //   public speedX: number,
+  //   public speedY: number,
+  //   public z: number,
+  //   public canvasWidth: number,
+  //   public canvasHeight: number,
+  //   playSound: () => void
+  // ) {
+  //   this.playSound = playSound;
+  // }
 
   constructor(
     public x: number,
@@ -14,11 +28,8 @@ class Particle {
     public speedY: number,
     public z: number,
     public canvasWidth: number,
-    public canvasHeight: number,
-    playSound: () => void
-  ) {
-    this.playSound = playSound;
-  }
+    public canvasHeight: number
+  ) { }
 
   update(center: { x: number; y: number }, blackholeRadius: number) {
     this.trail.push({ x: this.x, y: this.y });
@@ -76,7 +87,7 @@ class Particle {
     }
 
     if (dist < blackholeRadius * 1) {
-      this.playSound(); // 🔊 Particle is absorbed
+      //this.playSound(); // 🔊 Particle is absorbed
       this.reset();
       return;
     }
@@ -122,19 +133,20 @@ export default function CometsInBackground() {
   const particlesRef = useRef<Particle[]>([]);
   const animationFrameRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { audioEnabled } = useAudio();
+  // const { audioEnabled } = useAudio();
 
-  const playSound = useCallback(() => {
-    if (audioEnabled && audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch((error) => {
-        // Silently handle audio play errors (e.g., autoplay restrictions)
-        if (process.env.NODE_ENV === "development") {
-          console.error("Error playing audio:", error);
-        }
-      });
-    }
-  }, [audioEnabled]);
+  //const playSound = useCallback(() => {
+  //   if (audioEnabled && audioRef.current) {
+  //     audioRef.current.currentTime = 0;
+  //     audioRef.current.play().catch((error) => {
+  //       // Silently handle audio play errors (e.g., autoplay restrictions)
+  //       if (process.env.NODE_ENV === "development") {
+  //         console.error("Error playing audio:", error);
+  //       }
+  //     });
+  //   }
+  // }, [audioEnabled]);
+
 
   const initParticles = useCallback((width: number, height: number) => {
     const particles: Particle[] = [];
@@ -151,14 +163,13 @@ export default function CometsInBackground() {
           Math.random() * 2 - 1,
           z,
           width,
-          height,
-          playSound // Pass sound handler
+          height
         )
       );
     }
 
     particlesRef.current = particles;
-  }, [playSound]);
+  }, []);
 
   const drawParticles = useCallback(() => {
     const canvas = canvasRef.current;
