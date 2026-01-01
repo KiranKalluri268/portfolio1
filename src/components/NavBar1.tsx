@@ -1,13 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useRef } from 'react';
+import { useState } from 'react';
 import AudioToggle from './AudioToggle';
+import Tooltip from './Tooltip';
 
 export default function NavBar() {
 
-  const projectsRef = useRef<HTMLDivElement>(null);
-  const contactRef = useRef<HTMLElement>(null);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   return (
     <motion.header
@@ -24,52 +24,20 @@ export default function NavBar() {
       </h1>
       <nav aria-label="Main navigation" role="navigation">
         <ul className="flex space-x-6 text-lg items-center" role="list">
-          <motion.li whileHover={{ scale: 1.1 }} role="listitem">
-            <a
-              href="#main-content"
-              onClick={(e) => {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="hover:text-gray-400 outline-none px-2 py-1"
-              aria-label="Navigate to about section"
-            >
-              About
-            </a>
-          </motion.li>
-          <motion.li whileHover={{ scale: 1.1 }} role="listitem">
-            <a
-              href="#projects"
-              onClick={(e) => {
-                e.preventDefault();
-                projectsRef.current?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="hover:text-gray-400 outline-none px-2 py-1"
-              aria-label="Navigate to projects section"
-            >
-              Projects
-            </a>
-          </motion.li>
-          <motion.li whileHover={{ scale: 1.1 }} role="listitem">
-            <a
-              href="#contact"
-              onClick={(e) => {
-                e.preventDefault();
-                contactRef.current?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="hover:text-gray-400 outline-none px-2 py-1"
-              aria-label="Navigate to contact section"
-            >
-              Contact
-            </a>
-          </motion.li>
+
 
           {/* 👉 Add audio toggle right next to Contact */}
           <li role="listitem">
-            <AudioToggle />
+            <div
+              onMouseEnter={() => setHoveredItem("Audio")}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
+              <AudioToggle />
+            </div>
           </li>
         </ul>
       </nav>
+      <Tooltip text="Audio" isVisible={hoveredItem === "Audio"} />
     </motion.header>
   );
 }

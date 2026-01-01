@@ -3,17 +3,19 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from "react";
 
 // Constants for scroll behavior
-const SCROLL_THRESHOLD = 100; // Accumulated delta needed to trigger transition (lowered for better responsiveness)
-const SCROLL_RESET_TIME = 150; // Reset accumulator after this many ms of inactivity
-const TRANSITION_DURATION = 1000; // Milliseconds to wait at each scene before transitioning (allows time to see scene content)
-const SCENE_DISPLAY_TIME = 100; // Minimum time to display each scene before allowing transition
+const SCROLL_THRESHOLD = 1000; // Accumulated delta needed to trigger transition (lowered for better responsiveness)
+const SCROLL_RESET_TIME = 50; // Reset accumulator after this many ms of inactivity
+const TRANSITION_DURATION = 800; // Milliseconds to wait at each scene before transitioning (allows time to see scene content)
+const SCENE_DISPLAY_TIME = 500; // Minimum time to display each scene before allowing transition
 const TOTAL_SCENES = 5; // 0-4 scenes
+
+type NavigationSource = 'indicator' | 'input';
 
 interface UnifiedScrollManagerType {
   currentScene: number;
   targetScene: number;
   isTransitioning: boolean;
-  navigateToScene: (target: number) => void;
+  navigateToScene: (target: number, source?: NavigationSource) => void;
   navigateNext: () => void;
   navigatePrev: () => void;
   // Allow components to temporarily disable scroll handling (e.g., for internal carousels)
@@ -40,19 +42,29 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
   const lastScrollTimeRef = useRef(Date.now());
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const scrollEnabledRef = useRef(true); // Allow components to disable scroll handling
-  
+
+  // Touch handling
+  const touchStartYRef = useRef<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const TOUCH_THRESHOLD = 50; // Minimum distance for swipe
+
+
   // Animation blocking: tracks when we're in the middle of a visual animation
   // This extends beyond isTransitioning to cover the full animation duration
   const animationBlockUntilRef = useRef<number>(0); // Timestamp when animation blocking ends
-  
+
   // Navigation guards: Map<sceneNumber, guardFunction>
   // Guard function takes direction ("forward" | "backward") and returns false to block, true to allow
   const navigationGuardsRef = useRef<Map<number, (direction: "forward" | "backward") => boolean>>(new Map());
-  
+
   // Carousel advance callbacks: Map<sceneNumber, advanceFunction>
   // Advance function takes direction and advances internal carousel state
   // Returns Promise that resolves when advance animation completes
   const carouselAdvanceRef = useRef<Map<number, (direction: "forward" | "backward") => Promise<void>>>(new Map());
+
+  // Track navigation source for conditional delay application
+  // 'indicator' = SceneIndicator clicks (needs delay), 'input' = scroll/keyboard/touch (no delay)
+  const transitionSourceRef = useRef<NavigationSource>('input');
 
   /**
    * Builds a sequential path from current scene to target scene
@@ -61,37 +73,42 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
    */
   const buildPath = useCallback((from: number, to: number): number[] => {
     if (from === to) return [];
-    
+
     const path: number[] = [];
     const step = from < to ? 1 : -1;
-    
+
     // Include all intermediate scenes
     for (let i = from; i !== to; i += step) {
       path.push(i + step);
     }
-    
+
     return path;
   }, []);
 
   /**
    * Navigate to a target scene with sequential transitions
    * If jumping multiple scenes, it will animate through all intermediate ones
+   * @param target - Target scene index
+   * @param source - Navigation source: 'indicator' for SceneIndicator clicks, 'input' for scroll/keyboard/touch (default)
    */
-  const navigateToScene = useCallback((target: number) => {
+  const navigateToScene = useCallback((target: number, source: NavigationSource = 'input') => {
     // Validate target
     if (target < 0 || target >= TOTAL_SCENES) return;
-    
+
     // If already transitioning, ignore
     if (isTransitioning && target === targetScene) return;
-    
+
     // If already at target, ignore
     if (!isTransitioning && target === currentScene) return;
-    
+
     // Build the path
     const path = buildPath(currentScene, target);
-    
+
     if (path.length === 0) return;
-    
+
+    // Store navigation source for this transition
+    transitionSourceRef.current = source;
+
     // Set target and start transition queue
     setTargetScene(target);
     setTransitionQueue(path);
@@ -140,22 +157,22 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
   ): Promise<boolean> => {
     const guard = navigationGuardsRef.current.get(currentScene);
     const isBlocked = guard && !guard(direction);
-    
+
     if (!isBlocked) {
       // Guard allows - we're at a boundary state, wait to show it before transitioning
       // This ensures users see "Projects" title and "See all projects" states
       const isAtBoundary = true; // Guard allows means we're at boundary
-      
+
       if (isAtBoundary) {
         // Wait to display the boundary state before transitioning
         // This applies especially to Projects scene (Scene 1)
         await new Promise(resolve => setTimeout(resolve, SCENE_DISPLAY_TIME));
       }
-      
+
       // Guard allows - proceed with transition
       // Set animation blocking period
       animationBlockUntilRef.current = Date.now() + TRANSITION_DURATION;
-      
+
       setCurrentScene(nextScene);
       setTransitionQueue(prev => {
         const newQueue = prev.slice(1);
@@ -167,10 +184,10 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
       });
       return true; // Success
     }
-    
+
     // Guard blocks - try to advance carousel
     const advance = carouselAdvanceRef.current.get(currentScene);
-    
+
     if (!advance || maxRetries <= 0) {
       // No advance callback or too many retries - skip this transition
       setTransitionQueue(prev => {
@@ -182,13 +199,13 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
       });
       return false;
     }
-    
+
     // Advance carousel
     try {
       await advance(direction);
       // Small delay for state to update after advance
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       // Recursively retry (will check guard again and wait at boundary if guard allows)
       return await attemptTransitionWithAutoAdvance(nextScene, direction, maxRetries - 1);
     } catch {
@@ -213,34 +230,38 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
 
     const nextScene = transitionQueue[0];
     const direction: "forward" | "backward" = nextScene > currentScene ? "forward" : "backward";
-    
+
     // Small delay to ensure component has mounted and registered guards/callbacks
     // This is especially important when entering a scene from outside
     const checkAndTransition = () => {
       // Check guard before transitioning
       const guard = navigationGuardsRef.current.get(currentScene);
       const isBlocked = guard && !guard(direction);
-      
+
       if (isBlocked) {
         // Use auto-advance mechanism (handles its own timing)
         attemptTransitionWithAutoAdvance(nextScene, direction);
         return; // Don't proceed with normal transition
       }
-      
-      // No guard blocking - proceed with transition after scene display time
-      // Set animation blocking period to ensure no input during visual animation
-      // Use TRANSITION_DURATION (1000ms) to ensure scene is visible before transitioning
-      animationBlockUntilRef.current = Date.now() + TRANSITION_DURATION;
-      
+
+      // No guard blocking - proceed with transition
+      // Only apply TRANSITION_DURATION delay for SceneIndicator clicks
+      // For scroll/keyboard/touch input, transition immediately
+      const source = transitionSourceRef.current;
+      const delay = source === 'indicator' ? TRANSITION_DURATION : 0;
+
+      // Set animation blocking period (only for indicator, otherwise minimal)
+      animationBlockUntilRef.current = Date.now() + delay;
+
       const transitionTimer = setTimeout(() => {
         setCurrentScene(nextScene);
         setTransitionQueue(prev => prev.slice(1));
-        
+
         if (transitionQueue.length === 1) {
           setIsTransitioning(false);
         }
-      }, TRANSITION_DURATION);
-      
+      }, delay);
+
       return transitionTimer;
     };
 
@@ -258,7 +279,7 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
         }
       });
     });
-    
+
     return () => {
       cancelAnimationFrame(registrationFrame);
       if (innerFrameId !== null) {
@@ -359,7 +380,7 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
           clearTimeout(scrollTimeoutRef.current);
           scrollTimeoutRef.current = null;
         }
-        
+
         // Trigger navigation (will set isTransitioning and animation blocking)
         if (direction > 0) {
           navigateNext();
@@ -397,13 +418,58 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (["ArrowDown", "PageDown"].includes(e.key)) {
+    // ArrowDown / PageDown / s / S -> Next Scene
+    if (["ArrowDown", "PageDown", "s", "S"].includes(e.key)) {
       e.preventDefault();
       navigateNext();
-    } else if (["ArrowUp", "PageUp"].includes(e.key)) {
+    }
+    // ArrowUp / PageUp / w / W -> Previous Scene
+    else if (["ArrowUp", "PageUp", "w", "W"].includes(e.key)) {
       e.preventDefault();
       navigatePrev();
     }
+  }, [isTransitioning, navigateNext, navigatePrev]);
+
+  /**
+   * Touch navigation handler
+   */
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    touchStartYRef.current = e.touches[0].clientY;
+    touchStartXRef.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchMove = useCallback(() => {
+    // Optional: prevent default if we want to block native scrolling completely
+    // but usually better to let native scroll happen and just detect swipe
+  }, []);
+
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    if (!scrollEnabledRef.current || isTransitioning || touchStartYRef.current === null || touchStartXRef.current === null) {
+      return;
+    }
+
+    const touchEndY = e.changedTouches[0].clientY;
+    const touchEndX = e.changedTouches[0].clientX;
+
+    const deltaY = touchStartYRef.current - touchEndY;
+    const deltaX = touchStartXRef.current - touchEndX;
+
+    // Check if swipe is vertical dominant
+    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+      if (Math.abs(deltaY) > TOUCH_THRESHOLD) {
+        if (deltaY > 0) {
+          // Swipe Up -> Next Scene
+          navigateNext();
+        } else {
+          // Swipe Down -> Prev Scene
+          navigatePrev();
+        }
+      }
+    }
+
+    // Reset
+    touchStartYRef.current = null;
+    touchStartXRef.current = null;
   }, [isTransitioning, navigateNext, navigatePrev]);
 
   /**
@@ -412,15 +478,21 @@ export function UnifiedScrollProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     window.addEventListener("wheel", handleScroll, { passive: false });
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd);
 
     return () => {
       window.removeEventListener("wheel", handleScroll);
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [handleScroll, handleKeyDown]);
+  }, [handleScroll, handleKeyDown, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
   return (
     <UnifiedScrollManagerContext.Provider

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import { useRef } from "react";
 import { useGlobalContext } from "@/context/GlobalContext";
 import type { Experience } from "@/types";
@@ -38,10 +38,20 @@ const fadeInUpVariant = {
   },
 };
 
+const containerVariant = {
+  hidden: { opacity: 1 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
 const ExperienceTimeline = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const { currentScene, prevScene } = useGlobalContext();
-  
+
   // Determine navigation direction
   // Forward: prevScene < currentScene (moving down, e.g., 1→2 or 0→2)
   // Backward: prevScene > currentScene (moving up, e.g., 3→2 or 4→2)
@@ -81,12 +91,18 @@ const ExperienceTimeline = () => {
           ease: "easeInOut",
         }}
       >
-        <h2 className="text-4xl font-bold text-center mb-16">Experience Timeline</h2>
-        <ol className="relative border-l-4 border-blue-500 max-w-3xl mx-auto" aria-label="Professional experience timeline">
+        <h2 className="text-4xl font-bold text-center mb-8">Experience Timeline</h2>
+        <motion.ol
+          className="relative border-l-3 border-blue-500 max-w-3xl mx-auto"
+          aria-label="Professional experience timeline"
+          variants={containerVariant}
+          initial="hidden"
+          animate="visible"
+        >
           {experiences.map((exp, index) => (
             <TimelineItem key={index} experience={exp} index={index} />
           ))}
-        </ol>
+        </motion.ol>
       </motion.div>
     </section>
   );
@@ -98,24 +114,18 @@ interface TimelineItemProps {
 }
 
 const TimelineItem = ({ experience, index }: TimelineItemProps) => {
-  const ref = useRef<HTMLLIElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-300px" });
-
   return (
     <motion.li
-      ref={ref}
       variants={fadeInUpVariant}
-      initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
-      className="mb-12 ml-6 relative list-none"
+      className="mb-6 ml-6 relative list-none"
       role="listitem"
       aria-label={`Experience ${index + 1}: ${experience.title} at ${experience.company}`}
     >
-      <span 
-        className="absolute -left-4 top-1.5 w-4 h-4 bg-gray-500 rounded-full shadow-md" 
+      <span
+        className="absolute -left-2 top-1 w-3 h-3 bg-gray-500 rounded-full shadow-md"
         aria-hidden="true"
       />
-      <article className="bg-gray-550 p-6 rounded-xl shadow-lg">
+      <article className="bg-gray-550 p-5 pt-0 rounded-xl shadow-lg">
         <h3 className="text-xl font-semibold">{experience.title}</h3>
         <p className="text-sm text-gray-400">{experience.company}</p>
         <time className="text-sm text-gray-500 mb-2" dateTime={experience.date}>

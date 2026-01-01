@@ -48,24 +48,15 @@ const ProjectsSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { currentScene, prevScene } = useGlobalContext();
   const [activeIndex, setActiveIndex] = useState(() => {
-  return prevScene === 2 ? projects.length : -1;
-});
+    return prevScene === 2 ? projects.length : -1;
+  });
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isInView, setIsInView] = useState(false);
   const { setCurrentView } = useProjectView();
   const [prevIndex, setPrevIndex] = useState(() => {
-  return prevScene === 2 ? projects.length : -1;
-});
-  const checkIfInView = useCallback(() => {
-    if (!containerRef.current) return false;
-    const rect = containerRef.current.getBoundingClientRect();
-    const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
-    const containerHeight = rect.height;
-    return visibleHeight / containerHeight > 0.2;
-  }, []);
-
+    return prevScene === 2 ? projects.length : -1;
+  });
   // Import UnifiedScrollManager for scene navigation
-  const { setScrollEnabled, registerNavigationGuard, unregisterNavigationGuard, registerCarouselAdvance, unregisterCarouselAdvance } = useUnifiedScroll();
+  const { setScrollEnabled, registerNavigationGuard, unregisterNavigationGuard, registerCarouselAdvance, unregisterCarouselAdvance, navigateNext, navigatePrev } = useUnifiedScroll();
 
   // Handle internal carousel navigation (projects within scene)
   const navigateCarousel = useCallback(
@@ -84,7 +75,7 @@ const ProjectsSection = () => {
         setTimeout(() => setIsAnimating(false), 700);
       }
     },
-    [activeIndex, isAnimating, projects.length]
+    [activeIndex, isAnimating]
   );
 
   // Accumulated delta for projects carousel (similar to UnifiedScrollManager)
@@ -97,8 +88,13 @@ const ProjectsSection = () => {
     (event: WheelEvent) => {
       if (currentScene !== 1 || isAnimating) return;
 
-      const isScrollingDown = event.deltaY > 0;
-      const isScrollingUp = event.deltaY < 0;
+      // Calculate combined delta (support both vertical and horizontal scrolling)
+      const deltaX = event.deltaX;
+      const deltaY = event.deltaY;
+      const combinedDelta = deltaY + deltaX;
+
+      const isScrollingDown = combinedDelta > 0;
+      const isScrollingUp = combinedDelta < 0;
 
       // Check if at boundaries
       const atTopBoundary = activeIndex === -1 && isScrollingUp;
@@ -116,9 +112,44 @@ const ProjectsSection = () => {
         };
 
         const canNavigate = atTopBoundary ? guard("backward") : guard("forward");
-        
+
         if (canNavigate) {
-          // Guard allows navigation - let UnifiedScrollManager handle scene transition
+          // Guard allows navigation
+
+          // Special handling for horizontal scrolling at boundaries:
+          // UnifiedScrollManager usually only listens to deltaY. If this is a primarily horizontal scroll, we need to handle it manually.
+          const isHorizontalScroll = Math.abs(deltaX) > Math.abs(deltaY);
+
+          if (isHorizontalScroll) {
+            // Handle manually for horizontal scroll
+            event.preventDefault();
+            event.stopPropagation();
+            setScrollEnabled(false);
+
+            // Accumulate for boundary exit using the same logic as internal nav
+            const now = Date.now();
+            const timeDelta = now - projectsLastScrollTimeRef.current;
+
+            if (timeDelta > 150) {
+              projectsDeltaRef.current = 0;
+            }
+
+            projectsDeltaRef.current += combinedDelta;
+            projectsLastScrollTimeRef.current = now;
+
+            // Use same threshold
+            if (Math.abs(projectsDeltaRef.current) >= PROJECTS_SCROLL_THRESHOLD) {
+              if (isScrollingDown) {
+                navigateNext();
+              } else {
+                navigatePrev();
+              }
+              projectsDeltaRef.current = 0;
+            }
+            return;
+          }
+
+          // If vertical scroll, let UnifiedScrollManager handle it naturally
           setScrollEnabled(true);
           return; // Let event pass through to UnifiedScrollManager
         } else {
@@ -142,7 +173,7 @@ const ProjectsSection = () => {
         projectsDeltaRef.current = 0;
       }
 
-      projectsDeltaRef.current += event.deltaY;
+      projectsDeltaRef.current += combinedDelta;
       projectsLastScrollTimeRef.current = now;
 
       // Check threshold
@@ -158,7 +189,7 @@ const ProjectsSection = () => {
         projectsDeltaRef.current = 0; // Reset accumulator
       }, 200);
     },
-    [currentScene, isAnimating, activeIndex, projects.length, navigateCarousel, setScrollEnabled]
+    [currentScene, isAnimating, activeIndex, navigateCarousel, setScrollEnabled, navigateNext, navigatePrev]
   );
 
   // Register wheel handler for projects carousel
@@ -184,6 +215,72 @@ const ProjectsSection = () => {
     );
   }, [activeIndex, setCurrentView]);
 
+  // Touch handling for Projects (Horizontal & Vertical Swipe)
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+  const TOUCH_THRESHOLD = 50;
+
+  useEffect(() => {
+    if (currentScene !== 1) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartXRef.current = e.touches[0].clientX;
+      touchStartYRef.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!touchStartXRef.current || !touchStartYRef.current || isAnimatingRef.current) return;
+
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+
+      const deltaX = touchStartXRef.current - touchEndX;
+      const deltaY = touchStartYRef.current - touchEndY;
+      const combinedDelta = deltaX + deltaY;
+
+      // Check if combined delta exceeds threshold (support both axes)
+      if (Math.abs(combinedDelta) > TOUCH_THRESHOLD) {
+
+        // Stop propagation to prevent UnifiedScrollManager from handling this double
+        e.stopPropagation();
+
+        if (combinedDelta > 0) {
+          // Swipe Left OR Swipe Up -> Next Project
+          if (activeIndexRef.current < projects.length) {
+            navigateCarousel("down");
+          } else {
+            // At End -> Navigate to Next Scene
+            navigateNext();
+          }
+        } else {
+          // Swipe Right OR Swipe Down -> Prev Project
+          if (activeIndexRef.current > -1) {
+            navigateCarousel("up");
+          } else {
+            // At Start -> Navigate to Prev Scene
+            navigatePrev();
+          }
+        }
+      }
+
+      touchStartXRef.current = null;
+      touchStartYRef.current = null;
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener("touchstart", handleTouchStart, { passive: true });
+      container.addEventListener("touchend", handleTouchEnd);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener("touchstart", handleTouchStart);
+        container.removeEventListener("touchend", handleTouchEnd);
+      }
+    };
+  }, [currentScene, navigateCarousel, navigateNext, navigatePrev]);
+
   // Scene lifecycle: Handle scene enter - initialize based on entry direction
   useEffect(() => {
     if (currentScene === 1 && prevScene !== 1) {
@@ -200,7 +297,7 @@ const ProjectsSection = () => {
       // Immediately sync ref so guard checks work correctly
       activeIndexRef.current = initialIndex;
     }
-  }, [currentScene, prevScene, projects.length]);
+  }, [currentScene, prevScene]);
 
   // Handle boundary conditions - route to UnifiedScrollManager
   useEffect(() => {
@@ -212,41 +309,69 @@ const ProjectsSection = () => {
     if (currentScene === 1 && activeIndex === projects.length && prevScene === 2) {
       // User scrolled down from scene 2 to scene 1, already handled
     }
-  }, [currentScene, activeIndex, prevScene, projects.length]);
+  }, [currentScene, activeIndex, prevScene]);
 
-  // Internal carousel keyboard shortcuts (for left/right arrows within projects)
+  // Internal carousel keyboard shortcuts (for arrows within projects)
   useEffect(() => {
     const handleInternalKeys = (event: KeyboardEvent) => {
-      if (currentScene !== 1 || isAnimating) return;
-      
-      if (event.key === "ArrowRight") {
-        navigateCarousel("down");
-      } else if (event.key === "ArrowLeft") {
-        navigateCarousel("up");
+      // If we are not in the projects scene or animating, do nothing (let global handler take it if it wants, though global also checks scene)
+      if (currentScene !== 1 || isAnimatingRef.current) return;
+
+      const isArrowRight = event.key === "ArrowRight" || event.key === "d" || event.key === "D";
+      const isArrowLeft = event.key === "ArrowLeft" || event.key === "a" || event.key === "A";
+      const isArrowDown = event.key === "ArrowDown" || event.key === "s" || event.key === "S";
+      const isArrowUp = event.key === "ArrowUp" || event.key === "w" || event.key === "W";
+
+      if (!isArrowRight && !isArrowLeft && !isArrowDown && !isArrowUp) return;
+
+      // Logic for Internal Navigation vs Global Navigation
+      // We want to STOP propagation (prevent scene switch) UNLESS we are at a boundary and trying to leave
+
+      if (isArrowRight || isArrowDown) { // Moving Forward / Down
+        if (activeIndexRef.current < projects.length) {
+          // Not at the end yet -> Go to next project
+          event.stopPropagation();
+          event.stopImmediatePropagation(); // Capture phase needs this to prevent bubbling listeners
+          event.preventDefault(); // Prevent default scroll
+          navigateCarousel("down");
+        } else if (isArrowRight) {
+          // At "See All" (index === projects.length) AND ArrowRight.
+          // UnifiedScrollManager doesn't handle ArrowRight by default, so we trigger manually.
+          // For ArrowDown, we let it bubble to UnifiedScrollManager.
+          navigateNext();
+        }
+      }
+      else if (isArrowLeft || isArrowUp) { // Moving Backward / Up
+        if (activeIndexRef.current > -1) {
+          // Not at the start yet -> Go to prev project
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          event.preventDefault();
+          navigateCarousel("up");
+        } else if (isArrowLeft) {
+          // At "Title" (index === -1) AND ArrowLeft.
+          // Trigger manually.
+          navigatePrev();
+        }
       }
     };
 
-    window.addEventListener("keydown", handleInternalKeys);
-    return () => window.removeEventListener("keydown", handleInternalKeys);
-  }, [currentScene, isAnimating, navigateCarousel]);
-
-  // Track if section is in view for display purposes
-  useEffect(() => {
-    setIsInView(checkIfInView());
-    const handleScroll = () => setIsInView(checkIfInView());
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [checkIfInView]);
+    // Use CAPTURE phase to intercept events before they reach window (where UnifiedScrollManager listens)
+    // Note: Since UnifiedScrollManager also listens on window, the capture listener on window triggers BEFORE the bubble listener on window?
+    // Actually both are on window. Capture happens first.
+    window.addEventListener("keydown", handleInternalKeys, { capture: true });
+    return () => window.removeEventListener("keydown", handleInternalKeys, { capture: true });
+  }, [currentScene, navigateCarousel, navigateNext, navigatePrev]); // isAnimatingRef is used inside, so strict dependency on isAnimating not needed in array if we use ref
 
   // Use refs to store current state so guard/advance functions always read latest values
   const activeIndexRef = useRef(activeIndex);
   const isAnimatingRef = useRef(isAnimating);
-  
+
   // Sync refs immediately whenever state changes (use layout effect to ensure it happens before other effects)
   useEffect(() => {
     activeIndexRef.current = activeIndex;
   }, [activeIndex]);
-  
+
   useEffect(() => {
     isAnimatingRef.current = isAnimating;
   }, [isAnimating]);
@@ -254,7 +379,7 @@ const ProjectsSection = () => {
   // Register navigation guard: Block navigation until carousel is at appropriate boundary
   useEffect(() => {
     const PROJECTS_SCENE = 1; // Projects is scene 1
-    
+
     // Bidirectional guard function:
     // Forward: Allow navigation to Scene 2 only when at "See All" (activeIndex >= projects.length)
     // Backward: Allow navigation to Scene 0 only when at title (activeIndex <= -1)
@@ -304,7 +429,7 @@ const ProjectsSection = () => {
           // Boundary states (title at -1, "See all" at projects.length) need more display time
           const isBoundaryState = targetIndex === -1 || targetIndex === projects.length;
           const waitTime = isBoundaryState ? 1000 : 700; // 1000ms at boundaries, 700ms otherwise
-          
+
           setTimeout(() => {
             setIsAnimating(false);
             resolve();
@@ -325,7 +450,7 @@ const ProjectsSection = () => {
       unregisterNavigationGuard(PROJECTS_SCENE);
       unregisterCarouselAdvance(PROJECTS_SCENE);
     };
-  }, [projects.length, registerNavigationGuard, unregisterNavigationGuard, registerCarouselAdvance, unregisterCarouselAdvance, currentScene]);
+  }, [registerNavigationGuard, unregisterNavigationGuard, registerCarouselAdvance, unregisterCarouselAdvance, currentScene]);
 
   // Z-index: active scene on top, exiting scene below
   const zIndex = currentScene === 1 ? 10 : 1;
@@ -349,52 +474,54 @@ const ProjectsSection = () => {
         transition={{ duration: 0.7, ease: "easeInOut" }}
         className="text-6xl font-bold tracking-tight text-center absolute top-3/8 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap z-[999]"
         onAnimationComplete={() => {
-          if(activeIndex===-1){
-    setIsAnimating(false);
-        }}}
+          if (activeIndex === -1) {
+            setIsAnimating(false);
+          }
+        }}
       >
         Projects
       </motion.h2>
 
       {/* Animated See All */}
       <AnimatePresence mode="wait">
-  {activeIndex === projects.length && (
-    <motion.h2
-      initial={
-  prevScene === 0
-    ? { x: "500%" }                          // From Hero → enter from right
-  : prevScene === 2 && prevIndex === 3
-    ? { x: "500%" }                          // From Experience → back to See All → enter from right
-  : prevScene === 2
-    ? { y: "-500%" }                         // From Experience → fresh scroll to See All → enter from top
-  : prevIndex === projects.length - 1
-    ? { x: "500%" }                          // Forward scroll from last project → enter from right
-  : { opacity: 0 }                           // Fallback
-}
-      animate={
-        // Land in center
-        { x: "0%", y: "0%" }
-      }
-      exit={
-  (prevScene === 2 && activeIndex === projects.length)
-    ? { x: "500%" }         // Coming *to* See All from Experience → slide right
-  : (prevScene === 2)
-    ? { y: "-500%" }        // Going *to* Experience → move up
-  : (prevScene === 0 || activeIndex === projects.length - 1)
-    ? { x: "500%" }         // To Hero or back to last project → move right
-  : { opacity: 0 }
-}
-      transition={{ duration: 1, ease: "easeInOut" }}
-      className="text-5xl font-bold tracking-tight text-center absolute top-3/8 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap z-[999]"
-      onAnimationComplete={() => {
-        if(activeIndex===projects.length){
-    setIsAnimating(false);
-        }}}
-    >
-      See all projects
-    </motion.h2>
-  )}
-</AnimatePresence>
+        {activeIndex === projects.length && (
+          <motion.h2
+            initial={
+              prevScene === 0
+                ? { x: "500%" }                          // From Hero → enter from right
+                : prevScene === 2 && prevIndex === 3
+                  ? { x: "500%" }                          // From Experience → back to See All → enter from right
+                  : prevScene === 2
+                    ? { y: "-500%" }                         // From Experience → fresh scroll to See All → enter from top
+                    : prevIndex === projects.length - 1
+                      ? { x: "500%" }                          // Forward scroll from last project → enter from right
+                      : { opacity: 0 }                           // Fallback
+            }
+            animate={
+              // Land in center
+              { x: "0%", y: "0%" }
+            }
+            exit={
+              (prevScene === 2 && activeIndex === projects.length)
+                ? { x: "500%" }         // Coming *to* See All from Experience → slide right
+                : (prevScene === 2)
+                  ? { y: "-500%" }        // Going *to* Experience → move up
+                  : (prevScene === 0 || activeIndex === projects.length - 1)
+                    ? { x: "500%" }         // To Hero or back to last project → move right
+                    : { opacity: 0 }
+            }
+            transition={{ duration: 1, ease: "easeInOut" }}
+            className="text-5xl font-bold tracking-tight text-center absolute top-3/8 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap z-[999]"
+            onAnimationComplete={() => {
+              if (activeIndex === projects.length) {
+                setIsAnimating(false);
+              }
+            }}
+          >
+            See all projects
+          </motion.h2>
+        )}
+      </AnimatePresence>
 
       {/* Projects Carousel */}
       <div className="flex items-center justify-center h-full w-full">
@@ -422,9 +549,10 @@ const ProjectsSection = () => {
                   transition={{ duration: 0.7, ease: "easeInOut" }}
                   className="absolute w-full h-full p-12 flex flex-col justify-center items-center text-center"
                   onAnimationComplete={() => {
-          if(activeIndex>-1 && activeIndex<projects.length){
-    setIsAnimating(false);
-        }}}
+                    if (activeIndex > -1 && activeIndex < projects.length) {
+                      setIsAnimating(false);
+                    }
+                  }}
                 >
                   <h3 className="text-3xl font-semibold mb-4">{project.title}</h3>
                   <div className="relative w-full h-[300px] max-w-3xl mb-4" role="img" aria-label={`Screenshot of ${project.title}`}>

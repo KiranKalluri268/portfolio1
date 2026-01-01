@@ -5,6 +5,8 @@ import { forwardRef, useState } from "react";
 import { useGlobalContext } from "@/context/GlobalContext";
 import type { ContactForm, FormErrors, SocialLink } from "@/types";
 
+import Tooltip from "./Tooltip";
+
 type ContactSectionProps = Record<string, never>;
 
 const socialLinks: SocialLink[] = [
@@ -37,7 +39,7 @@ const socialLinks: SocialLink[] = [
     ),
   },
   {
-    name: "X",
+    name: "X (Twitter)",
     url: "https://x.com/KiranKalluri_08",
     svg: (
       <svg
@@ -50,11 +52,25 @@ const socialLinks: SocialLink[] = [
       </svg>
     ),
   },
+  {
+    name: "Gmail",
+    url: "mailto:kirankalluri@gmail.com",
+    svg: (
+      <svg
+        className="w-8 h-8"
+        fill="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+      </svg>
+    ),
+  },
 ];
 
 const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref) => {
   const { currentScene, prevScene } = useGlobalContext();
-  
+
   // Determine navigation direction
   // Forward: prevScene < currentScene (moving down, e.g., 3→4 or 0→4)
   // Backward: prevScene > currentScene (moving up, e.g., 4→3)
@@ -63,6 +79,7 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
   const [form, setForm] = useState<ContactForm>({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
+  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
@@ -144,9 +161,8 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
                 type="text"
                 value={form.name}
                 onChange={handleChange}
-                className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.name ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? "border-red-500" : "border-gray-300"
+                  }`}
                 required
               />
               {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
@@ -162,9 +178,8 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
                 type="email"
                 value={form.email}
                 onChange={handleChange}
-                className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.email ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? "border-red-500" : "border-gray-300"
+                  }`}
                 required
               />
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -180,31 +195,24 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
                 rows={4}
                 value={form.message}
                 onChange={handleChange}
-                className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.message ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.message ? "border-red-500" : "border-gray-300"
+                  }`}
                 required
               />
               {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
             </div>
 
             <div className="flex items-center justify-center gap-x-25">
-  <motion.button
-    type="submit"
-    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500"
-    whileHover={{ scale: 1.05 }}
-  >
-    Send Message
-  </motion.button>
+              <motion.button
+                type="submit"
+                className="bg-white text-black px-6 py-3 rounded-lg hover:bg-black hover:text-white transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500"
+                whileHover={{ scale: 1.05 }}
+              >
+                Send Message
+              </motion.button>
 
-  <motion.a
-    href="mailto:kirankalluri@gmail.com"
-    className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500"
-    whileHover={{ scale: 1.05 }}
-  >
-    Say Hello 👋
-  </motion.a>
-</div>
+
+            </div>
           </form>
         )}
 
@@ -213,16 +221,19 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
             <a
               key={name}
               href={url}
-              target="_blank"
-              rel="noopener noreferrer"
+              target={url.startsWith("mailto") ? undefined : "_blank"}
+              rel={url.startsWith("mailto") ? undefined : "noopener noreferrer"}
               aria-label={name}
               className="hover:text-blue-500 transition-colors"
+              onMouseEnter={() => setHoveredLink(name)}
+              onMouseLeave={() => setHoveredLink(null)}
             >
               {svg}
             </a>
           ))}
         </div>
       </motion.div>
+      <Tooltip text={hoveredLink || ""} isVisible={!!hoveredLink} />
 
       <motion.footer
         className="w-full text-gray-500 text-sm py-4 text-center"

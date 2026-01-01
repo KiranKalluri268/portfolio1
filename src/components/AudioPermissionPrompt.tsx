@@ -65,10 +65,10 @@ function hexToRgb(hex: string) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16),
+    }
     : null;
 }
 
@@ -266,6 +266,21 @@ export default function AudioPermissionPrompt({
       >
         Enter
       </button>
+      <p
+        style={{
+          color: colorToRgba(color, 0.7),
+          fontSize: "0.9rem",
+          fontWeight: 300,
+          letterSpacing: "0.05em",
+          textAlign: "center",
+          userSelect: "none",
+          position: "absolute",
+          bottom: "2rem",
+          zIndex: 10,
+        }}
+      >
+        NOTE: You can also use arrow keys (or WASD keys like in Games) for navigation, Clicking &quot;ENTER&quot; will turn on audio
+      </p>
     </div>
   );
 }

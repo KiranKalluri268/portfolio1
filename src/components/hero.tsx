@@ -30,7 +30,7 @@ export default function Hero() {
 
   const heroRef = useRef<HTMLDivElement>(null);
   const { currentScene, prevScene } = useGlobalContext();
-  
+
   // Determine navigation direction
   // Forward: prevScene < currentScene (moving down, e.g., initial load or 0→1)
   // Backward: prevScene > currentScene (moving up, e.g., 1→0)
@@ -77,9 +77,9 @@ export default function Hero() {
   const zIndex = currentScene === 0 ? 10 : 1;
 
   return (
-    <section 
-      ref={heroRef} 
-      className="h-screen w-full relative overflow-hidden" 
+    <section
+      ref={heroRef}
+      className="h-screen w-full relative overflow-hidden"
       id="hero"
       aria-label="Hero section - Introduction"
       style={{ zIndex }}
@@ -135,6 +135,39 @@ export default function Hero() {
           </h2>
         </div>
       </motion.div>
-    </section>
+
+      {/* Scroll Indicator */}
+      <motion.div
+        className="absolute bottom-1 left-1/2 -translate-x-1/2 text-white/50 flex flex-col items-center gap-0 cursor-pointer z-20"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1, y: [0, 10, 0] }}
+        transition={{
+          opacity: { delay: 1, duration: 1 },
+          y: { repeat: Infinity, duration: 1.5, ease: "easeInOut" },
+        }}
+        onClick={() => {
+          // Trigger scroll via UnifiedScrollManager if available, or just visual hint
+          window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+        }}
+        aria-label="Scroll down"
+        role="button"
+      >
+        <span className="text-sm font-light tracking-widest">Scroll Down or</span>
+        <span className="text-sm font-light tracking-widest">Press Arrow Down</span>
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 14l-7 7m0 0l-7-7m7 7V3"
+          />
+        </svg>
+      </motion.div>
+    </section >
   );
 }

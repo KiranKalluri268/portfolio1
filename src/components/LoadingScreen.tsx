@@ -60,6 +60,29 @@ interface LoadingScreenProps {
   particleRadius?: number;     // radius of each particle (default 7)
 }
 
+// Helper: Convert hex color to rgba
+function hexToRgb(hex: string) {
+  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+  hex = hex.replace(shorthandRegex, (_, r, g, b) => r + r + g + g + b + b);
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16),
+    }
+    : null;
+}
+
+function colorToRgba(color: string, alpha: number) {
+  const rgb = hexToRgb(color);
+  if (rgb) {
+    return `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})`;
+  }
+  // fallback for named colors or invalid hex — use white with alpha
+  return `rgba(255,255,255,${alpha})`;
+}
+
 export default function LoadingScreen({
   tailLength = 60,
   thickness = 1.5,
@@ -76,27 +99,7 @@ export default function LoadingScreen({
   // To handle responsive canvas size
   const [canvasSize, setCanvasSize] = useState({ width: 300, height: 300 });
 
-  // Helper: Convert hex color to rgba
-  function hexToRgb(hex: string) {
-    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    hex = hex.replace(shorthandRegex, (_, r, g, b) => r + r + g + g + b + b);
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
-        }
-      : null;
-  }
-  function colorToRgba(color: string, alpha: number) {
-    const rgb = hexToRgb(color);
-    if (rgb) {
-      return `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})`;
-    }
-    // fallback for named colors or invalid hex — use white with alpha
-    return `rgba(255,255,255,${alpha})`;
-  }
+
 
   useEffect(() => {
     function updateCanvasSize() {
@@ -115,7 +118,6 @@ export default function LoadingScreen({
     return () => window.removeEventListener("resize", updateCanvasSize);
   }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -136,19 +138,19 @@ export default function LoadingScreen({
 
     // Initialize particles with evenly spread angles
     particlesRef.current = Array(numParticles)
-  .fill(null)
-  .map((_, i) => {
-    return new LoadingParticle({
-      radius: particleRadius,
-      size: particleRadius,
-      angle: (2 * Math.PI * i) / numParticles,
-      speed,
-      orbitRadius: orbitRadii[i % orbitRadii.length] || 50,
-      centerX,
-      centerY,
-      tailLength,     // <-- pass the tailLength here
-    });
-  });
+      .fill(null)
+      .map((_, i) => {
+        return new LoadingParticle({
+          radius: particleRadius,
+          size: particleRadius,
+          angle: (2 * Math.PI * i) / numParticles,
+          speed,
+          orbitRadius: orbitRadii[i % orbitRadii.length] || 50,
+          centerX,
+          centerY,
+          tailLength,     // <-- pass the tailLength here
+        });
+      });
 
     function draw() {
       if (!canvas) return;
@@ -161,18 +163,18 @@ export default function LoadingScreen({
         const pos = p.update();
 
         // Draw trail — segment by segment with fading alpha
-for (let i = 1; i < p.trail.length; i++) {
-  const prev = p.trail[i - 1];
-  const curr = p.trail[i];
+        for (let i = 1; i < p.trail.length; i++) {
+          const prev = p.trail[i - 1];
+          const curr = p.trail[i];
 
-  const t = i / p.trail.length; // 0 to 1
-  ctx.beginPath();
-  ctx.strokeStyle = colorToRgba(color, t * 0.7); // fade based on segment age
-  ctx.lineWidth = p.size * thickness;
-  ctx.moveTo(prev.x, prev.y);
-  ctx.lineTo(curr.x, curr.y);
-  ctx.stroke();
-}
+          const t = i / p.trail.length; // 0 to 1
+          ctx.beginPath();
+          ctx.strokeStyle = colorToRgba(color, t * 0.7); // fade based on segment age
+          ctx.lineWidth = p.size * thickness;
+          ctx.moveTo(prev.x, prev.y);
+          ctx.lineTo(curr.x, curr.y);
+          ctx.stroke();
+        }
 
 
         // Draw particle
@@ -193,7 +195,7 @@ for (let i = 1; i < p.trail.length; i++) {
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [canvasSize, color, thickness, speed, numParticles, orbitRadii, particleRadius]);
+  }, [canvasSize, color, thickness, speed, numParticles, orbitRadii, particleRadius, tailLength]);
 
   return (
     <div

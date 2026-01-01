@@ -33,53 +33,53 @@ class Particle {
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     if (dist < blackholeRadius * 8) {
-  const pull = 1 / (dist + 0.01);
-  const gravityStrength = pull * 0.05;
+      const pull = 1 / (dist + 0.01);
+      const gravityStrength = pull * 0.05;
 
-  const normDx = dx / dist;
-  const normDy = dy / dist;
-  const tangentX = -normDy;
-  const tangentY = normDx;
+      const normDx = dx / dist;
+      const normDy = dy / dist;
+      const tangentX = -normDy;
+      const tangentY = normDx;
 
-  this.speedX += dx * gravityStrength * 0.2 + tangentX * gravityStrength * 0.1;
-  this.speedY += dy * gravityStrength * 0.2 + tangentY * gravityStrength * 0.1;
-}
+      this.speedX += dx * gravityStrength * 0.2 + tangentX * gravityStrength * 0.1;
+      this.speedY += dy * gravityStrength * 0.2 + tangentY * gravityStrength * 0.1;
+    }
 
-if (dist < blackholeRadius * 5) {
-  const pullStrength = (1 / (dist + 0.01)) * 2;
-  this.speedX += dx * pullStrength * 0.002;
-  this.speedY += dy * pullStrength * 0.002;
-}
+    if (dist < blackholeRadius * 5) {
+      const pullStrength = (1 / (dist + 0.01)) * 2;
+      this.speedX += dx * pullStrength * 0.002;
+      this.speedY += dy * pullStrength * 0.002;
+    }
 
-if (dist < blackholeRadius * 4) {
-  const pullStrength = (1 / (dist + 0.01)) * 3.5;
-  this.speedX += dx * pullStrength * 0.004;
-  this.speedY += dy * pullStrength * 0.004;
-}
+    if (dist < blackholeRadius * 4) {
+      const pullStrength = (1 / (dist + 0.01)) * 3.5;
+      this.speedX += dx * pullStrength * 0.004;
+      this.speedY += dy * pullStrength * 0.004;
+    }
 
-if (dist < blackholeRadius * 3) {
-  const pullStrength = (1 / (dist + 0.01)) * 5;
-  this.speedX += dx * pullStrength * 0.006;
-  this.speedY += dy * pullStrength * 0.006;
-}
+    if (dist < blackholeRadius * 3) {
+      const pullStrength = (1 / (dist + 0.01)) * 5;
+      this.speedX += dx * pullStrength * 0.006;
+      this.speedY += dy * pullStrength * 0.006;
+    }
 
-if (dist < blackholeRadius * 2) {
-  const pullStrength = (1 / (dist + 0.01)) * 6.5;
-  this.speedX += dx * pullStrength * 0.008;
-  this.speedY += dy * pullStrength * 0.008;
-}
+    if (dist < blackholeRadius * 2) {
+      const pullStrength = (1 / (dist + 0.01)) * 6.5;
+      this.speedX += dx * pullStrength * 0.008;
+      this.speedY += dy * pullStrength * 0.008;
+    }
 
-if (dist < blackholeRadius * 1.2) {
-  const pullStrength = (1 / (dist + 0.01)) * 8;
-  this.speedX += dx * pullStrength * 0.01;
-  this.speedY += dy * pullStrength * 0.01;
-}
+    if (dist < blackholeRadius * 1.2) {
+      const pullStrength = (1 / (dist + 0.01)) * 8;
+      this.speedX += dx * pullStrength * 0.01;
+      this.speedY += dy * pullStrength * 0.01;
+    }
 
-if (dist < blackholeRadius * 1) {
-  this.playSound(); // 🔊 Particle is absorbed
-  this.reset();
-  return;
-}
+    if (dist < blackholeRadius * 1) {
+      this.playSound(); // 🔊 Particle is absorbed
+      this.reset();
+      return;
+    }
 
 
     const buffer = 100;
@@ -124,8 +124,8 @@ export default function CometsInBackground() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const { audioEnabled } = useAudio();
 
-  const playSound = () => {
-    if (audioEnabled && audioRef.current) { 
+  const playSound = useCallback(() => {
+    if (audioEnabled && audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch((error) => {
         // Silently handle audio play errors (e.g., autoplay restrictions)
@@ -134,9 +134,8 @@ export default function CometsInBackground() {
         }
       });
     }
-  };
+  }, [audioEnabled]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const initParticles = useCallback((width: number, height: number) => {
     const particles: Particle[] = [];
     const particleCount = Math.min(120, Math.floor(width / 60));
@@ -159,7 +158,7 @@ export default function CometsInBackground() {
     }
 
     particlesRef.current = particles;
-  }, []);
+  }, [playSound]);
 
   const drawParticles = useCallback(() => {
     const canvas = canvasRef.current;

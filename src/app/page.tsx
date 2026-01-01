@@ -11,6 +11,7 @@ import AudioPermissionPrompt from '@/components/AudioPermissionPrompt';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import SkipLink from '@/components/SkipLink';
 import SceneIndicator from '@/components/SceneIndicator';
+import NavigationControls from '@/components/NavigationControls';
 import { useAudio } from '@/context/AudioContextProvider';
 import { AnimatePresence } from 'framer-motion';
 
@@ -31,15 +32,19 @@ export default function Home() {
           <SkipLink href="#experience">Skip to experience</SkipLink>
           <SkipLink href="#skills">Skip to skills</SkipLink>
           <SkipLink href="#contact">Skip to contact</SkipLink>
-          
+
           <ErrorBoundary>
             <NavBar />
           </ErrorBoundary>
-          
+
           <ErrorBoundary>
             <SceneIndicator />
           </ErrorBoundary>
-          
+
+          <ErrorBoundary>
+            <NavigationControls />
+          </ErrorBoundary>
+
           <main id="main-content" aria-label="Main content">
             <AnimatePresence mode="sync">
               {currentScene === 0 && (
