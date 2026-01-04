@@ -41,6 +41,9 @@ export const metadata: Metadata = {
   title: "Saikiran Kalluri | Full Stack Developer & C++ Engineer | Telangana",
   description: "Portfolio of Saikiran Kalluri (Sai Kiran), a Software Engineer from Telangana. Specializing in AWS, C++, and Web Development. View projects by Saikiran Kalluri.",
   keywords: ["Saikiran Kalluri", "Sai Kiran Kalluri", "Kiran Kalluri", "AWS Engineer", "C++ Developer"],
+  verification: {
+    google: "3EakCwstiUdkMkdhG4C9U2iG3xAVbQnaDxh9ButJ7yM",
+  },
 };
 
 const jsonLd = {
