@@ -5,13 +5,12 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useGlobalContext } from "@/context/GlobalContext";
 
 export default function Hero() {
-  const staticText = "NAMASTE ! I'M";
   const words = useMemo(
     () => [
-      "SAIKIRAN..",
-      "MERN FULL STACK DEVELOPER...",
+      "MERN FULL STACK DEVELOPER..",
       "PYTHON DEVELOPER....",
-      "CURRENTLY WORKING ON THIS....",
+      "AWS ENGINEER...",
+      "C++ DEVELOPER...",
     ],
     []
   );
@@ -21,6 +20,7 @@ export default function Hero() {
   const delayBeforeDeletingCurrent = 2000;
   const delayBetweenLines = 500;
 
+  // Animation States
   const [displayText, setDisplayText] = useState("");
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [secondLine, setSecondLine] = useState("");
@@ -28,27 +28,66 @@ export default function Hero() {
   const [isFirstLineDone, setIsFirstLineDone] = useState(false);
   const [showSecondCursor, setShowSecondCursor] = useState(false);
 
+  // New state for H1 intro sequence
+  const [h1State, setH1State] = useState<'typing_intro' | 'deleting_intro' | 'typing_name' | 'done'>('typing_intro');
+
   const heroRef = useRef<HTMLDivElement>(null);
   const { currentScene, prevScene } = useGlobalContext();
 
   // Determine navigation direction
-  // Forward: prevScene < currentScene (moving down, e.g., initial load or 0→1)
-  // Backward: prevScene > currentScene (moving up, e.g., 1→0)
   const isForward = prevScene <= currentScene;
 
-  // First line typing
+  const introText = "NAMASTE!";
+  const mainText = "I'M,\nSAIKIRAN KALLURI";
+
+  // H1 Animation Sequence
   useEffect(() => {
-    if (displayText.length < staticText.length) {
-      const timeout = setTimeout(() => {
-        setDisplayText(staticText.slice(0, displayText.length + 1));
-      }, displayText === "NAMASTE !" ? 2000 : typingSpeed);
-      return () => clearTimeout(timeout);
-    } else if (!isFirstLineDone) {
-      setIsFirstLineDone(true);
-      const cursorTimeout = setTimeout(() => setShowSecondCursor(true), delayBetweenLines);
-      return () => clearTimeout(cursorTimeout);
+    let timeout: NodeJS.Timeout;
+
+    switch (h1State) {
+      case 'typing_intro':
+        if (displayText.length < introText.length) {
+          timeout = setTimeout(() => {
+            setDisplayText(introText.slice(0, displayText.length + 1));
+          }, typingSpeed);
+        } else {
+          // Wait before deleting
+          timeout = setTimeout(() => setH1State('deleting_intro'), 1000);
+        }
+        break;
+
+      case 'deleting_intro':
+        if (displayText.length > 0) {
+          timeout = setTimeout(() => {
+            setDisplayText(displayText.slice(0, -1));
+          }, deleteSpeed / 2); // Delete slightly faster
+        } else {
+          setH1State('typing_name');
+        }
+        break;
+
+      case 'typing_name':
+        if (displayText.length < mainText.length) {
+          timeout = setTimeout(() => {
+            setDisplayText(mainText.slice(0, displayText.length + 1));
+          }, typingSpeed);
+        } else {
+          // Wait 1 second before starting H2
+          timeout = setTimeout(() => {
+            setH1State('done');
+            setIsFirstLineDone(true);
+            setShowSecondCursor(true);
+          }, 1000);
+        }
+        break;
+
+      case 'done':
+        // H1 animation complete
+        break;
     }
-  }, [displayText, isFirstLineDone, staticText]);
+
+    return () => clearTimeout(timeout);
+  }, [displayText, h1State, introText, mainText]);
 
   // Second line typing
   useEffect(() => {
@@ -85,10 +124,8 @@ export default function Hero() {
       style={{ zIndex }}
     >
       <motion.div
-        className="fixed top-0 left-0 w-full h-screen flex items-center justify-center text-white"
+        className="fixed top-0 left-0 w-full h-screen text-white"
         initial={{
-          // Forward navigation (top→bottom): entry from bottom
-          // Backward navigation (bottom→top): entry from top
           y: isForward ? "100%" : "-100%",
           opacity: 0,
         }}
@@ -107,22 +144,41 @@ export default function Hero() {
           ease: "easeInOut",
         }}
       >
-        <div className="max-w-4xl w-full text-left">
+        <div
+          className={`absolute left-1/2 -translate-x-1/2 w-full max-w-5xl px-4 md:px-0 text-left transition-all duration-1000 ease-in-out ${h1State === 'done' ? 'top-[20vh] translate-y-0' : 'top-1/2 -translate-y-1/2'
+            }`}
+        >
           <h1
-            className="text-4xl sm:text-5xl md:text-9xl font-bold font-['Foldit']"
+            className="font-bold font-['Foldit'] whitespace-pre-line leading-none"
             style={{
               textShadow:
                 "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
             }}
           >
-            {displayText}
-            {displayText.length < staticText.length && (
-              <span className="text-blue-500 animate-blink" aria-hidden="true">|</span>
+            {displayText.split('\n').map((part, index) => (
+              <span
+                key={index}
+                className={`transition-all duration-1000 ease-in-out ${index === 0
+                  ? `text-[2.5rem] sm:text-[3rem] ${h1State === 'done' ? 'md:text-[4.5rem]' : 'md:text-[8rem]'}`
+                  : `text-[2.5rem] sm:text-[3rem] ${h1State === 'done' ? 'md:text-[6rem]' : 'md:text-[8rem]'}`
+                  }`}
+              >
+                {part}
+                {index === 0 && displayText.includes('\n') && '\n'}
+              </span>
+            ))}
+            {h1State !== 'done' && (
+              <span
+                className="text-blue-500 animate-blink text-[2.5rem] sm:text-[3rem] md:text-[8rem]"
+                aria-hidden="true"
+              >
+                |
+              </span>
             )}
           </h1>
 
           <h2
-            className="text-4xl sm:text-5xl md:text-9xl font-bold mt-4 font-['Foldit']"
+            className="text-[2.5rem] sm:text-[3rem] md:text-[7.5rem] font-bold mt-4 font-['Foldit'] leading-none"
             style={{
               textShadow:
                 "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
