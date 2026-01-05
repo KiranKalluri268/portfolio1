@@ -1,14 +1,16 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useAudio } from "../context/AudioContextProvider";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ParticleProps {
-  radius: number;        // particle radius (circle size)
-  size: number;          // line thickness for trail
-  angle: number;         // current angle position
-  speed: number;         // speed of rotation (radians/frame)
-  orbitRadius: number;   // orbit circle radius
-  centerX: number;       // center x of orbit
-  centerY: number;       // center y of orbit
+  radius: number;
+  size: number;
+  angle: number;
+  speed: number;
+  orbitRadius: number;
+  centerX: number;
+  centerY: number;
 }
 
 class LoadingParticle {
@@ -19,8 +21,7 @@ class LoadingParticle {
   orbitRadius: number;
   centerX: number;
   centerY: number;
-  tailLength: number;  // <-- add this
-
+  tailLength: number;
   trail: { x: number; y: number }[] = [];
 
   constructor(props: ParticleProps & { tailLength: number }) {
@@ -31,7 +32,7 @@ class LoadingParticle {
     this.orbitRadius = props.orbitRadius;
     this.centerX = props.centerX;
     this.centerY = props.centerY;
-    this.tailLength = props.tailLength; // <--- store tail length
+    this.tailLength = props.tailLength;
   }
 
   update() {
@@ -43,7 +44,6 @@ class LoadingParticle {
 
     this.trail.push({ x, y });
 
-    // Use tailLength instead of fixed 30:
     if (this.trail.length > this.tailLength) this.trail.shift();
 
     return { x, y };
@@ -51,16 +51,15 @@ class LoadingParticle {
 }
 
 interface LoadingScreenProps {
-  tailLength?: number;         // max length of tail (default 30)
-  thickness?: number;          // trail thickness multiplier (default 1.2)
-  speed?: number;              // rotation speed (default 0.04)
-  numParticles?: number;       // number of particles (default 2)
-  color?: string;              // particle color (default white)
-  orbitRadii?: number[];       // array of orbit radii (default [50,80])
-  particleRadius?: number;     // radius of each particle (default 7)
+  tailLength?: number;
+  thickness?: number;
+  speed?: number;
+  numParticles?: number;
+  color?: string;
+  orbitRadii?: number[];
+  particleRadius?: number;
 }
 
-// Helper: Convert hex color to rgba
 function hexToRgb(hex: string) {
   const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
   hex = hex.replace(shorthandRegex, (_, r, g, b) => r + r + g + g + b + b);
@@ -79,27 +78,35 @@ function colorToRgba(color: string, alpha: number) {
   if (rgb) {
     return `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})`;
   }
-  // fallback for named colors or invalid hex — use white with alpha
   return `rgba(255,255,255,${alpha})`;
 }
 
 export default function LoadingScreen({
-  tailLength = 60,
-  thickness = 1.5,
-  speed = 0.08,
+  tailLength = 100,
+  thickness = 2.2,
+  speed = 0.05,
   numParticles = 2,
   color = "white",
-  orbitRadii = [20, 40],
-  particleRadius = 1,
+  orbitRadii = [80, 90],
+  particleRadius = 1.8,
 }: LoadingScreenProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<LoadingParticle[]>([]);
   const animationFrameRef = useRef<number | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // To handle responsive canvas size
+  // Audio context
+  const { audioEnabled, setAudioEnabled } = useAudio();
+
+  // Show prompt if audio is not enabled
+  const [visible, setVisible] = useState(!audioEnabled);
+
+  // Loading progress state
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Responsive canvas size
   const [canvasSize, setCanvasSize] = useState({ width: 300, height: 300 });
-
-
 
   useEffect(() => {
     function updateCanvasSize() {
@@ -108,8 +115,10 @@ export default function LoadingScreen({
       if (!parent) return;
 
       const style = getComputedStyle(parent);
-      const width = parent.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-      const height = parent.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      const width =
+        parent.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const height =
+        parent.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
 
       setCanvasSize({ width, height });
     }
@@ -118,13 +127,103 @@ export default function LoadingScreen({
     return () => window.removeEventListener("resize", updateCanvasSize);
   }, []);
 
+  // Actual loading progress tracking
   useEffect(() => {
+    if (!visible) return;
+
+    let fontsReady = false;
+
+    // Helper to calculate progress based on images loaded
+    const checkProgress = () => {
+      // If document is already complete, we're at 100% (but check fonts!)
+      if (document.readyState === "complete" && fontsReady) {
+        return 100;
+      }
+
+      const images = document.images;
+      const total = images.length;
+
+      if (total === 0) return 0;
+
+      let loaded = 0;
+      for (let i = 0; i < total; i++) {
+        if (images[i].complete) {
+          loaded++;
+        }
+      }
+
+      return Math.floor((loaded / total) * 100);
+    };
+
+    // Track fonts separately
+    document.fonts.ready.then(() => {
+      fontsReady = true;
+    });
+
+    // 0. Initial check: might already be done if came from another page
+    // or if the browser cached everything instantly.
+    if (document.readyState === "complete") {
+      // We still want to verify fonts if possible.
+    }
+
+    // 1. Listen for window load event (absolute 100%)
+    const handleLoad = () => {
+      // Window loaded
+    };
+    window.addEventListener("load", handleLoad);
+
+    // 2. Poll for image loading progress + drift
+    let currentDrift = 0;
+    const interval = setInterval(() => {
+      const realProgress = checkProgress();
+
+      // Add a small "drift" so it doesn't look frozen if waiting for one big asset
+      if (currentDrift < 90) {
+        currentDrift += 0.5; // slow automated tick
+      }
+
+      // Use the higher of the two values to ensure we never go backwards
+      // but favor real progress if it jumps ahead.
+      // We cap drift at 99 so it never hits 100 purely by drifting.
+      let displayProgress = Math.min(
+        99,
+        Math.max(Math.floor(currentDrift), realProgress)
+      );
+
+      // CAP at 90% if fonts are not ready yet
+      if (!fontsReady && displayProgress > 90) {
+        displayProgress = 90;
+      }
+
+      setLoadingProgress((prev) => {
+        // If we hit 100, stay there
+        if (prev >= 100) return 100;
+        // Never go backwards
+        return Math.max(prev, displayProgress);
+      });
+
+      // If we confirm real progress reaches 100 via check (includes fonts), finish early
+      if (realProgress === 100 && fontsReady) {
+        setLoadingProgress(100);
+        setIsLoaded(true);
+        clearInterval(interval);
+      }
+    }, 200);
+
+    return () => {
+      window.removeEventListener("load", handleLoad);
+      clearInterval(interval);
+    };
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible) return; // don't run animation if hidden
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Adjust for device pixel ratio for crispness
     const dpr = window.devicePixelRatio || 1;
 
     canvas.width = canvasSize.width * dpr;
@@ -136,7 +235,6 @@ export default function LoadingScreen({
     const centerX = canvasSize.width / 2;
     const centerY = canvasSize.height / 2;
 
-    // Initialize particles with evenly spread angles
     particlesRef.current = Array(numParticles)
       .fill(null)
       .map((_, i) => {
@@ -148,7 +246,7 @@ export default function LoadingScreen({
           orbitRadius: orbitRadii[i % orbitRadii.length] || 50,
           centerX,
           centerY,
-          tailLength,     // <-- pass the tailLength here
+          tailLength,
         });
       });
 
@@ -162,22 +260,19 @@ export default function LoadingScreen({
       particlesRef.current.forEach((p) => {
         const pos = p.update();
 
-        // Draw trail — segment by segment with fading alpha
         for (let i = 1; i < p.trail.length; i++) {
           const prev = p.trail[i - 1];
           const curr = p.trail[i];
 
-          const t = i / p.trail.length; // 0 to 1
+          const t = i / p.trail.length;
           ctx.beginPath();
-          ctx.strokeStyle = colorToRgba(color, t * 0.7); // fade based on segment age
+          ctx.strokeStyle = colorToRgba(color, t * 0.7);
           ctx.lineWidth = p.size * thickness;
           ctx.moveTo(prev.x, prev.y);
           ctx.lineTo(curr.x, curr.y);
           ctx.stroke();
         }
 
-
-        // Draw particle
         ctx.beginPath();
         ctx.fillStyle = color;
         ctx.shadowColor = color;
@@ -195,7 +290,25 @@ export default function LoadingScreen({
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [canvasSize, color, thickness, speed, numParticles, orbitRadii, particleRadius, tailLength]);
+  }, [canvasSize, color, thickness, speed, numParticles, orbitRadii, particleRadius, tailLength, visible]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && visible && isLoaded && buttonRef.current) {
+        buttonRef.current.click(); // triggers the full click lifecycle
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [visible, isLoaded]);
+
+  const handleEnableAudio = () => {
+    setAudioEnabled(true);
+    setVisible(false);
+  };
+
+  if (!visible) return null;
 
   return (
     <div
@@ -217,8 +330,88 @@ export default function LoadingScreen({
           backgroundColor: "transparent",
           width: "100vw",
           height: "100vh",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          pointerEvents: "none",
         }}
       />
+
+      <div
+        style={{
+          position: "relative",
+          zIndex: 10,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "60px", // Fixed height to prevent layout shift
+        }}
+      >
+        <AnimatePresence mode="wait">
+          {!isLoaded ? (
+            <motion.p
+              key="loading-text"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              style={{
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                color: color,
+                fontFamily: "monospace",
+              }}
+            >
+              {loadingProgress}%
+            </motion.p>
+          ) : (
+            <motion.button
+              ref={buttonRef}
+              key="enter-button"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              onClick={handleEnableAudio}
+              style={{
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                cursor: "pointer",
+                color: color,
+                background: "transparent",
+                border: "none",
+                userSelect: "none",
+                transition: "transform 0.2s ease",
+              }}
+              onMouseEnter={(e) =>
+                ((e.target as HTMLButtonElement).style.transform = "scale(1.2)")
+              }
+              onMouseLeave={(e) =>
+                ((e.target as HTMLButtonElement).style.transform = "scale(1.0)")
+              }
+              aria-label="Enable Audio and Enter"
+            >
+              Enter
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <p
+        style={{
+          color: colorToRgba(color, 0.7),
+          fontSize: "0.9rem",
+          fontWeight: 300,
+          letterSpacing: "0.05em",
+          textAlign: "center",
+          userSelect: "none",
+          position: "absolute",
+          bottom: "2rem",
+          zIndex: 10,
+        }}
+      >
+        NOTE: You can also use arrow keys (or WASD keys like in Games) for navigation, Clicking &quot;ENTER&quot; will turn on audio
+      </p>
     </div>
   );
 }

@@ -7,7 +7,7 @@ import ProjectsSection from '@/components/projects';
 import ExperienceTimeline from '@/components/ExperienceTimeline';
 import SkillsCarousel from '@/components/SkillsCarousel';
 import ContactSection from '@/components/Contact';
-import AudioPermissionPrompt from '@/components/AudioPermissionPrompt';
+import LoadingScreen from '@/components/LoadingScreen';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import SkipLink from '@/components/SkipLink';
 import SceneIndicator from '@/components/SceneIndicator';
@@ -22,7 +22,7 @@ export default function Home() {
   return (
     <>
       <ErrorBoundary>
-        <AudioPermissionPrompt />
+        <LoadingScreen />
       </ErrorBoundary>
 
       {audioEnabled && (
