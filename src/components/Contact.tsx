@@ -110,14 +110,14 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
     <section
       ref={ref}
       id="contact"
-      className="h-screen text-white text-center flex flex-col justify-end gap-25 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      className="h-screen text-white text-center flex flex-col justify-center items-center gap-12 px-4 sm:px-6 lg:px-8 overflow-hidden relative"
       style={{ zIndex }}
     >
       <motion.div
         initial={{
           // Forward navigation (top→bottom): entry from bottom
           // Backward navigation (bottom→top): entry from top
-          y: isForward ? "100%" : "-100%",
+          y: isForward ? "100vh" : "-100vh",
           opacity: 0,
         }}
         animate={{
@@ -127,14 +127,14 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
         exit={{
           // Forward navigation: exit to top (moving up in viewport)
           // Backward navigation: exit to bottom (moving down in viewport)
-          y: isForward ? "-100%" : "100%",
+          y: isForward ? "-100vh" : "100vh",
           opacity: 0,
         }}
         transition={{
           duration: 0.5,
           ease: "easeInOut",
         }}
-        className="absolute sm:left-1/4 left-1/9 top-[20%] sm:max-w-xl max-w-xs"
+        className="relative w-full max-w-xs sm:max-w-sm flex flex-col items-center"
       >
         <h2 className="text-3xl font-bold sm:mb-4 mb-2">Contact Me</h2>
         <p className="text-gray-400 mb-8">Feel free to reach out!</p>
@@ -150,7 +150,7 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
             Thanks for reaching out! I will get back to you soon.
           </motion.div>
         ) : (
-          <form onSubmit={handleSubmit} noValidate className="space-y-6 text-left" aria-label="Contact form">
+          <form onSubmit={handleSubmit} noValidate className="w-full space-y-6 text-left" aria-label="Contact form">
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-1">
                 Name <span className="text-red-500">*</span>
@@ -161,7 +161,7 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
                 type="text"
                 value={form.name}
                 onChange={handleChange}
-                className={`w-full rounded-md border sm:px-3 sm:py-2 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? "border-red-500" : "border-gray-300"
+                className={`w-full rounded-md border sm:px-3 sm:py-2 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? "border-red-500" : "border-gray-300"
                   }`}
                 required
               />
@@ -178,7 +178,7 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
                 type="email"
                 value={form.email}
                 onChange={handleChange}
-                className={`w-full rounded-md border sm:px-3 sm:py-2 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? "border-red-500" : "border-gray-300"
+                className={`w-full rounded-md border sm:px-3 sm:py-2 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? "border-red-500" : "border-gray-300"
                   }`}
                 required
               />
@@ -236,7 +236,7 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
       <Tooltip text={hoveredLink || ""} isVisible={!!hoveredLink} />
 
       <motion.footer
-        className="w-full text-gray-500 text-sm py-4 text-center"
+        className="absolute bottom-4 left-0 w-full text-gray-500 text-sm py-4 text-center"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}

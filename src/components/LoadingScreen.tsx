@@ -311,43 +311,13 @@ export default function LoadingScreen({
   if (!visible) return null;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        backdropFilter: "blur(10px)",
-        backgroundColor: "rgba(0,0,0,0.3)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 9999,
-      }}
-    >
+    <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex justify-center items-center z-[9999]">
       <canvas
         ref={canvasRef}
-        style={{
-          borderRadius: "50%",
-          backgroundColor: "transparent",
-          width: "100vw",
-          height: "100vh",
-          position: "absolute",
-          top: 0,
-          left: 0,
-          pointerEvents: "none",
-        }}
+        className="rounded-full bg-transparent w-screen h-screen absolute top-0 left-0 pointer-events-none"
       />
 
-      <div
-        style={{
-          position: "relative",
-          zIndex: 10,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "60px", // Fixed height to prevent layout shift
-        }}
-      >
+      <div className="relative z-10 flex flex-col items-center justify-center h-[60px]">
         <AnimatePresence mode="wait">
           {!isLoaded ? (
             <motion.p
@@ -356,12 +326,8 @@ export default function LoadingScreen({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              style={{
-                fontSize: "1.5rem",
-                fontWeight: "bold",
-                color: color,
-                fontFamily: "monospace",
-              }}
+              className="text-2xl md:text-3xl font-bold font-mono"
+              style={{ color: color }}
             >
               {loadingProgress}%
             </motion.p>
@@ -373,22 +339,8 @@ export default function LoadingScreen({
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
               onClick={handleEnableAudio}
-              style={{
-                fontSize: "1.5rem",
-                fontWeight: "bold",
-                cursor: "pointer",
-                color: color,
-                background: "transparent",
-                border: "none",
-                userSelect: "none",
-                transition: "transform 0.2s ease",
-              }}
-              onMouseEnter={(e) =>
-                ((e.target as HTMLButtonElement).style.transform = "scale(1.2)")
-              }
-              onMouseLeave={(e) =>
-                ((e.target as HTMLButtonElement).style.transform = "scale(1.0)")
-              }
+              className="text-2xl md:text-3xl font-bold cursor-pointer bg-transparent border-none select-none transition-transform duration-200 hover:scale-115 active:scale-95 p-4"
+              style={{ color: color }}
               aria-label="Enable Audio and Enter"
             >
               Enter
@@ -398,17 +350,8 @@ export default function LoadingScreen({
       </div>
 
       <p
-        style={{
-          color: colorToRgba(color, 0.7),
-          fontSize: "0.9rem",
-          fontWeight: 300,
-          letterSpacing: "0.05em",
-          textAlign: "center",
-          userSelect: "none",
-          position: "absolute",
-          bottom: "2rem",
-          zIndex: 10,
-        }}
+        className="absolute bottom-8 left-0 w-full text-center text-sm md:text-base font-light tracking-wider select-none px-4 pb-safe"
+        style={{ color: colorToRgba(color, 0.7) }}
       >
         NOTE: You can also use arrow keys (or WASD keys like in Games) for navigation, Clicking &quot;ENTER&quot; will turn on audio
       </p>
