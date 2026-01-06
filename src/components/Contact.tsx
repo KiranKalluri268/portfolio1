@@ -134,9 +134,9 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
           duration: 0.5,
           ease: "easeInOut",
         }}
-        className="absolute left-1/4 top-[20%] max-w-xl"
+        className="absolute sm:left-1/4 left-1/9 top-[20%] sm:max-w-xl max-w-xs"
       >
-        <h2 className="text-3xl font-bold mb-4">Contact Me</h2>
+        <h2 className="text-3xl font-bold sm:mb-4 mb-2">Contact Me</h2>
         <p className="text-gray-400 mb-8">Feel free to reach out!</p>
 
         {submitted ? (
@@ -161,7 +161,7 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
                 type="text"
                 value={form.name}
                 onChange={handleChange}
-                className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? "border-red-500" : "border-gray-300"
+                className={`w-full rounded-md border sm:px-3 sm:py-2 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? "border-red-500" : "border-gray-300"
                   }`}
                 required
               />
@@ -178,7 +178,7 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
                 type="email"
                 value={form.email}
                 onChange={handleChange}
-                className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? "border-red-500" : "border-gray-300"
+                className={`w-full rounded-md border sm:px-3 sm:py-2 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? "border-red-500" : "border-gray-300"
                   }`}
                 required
               />
@@ -216,7 +216,7 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
           </form>
         )}
 
-        <div className="mt-20 flex justify-center space-x-20 text-gray-200">
+        <div className="mt-20 flex justify-center sm:space-x-20 space-x-16 text-gray-200">
           {socialLinks.map(({ name, url, svg }) => (
             <a
               key={name}

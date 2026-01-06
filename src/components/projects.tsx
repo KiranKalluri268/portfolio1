@@ -452,6 +452,18 @@ const ProjectsSection = () => {
     };
   }, [registerNavigationGuard, unregisterNavigationGuard, registerCarouselAdvance, unregisterCarouselAdvance, currentScene]);
 
+  // Responsive check for mobile specific animations
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640); // Standard sm breakpoint
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   // Z-index: active scene on top, exiting scene below
   const zIndex = currentScene === 1 ? 10 : 1;
 
@@ -467,12 +479,18 @@ const ProjectsSection = () => {
       <motion.h2
         initial={{ y: "600%", opacity: 0 }}
         animate={{
-          y: activeIndex >= 0 ? "-300%" : "0%",
-          x: activeIndex === projects.length ? "-600%" : activeIndex >= 0 ? "-40vw" : "0%",
+          y: activeIndex >= 0 ? (isMobile ? "-400%" : "-300%") : "0%",
+          // Desktop: Move way left (-40vw). Mobile: Stay centered (0%) or move slightly up/scale
+          x: activeIndex === projects.length
+            ? "-600%"
+            : activeIndex >= 0
+              ? (isMobile ? "-20vw" : "-40vw")
+              : "0%",
+          scale: activeIndex >= 0 && isMobile ? 0.7 : 1, // Optional: scale down on mobile when moving up
           opacity: 1,
         }}
         transition={{ duration: 0.7, ease: "easeInOut" }}
-        className="text-6xl font-bold tracking-tight text-center absolute top-3/8 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap z-[999]"
+        className="text-5xl sm:text-6xl font-bold tracking-tight text-center absolute top-3/8 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap z-[999]"
         onAnimationComplete={() => {
           if (activeIndex === -1) {
             setIsAnimating(false);
@@ -511,7 +529,7 @@ const ProjectsSection = () => {
                     : { opacity: 0 }
             }
             transition={{ duration: 1, ease: "easeInOut" }}
-            className="text-5xl font-bold tracking-tight text-center absolute top-3/8 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap z-[999]"
+            className="text-4xl sm:text-5xl font-bold tracking-tight text-center absolute top-3/8 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap z-[999]"
             onAnimationComplete={() => {
               if (activeIndex === projects.length) {
                 setIsAnimating(false);
@@ -554,8 +572,8 @@ const ProjectsSection = () => {
                     }
                   }}
                 >
-                  <h3 className="text-3xl font-semibold mb-4">{project.title}</h3>
-                  <div className="relative w-full h-[300px] max-w-3xl mb-4" role="img" aria-label={`Screenshot of ${project.title}`}>
+                  <h3 className="text-lg sm:text-3xl font-semibold mb-4">{project.title}</h3>
+                  <div className="relative w-full sm:h-[300px] h-[200px] max-w-3xl mb-4" role="img" aria-label={`Screenshot of ${project.title}`}>
                     <Image
                       src={project.image}
                       alt={`Screenshot of ${project.title} project`}
@@ -565,7 +583,7 @@ const ProjectsSection = () => {
                       priority={index === activeIndex}
                     />
                   </div>
-                  <p className="text-lg max-w-xl mb-6">{project.description}</p>
+                  <p className="text-base sm:text-lg max-w-xl mb-6">{project.description}</p>
                   <nav className="space-x-4" aria-label={`Links for ${project.title}`}>
                     {project.github && (
                       <>

@@ -124,7 +124,7 @@ function SkillRow({ category, speed, direction }: SkillRowProps) {
         onMouseLeave={() => setIsHovered(false)}
       >
         <motion.div
-          className="inline-flex gap-8 items-center whitespace-nowrap"
+          className="inline-flex gap-0 sm:gap-8 items-center whitespace-nowrap"
           ref={containerRef}
           style={{ x }}
         >
@@ -140,7 +140,7 @@ function SkillRow({ category, speed, direction }: SkillRowProps) {
               aria-label={skill.name}
               tabIndex={0}
             >
-              <div className="text-3xl md:text-4xl select-none">{skill.icon}</div>
+              <div className="text-2xl sm:text-4xl select-none">{skill.icon}</div>
               <span className="text-xs mt-1 select-none">{skill.name}</span>
             </div>
           ))}
@@ -153,7 +153,7 @@ function SkillRow({ category, speed, direction }: SkillRowProps) {
 export default function SkillsCarousel() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const { currentScene, prevScene } = useGlobalContext();
-  
+
   // Determine navigation direction
   // Forward: prevScene < currentScene (moving down, e.g., 2→3 or 0→3)
   // Backward: prevScene > currentScene (moving up, e.g., 4→3 or 2→3 backward)
@@ -171,7 +171,7 @@ export default function SkillsCarousel() {
       style={{ zIndex }}
     >
       <motion.div
-        className="w-full sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[70%] space-y-12 py-20"
+        className="w-full sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[70%] space-y-6 sm:space-y-12 py-20"
         initial={{
           // Forward navigation (top→bottom): entry from bottom
           // Backward navigation (bottom→top): entry from top
@@ -193,7 +193,7 @@ export default function SkillsCarousel() {
           ease: "easeInOut",
         }}
       >
-        <h1 className="text-4xl font-bold text-center mb-20">Tech Stack</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-center mb-10 sm:mb-20">Tech Stack</h1>
         {skillCategories.map((category, idx) => {
           const direction = idx % 2 === 0 ? 1 : -1;
           const speed = 40 - idx * 5;

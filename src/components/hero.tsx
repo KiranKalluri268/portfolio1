@@ -145,7 +145,7 @@ export default function Hero() {
         }}
       >
         <div
-          className={`absolute left-1/2 -translate-x-1/2 w-full max-w-5xl px-4 md:px-0 text-left transition-all duration-1000 ease-in-out ${h1State === 'done' ? 'top-[20vh] translate-y-0' : 'top-1/2 -translate-y-1/2'
+          className={`absolute left-1/2 -translate-x-1/2 w-full max-w-5xl px-18 pt-8 sm:pt-0 sm:px-0 text-left transition-all duration-1000 ease-in-out ${h1State === 'done' ? 'top-[20vh] translate-y-0' : 'top-1/2 -translate-y-1/2'
             }`}
         >
           <h1
@@ -159,8 +159,8 @@ export default function Hero() {
               <span
                 key={index}
                 className={`transition-all duration-1000 ease-in-out ${index === 0
-                  ? `text-[2.5rem] sm:text-[3rem] ${h1State === 'done' ? 'md:text-[4.5rem]' : 'md:text-[8rem]'}`
-                  : `text-[2.5rem] sm:text-[3rem] ${h1State === 'done' ? 'md:text-[6rem]' : 'md:text-[8rem]'}`
+                  ? `sm:text-[3rem] ${h1State === 'done' ? 'text-[2.3rem] md:text-[4.5rem]' : 'text-[3rem] md:text-[8rem]'}`
+                  : `text-[3rem] sm:text-[3rem] ${h1State === 'done' ? 'md:text-[6rem]' : 'md:text-[8rem]'}`
                   }`}
               >
                 {part}
@@ -178,7 +178,7 @@ export default function Hero() {
           </h1>
 
           <h2
-            className="text-[2.5rem] sm:text-[3rem] md:text-[7.5rem] font-bold mt-4 font-['Foldit'] leading-none"
+            className="text-[3.1rem] sm:text-[3rem] md:text-[7.5rem] font-bold mt-4 font-['Foldit'] leading-none"
             style={{
               textShadow:
                 "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",

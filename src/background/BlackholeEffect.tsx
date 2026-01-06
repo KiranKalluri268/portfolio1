@@ -5,7 +5,7 @@ export default function Blackhole() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
   const centerRef = useRef({ x: 0, y: 0 });
-  const blackholeRadius = 60;
+  const blackholeRadiusRef = useRef(60);
 
 
   const draw = useCallback(() => {
@@ -17,39 +17,39 @@ export default function Blackhole() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const glowRadius = blackholeRadius * 4;
-    const grad = ctx.createRadialGradient(center.x, center.y, blackholeRadius * 0.2, center.x, center.y, glowRadius);
+    const glowRadius = blackholeRadiusRef.current * 4;
+    const grad = ctx.createRadialGradient(center.x, center.y, blackholeRadiusRef.current * 0.2, center.x, center.y, glowRadius);
     grad.addColorStop(0, "rgba(0, 0, 0, 0)");
     grad.addColorStop(0.25, "rgba(126, 38, 9, 0.6)");
     grad.addColorStop(1, "rgba(0, 0, 0, 0)");
 
     ctx.save();
 
-// Move to center and compensate for Y scaling
-ctx.translate(center.x, center.y );
+    // Move to center and compensate for Y scaling
+    ctx.translate(center.x, center.y);
 
-// Rotate -20 degrees around Z (in radians)
-ctx.rotate((-20 * Math.PI) / 180);
+    // Rotate -20 degrees around Z (in radians)
+    ctx.rotate((-20 * Math.PI) / 180);
 
-// Scale Y to squash vertically into an ellipse
-ctx.scale(1, 0.4);
+    // Scale Y to squash vertically into an ellipse
+    ctx.scale(1, 0.4);
 
-// Create elliptical radial gradient centered at (0, 0)
-const ellipseGrad = ctx.createRadialGradient(
-  0, 0, blackholeRadius * 1,
-  0, 0, glowRadius*1.15
-);
+    // Create elliptical radial gradient centered at (0, 0)
+    const ellipseGrad = ctx.createRadialGradient(
+      0, 0, blackholeRadiusRef.current * 1,
+      0, 0, glowRadius * 1.15
+    );
 
-ellipseGrad.addColorStop(0, "rgba(0, 0, 0, 0)");
-ellipseGrad.addColorStop(0.25, "rgba(126, 38, 9, 0.6)");
-ellipseGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ellipseGrad.addColorStop(0, "rgba(0, 0, 0, 0)");
+    ellipseGrad.addColorStop(0.25, "rgba(126, 38, 9, 0.6)");
+    ellipseGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
 
-ctx.fillStyle = ellipseGrad;
-ctx.beginPath();
-ctx.arc(0, 0, glowRadius, 0, Math.PI * 2);
-ctx.fill();
+    ctx.fillStyle = ellipseGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, glowRadius, 0, Math.PI * 2);
+    ctx.fill();
 
-ctx.restore();
+    ctx.restore();
 
 
     ctx.beginPath();
@@ -59,11 +59,11 @@ ctx.restore();
 
     ctx.beginPath();
     ctx.fillStyle = "black";
-    ctx.arc(center.x, center.y, blackholeRadius, 0, Math.PI * 2);
+    ctx.arc(center.x, center.y, blackholeRadiusRef.current, 0, Math.PI * 2);
     ctx.fill();
 
     animationRef.current = requestAnimationFrame(draw);
-  }, [blackholeRadius]);
+  }, [blackholeRadiusRef]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -72,8 +72,17 @@ ctx.restore();
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      centerRef.current.x = (canvas.width * 4) / 5;
-      centerRef.current.y = canvas.height / 2;
+      if (window.innerWidth < 640) {
+        // Mobile: center X, lower Y
+        blackholeRadiusRef.current = 31;
+        centerRef.current.x = canvas.width / 2;
+        centerRef.current.y = (canvas.height * 3) / 4;
+      } else {
+        // Desktop/tablet: right-ish X, middle Y
+        blackholeRadiusRef.current = 60;
+        centerRef.current.x = (canvas.width * 4) / 5;
+        centerRef.current.y = canvas.height / 2;
+      }
     };
 
     resize();
@@ -88,21 +97,21 @@ ctx.restore();
 
   return (
     <div>
-    <canvas
-      ref={canvasRef}
-      className="fixed top-0 left-0 w-full h-full -z-18 pointer-events-none"
-    />
-    <video
-  src="/images/blackhole.webm"
-  autoPlay
-  loop
-  muted
-  playsInline
-  className="fixed top-1/2 left-[80%] w-210 h-210 object-contain -z-10 transform -translate-x-1/2 -translate-y-1/2 [transform-style:preserve-3d]"
-  style={{
-    transform: 'rotateX(0deg) rotateY(0deg) rotateZ(-20deg)',
-  }}
-/>
+      <canvas
+        ref={canvasRef}
+        className="fixed top-0 left-0 w-full h-full -z-18 pointer-events-none"
+      />
+      <video
+        src="/images/blackhole.webm"
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="fixed top-3/4 left-1/2 sm:top-1/2 sm:left-[80%] w-210 h-210 object-contain -z-10 transform -translate-x-1/2 -translate-y-1/2 [transform-style:preserve-3d]"
+        style={{
+          transform: 'rotateX(0deg) rotateY(0deg) rotateZ(-20deg)',
+        }}
+      />
     </div>
   );
 }

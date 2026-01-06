@@ -91,7 +91,7 @@ const ExperienceTimeline = () => {
           ease: "easeInOut",
         }}
       >
-        <h2 className="text-4xl font-bold text-center mb-8">Experience Timeline</h2>
+        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-8">Experience Timeline</h2>
         <motion.ol
           className="relative border-l-3 border-blue-500 max-w-3xl mx-auto"
           aria-label="Professional experience timeline"
@@ -126,12 +126,12 @@ const TimelineItem = ({ experience, index }: TimelineItemProps) => {
         aria-hidden="true"
       />
       <article className="bg-gray-550 p-5 pt-0 rounded-xl shadow-lg">
-        <h3 className="text-xl font-semibold">{experience.title}</h3>
-        <p className="text-sm text-gray-400">{experience.company}</p>
-        <time className="text-sm text-gray-500 mb-2" dateTime={experience.date}>
+        <h3 className="text-lg sm:text-xl font-semibold">{experience.title}</h3>
+        <p className="text-xs sm:text-sm text-gray-400">{experience.company}</p>
+        <time className="text-xs sm:text-sm text-gray-500 mb-2" dateTime={experience.date}>
           {experience.date}
         </time>
-        <p className="text-gray-300">{experience.description}</p>
+        <p className="text-xs sm:text-base text-gray-300">{experience.description}</p>
       </article>
     </motion.li>
   );

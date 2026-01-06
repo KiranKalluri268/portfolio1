@@ -11,14 +11,14 @@ export default function NavBar() {
 
   return (
     <motion.header
-      className="w-full text-white pt-15 pb-0 px-20 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-lg"
+      className="w-full text-white pt-12 pb-0 px-12 sm:pt-15 sm:pb-0 sm:px-20 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-lg"
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
       role="banner"
     >
       <h1 className="text-3xl font-bold" id="site-title">
-        <a href="#main-content" aria-label="Kiran Kalluri Portfolio - Home" className="outline-none">
+        <a href="#main-content" aria-label="Saikiran Kalluri Portfolio - Home" className="outline-none">
           KS
         </a>
       </h1>
