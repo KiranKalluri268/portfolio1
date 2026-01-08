@@ -14,6 +14,7 @@ import SceneIndicator from '@/components/SceneIndicator';
 import NavigationControls from '@/components/NavigationControls';
 import { useAudio } from '@/context/AudioContextProvider';
 import { AnimatePresence } from 'framer-motion';
+import SceneWrapper from '@/components/SceneWrapper';
 
 export default function Home() {
   const { currentScene } = useGlobalContext();
@@ -48,29 +49,39 @@ export default function Home() {
           <main id="main-content" aria-label="Main content">
             <AnimatePresence mode="sync">
               {currentScene === 0 && (
-                <ErrorBoundary key={0}>
-                  <Hero />
-                </ErrorBoundary>
+                <SceneWrapper key={0} index={0}>
+                  <ErrorBoundary>
+                    <Hero />
+                  </ErrorBoundary>
+                </SceneWrapper>
               )}
               {currentScene === 1 && (
-                <ErrorBoundary key={1}>
-                  <ProjectsSection />
-                </ErrorBoundary>
+                <SceneWrapper key={1} index={1}>
+                  <ErrorBoundary>
+                    <ProjectsSection />
+                  </ErrorBoundary>
+                </SceneWrapper>
               )}
               {currentScene === 2 && (
-                <ErrorBoundary key={2}>
-                  <ExperienceTimeline />
-                </ErrorBoundary>
+                <SceneWrapper key={2} index={2}>
+                  <ErrorBoundary>
+                    <ExperienceTimeline />
+                  </ErrorBoundary>
+                </SceneWrapper>
               )}
               {currentScene === 3 && (
-                <ErrorBoundary key={3}>
-                  <SkillsCarousel />
-                </ErrorBoundary>
+                <SceneWrapper key={3} index={3}>
+                  <ErrorBoundary>
+                    <SkillsCarousel />
+                  </ErrorBoundary>
+                </SceneWrapper>
               )}
               {currentScene === 4 && (
-                <ErrorBoundary key={4}>
-                  <ContactSection />
-                </ErrorBoundary>
+                <SceneWrapper key={4} index={4}>
+                  <ErrorBoundary>
+                    <ContactSection />
+                  </ErrorBoundary>
+                </SceneWrapper>
               )}
             </AnimatePresence>
           </main>

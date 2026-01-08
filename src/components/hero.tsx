@@ -123,27 +123,7 @@ export default function Hero() {
       aria-label="Hero section - Introduction"
       style={{ zIndex }}
     >
-      <motion.div
-        className="fixed top-0 left-0 w-full h-screen text-white"
-        initial={{
-          y: isForward ? "100%" : "-100%",
-          opacity: 0,
-        }}
-        animate={{
-          y: 0,
-          opacity: 1,
-        }}
-        exit={{
-          // Forward navigation: exit to top (moving up in viewport)
-          // Backward navigation: exit to bottom (moving down in viewport)
-          y: isForward ? "-100%" : "100%",
-          opacity: 0,
-        }}
-        transition={{
-          duration: 0.5,
-          ease: "easeInOut",
-        }}
-      >
+      <div className="relative w-full h-full text-white">
         <div
           className={`absolute left-1/2 -translate-x-1/2 w-full max-w-5xl px-18 pt-8 sm:pt-0 sm:px-0 text-left transition-all duration-1000 ease-in-out ${h1State === 'done' ? 'top-[20vh] translate-y-0' : 'top-1/2 -translate-y-1/2'
             }`}
@@ -190,7 +170,7 @@ export default function Hero() {
             {showSecondCursor && <span className="text-red-500 animate-blink" aria-hidden="true">|</span>}
           </h2>
         </div>
-      </motion.div>
+      </div>
 
       {/* Scroll Indicator */}
       <motion.div
