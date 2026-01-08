@@ -78,17 +78,23 @@ const ProjectsSection = () => {
     [activeIndex, isAnimating]
   );
 
-  // Accumulated delta for projects carousel (similar to UnifiedScrollManager)
-  const projectsDeltaRef = useRef(0);
-  const projectsLastScrollTimeRef = useRef(Date.now());
-  const PROJECTS_SCROLL_THRESHOLD = 80;
+
 
   // Handle wheel events for internal carousel (when not at boundaries)
+  // Handle wheel events for internal carousel (when not at boundaries)
+  // UPDATED: Now uses "Trigger & Lock" logic for instant responsiveness
   const handleProjectsWheel = useCallback(
     (event: WheelEvent) => {
-      if (currentScene !== 1 || isAnimating) return;
+      if (currentScene !== 1) return;
 
-      // Calculate combined delta (support both vertical and horizontal scrolling)
+      // 1. Check Lock (isAnimating)
+      if (isAnimating) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      // Calculate combined delta
       const deltaX = event.deltaX;
       const deltaY = event.deltaY;
       const combinedDelta = deltaY + deltaX;
@@ -96,13 +102,20 @@ const ProjectsSection = () => {
       const isScrollingDown = combinedDelta > 0;
       const isScrollingUp = combinedDelta < 0;
 
+      // 2. Filter Jitter
+      // Slightly lower threshold for internal carousel to feel "lighter" than scene switch
+      const INTERNAL_THRESHOLD = 30;
+
+      if (Math.abs(combinedDelta) < INTERNAL_THRESHOLD) {
+        return;
+      }
+
       // Check if at boundaries
       const atTopBoundary = activeIndex === -1 && isScrollingUp;
       const atBottomBoundary = activeIndex === projects.length && isScrollingDown;
 
       // If at boundary, check if guard allows navigation
       if (atTopBoundary || atBottomBoundary) {
-        // Check guard before letting UnifiedScrollManager handle it
         const guard = (direction: "forward" | "backward") => {
           if (direction === "forward") {
             return activeIndex >= projects.length;
@@ -114,46 +127,17 @@ const ProjectsSection = () => {
         const canNavigate = atTopBoundary ? guard("backward") : guard("forward");
 
         if (canNavigate) {
-          // Guard allows navigation
+          // Guard allows navigation - trigger Global Scroll logic
+          // UNIFIED SCROLL MANAGER will handle this mostly, but we need to ensure it sees the event.
+          // Since we are capturing, we can't just return; UnifiedScrollManager handles 'wheel' on window too.
+          // BUT: We need to respect the "Lock" of UnifiedScrollManager so we don't trigger if it's locked.
+          // For now, let's just let the event bubble?
+          // Wait, we are in capture phase. If we return efficiently, it will reach bubbling phase.
 
-          // Special handling for horizontal scrolling at boundaries:
-          // UnifiedScrollManager usually only listens to deltaY. If this is a primarily horizontal scroll, we need to handle it manually.
-          const isHorizontalScroll = Math.abs(deltaX) > Math.abs(deltaY);
-
-          if (isHorizontalScroll) {
-            // Handle manually for horizontal scroll
-            event.preventDefault();
-            event.stopPropagation();
-            setScrollEnabled(false);
-
-            // Accumulate for boundary exit using the same logic as internal nav
-            const now = Date.now();
-            const timeDelta = now - projectsLastScrollTimeRef.current;
-
-            if (timeDelta > 150) {
-              projectsDeltaRef.current = 0;
-            }
-
-            projectsDeltaRef.current += combinedDelta;
-            projectsLastScrollTimeRef.current = now;
-
-            // Use same threshold
-            if (Math.abs(projectsDeltaRef.current) >= PROJECTS_SCROLL_THRESHOLD) {
-              if (isScrollingDown) {
-                navigateNext();
-              } else {
-                navigatePrev();
-              }
-              projectsDeltaRef.current = 0;
-            }
-            return;
-          }
-
-          // If vertical scroll, let UnifiedScrollManager handle it naturally
           setScrollEnabled(true);
-          return; // Let event pass through to UnifiedScrollManager
+          return; // Allow event to propagate to UnifiedScrollManager
         } else {
-          // Guard blocks navigation - prevent scene transition
+          // Guard blocks navigation
           event.preventDefault();
           event.stopPropagation();
           return;
@@ -163,33 +147,14 @@ const ProjectsSection = () => {
       // Not at boundary - handle carousel navigation internally
       event.preventDefault();
       event.stopPropagation();
-      setScrollEnabled(false); // Temporarily disable UnifiedScrollManager
 
-      const now = Date.now();
-      const timeDelta = now - projectsLastScrollTimeRef.current;
+      // TRIGGER INTERNAL NAVIGATION
+      // The state update in navigateCarousel will set isAnimating=true, effectively locking it.
+      const direction: AnimationDirection = combinedDelta > 0 ? "down" : "up";
+      navigateCarousel(direction);
 
-      // Reset if too much time passed
-      if (timeDelta > 150) {
-        projectsDeltaRef.current = 0;
-      }
-
-      projectsDeltaRef.current += combinedDelta;
-      projectsLastScrollTimeRef.current = now;
-
-      // Check threshold
-      if (Math.abs(projectsDeltaRef.current) >= PROJECTS_SCROLL_THRESHOLD) {
-        const direction: AnimationDirection = projectsDeltaRef.current > 0 ? "down" : "up";
-        navigateCarousel(direction);
-        projectsDeltaRef.current = 0;
-      }
-
-      // Re-enable UnifiedScrollManager after a delay
-      setTimeout(() => {
-        setScrollEnabled(true);
-        projectsDeltaRef.current = 0; // Reset accumulator
-      }, 200);
     },
-    [currentScene, isAnimating, activeIndex, navigateCarousel, setScrollEnabled, navigateNext, navigatePrev]
+    [currentScene, isAnimating, activeIndex, navigateCarousel, setScrollEnabled]
   );
 
   // Register wheel handler for projects carousel
@@ -200,11 +165,9 @@ const ProjectsSection = () => {
       return () => {
         window.removeEventListener("wheel", handleProjectsWheel, { capture: true });
         setScrollEnabled(true); // Re-enable on unmount
-        projectsDeltaRef.current = 0; // Reset
       };
     } else {
       // Reset when leaving scene
-      projectsDeltaRef.current = 0;
       setScrollEnabled(true);
     }
   }, [currentScene, handleProjectsWheel, setScrollEnabled]);
