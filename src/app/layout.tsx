@@ -38,9 +38,9 @@ const tektur = Tektur({
 });
 
 export const metadata: Metadata = {
-  title: "Saikiran Kalluri | Full Stack Developer & C++ Engineer | Telangana",
-  description: "Portfolio of Saikiran Kalluri (Sai Kiran), a Software Engineer from Telangana. Specializing in AWS, C++, and Web Development. View projects by Saikiran Kalluri.",
-  keywords: ["Saikiran Kalluri", "Sai Kiran Kalluri", "Kiran Kalluri", "AWS Engineer", "C++ Developer"],
+  title: "Saikiran Kalluri | MERN Full Stack Developer, DevOps Engineer & Cloud Engineer| Telangana, India",
+  description: "Portfolio of Saikiran Kalluri (SaiKiran), a Software Engineer and AI Enthusiastic from Telangana, India. Specializing in Web Development(MERN Stack),DevOps, AWS, C++, and Java. View projects by Saikiran Kalluri.",
+  keywords: ["Saikiran Kalluri", "Sai Kiran Kalluri", "Kiran Kalluri", "SaiKiran", "Kiran", "AWS Engineer", "C++ Developer", "Java Developer", "Full Stack Developer", "Cloud Engineer", "DevOps Engineer", "AI Enthusiastic", "Telangana", "India"],
   verification: {
     google: "3EakCwstiUdkMkdhG4C9U2iG3xAVbQnaDxh9ButJ7yM",
   },
@@ -58,7 +58,7 @@ const jsonLd = {
     "addressLocality": "Telangana",
     "addressCountry": "India"
   },
-  "knowsAbout": ["AWS", "C++", "React", "Node.js", "Computer Vision"],
+  "knowsAbout": ["AWS", "React", "Node.js", "JAVA", "Python", "C++", "MERN Stack", "DevOps", "Git", "Github", "Docker", "Linux", "CI/CD", "GCP"],
   "worksFor": {
     "@type": "Organization",
     "name": "Freelance"

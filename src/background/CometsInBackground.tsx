@@ -177,7 +177,10 @@ export default function CometsInBackground() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const center = { x: (canvas.width * 4) / 5, y: canvas.height / 2 };
+    const center =
+      window.innerWidth < 640
+        ? { x: canvas.width / 2, y: (canvas.height * 3) / 4 }
+        : { x: (canvas.width * 4) / 5, y: canvas.height / 2 };
     const blackholeRadius = 50;
 
     ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
