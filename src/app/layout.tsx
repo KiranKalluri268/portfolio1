@@ -62,7 +62,20 @@ const jsonLd = {
   "worksFor": {
     "@type": "Organization",
     "name": "Freelance"
-  }
+  },
+  "image": {
+    "@type": "ImageObject",
+    "url": "https://saikirankalluri.vercel.app/images/kiran_passphoto.jpg",
+    "width": 500,
+    "height": 500
+  },
+  "sameAs": [
+    "https://www.linkedin.com/in/saikiran-kalluri",
+    "https://github.com/KiranKalluri268",
+    "https://www.instagram.com/kiran_kalluri__08",
+    "https://www.facebook.com/saikiran.88s",
+    "https://x.com/KiranKalluri_08"
+  ]
 };
 
 export default function RootLayout({
