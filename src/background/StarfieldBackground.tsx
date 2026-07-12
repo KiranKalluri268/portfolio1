@@ -108,6 +108,10 @@ export default function StarfieldBackground({ starCount = 200 }: { starCount?: n
     const frameDuration = 1000 / desiredFPS;
 
     const render = (time: number) => {
+      if (document.hidden) {
+        animationRef.current = requestAnimationFrame(render);
+        return;
+      }
       if (time - lastFrameTime >= frameDuration) {
         lastFrameTime = time;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -162,7 +166,7 @@ export default function StarfieldBackground({ starCount = 200 }: { starCount?: n
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
       canvas.style.width = `${window.innerWidth}px`;

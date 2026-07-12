@@ -132,7 +132,6 @@ export default function CometsInBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animationFrameRef = useRef<number | null>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
   // const { audioEnabled } = useAudio();
 
   //const playSound = useCallback(() => {
@@ -171,9 +170,15 @@ export default function CometsInBackground() {
     particlesRef.current = particles;
   }, []);
 
-  const drawParticles = useCallback(() => {
+  const drawParticles = useCallback((time = 0) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const lastFrame = Number(canvas.dataset.lastFrame || 0);
+    if (document.hidden || time - lastFrame < 1000 / 30) {
+      animationFrameRef.current = requestAnimationFrame(drawParticles);
+      return;
+    }
+    canvas.dataset.lastFrame = String(time);
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -235,7 +240,7 @@ export default function CometsInBackground() {
     };
 
     resize();
-    drawParticles();
+    animationFrameRef.current = requestAnimationFrame(drawParticles);
     window.addEventListener("resize", resize);
 
     return () => {
@@ -250,7 +255,6 @@ export default function CometsInBackground() {
         ref={canvasRef}
         className="fixed top-0 left-0 w-full h-full -z-20 pointer-events-none"
       />
-      <audio ref={audioRef} src="/sounds/absorbtion.mp3" preload="auto" />
     </>
   );
 }

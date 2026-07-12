@@ -3,7 +3,7 @@ import { useRef, useEffect, useCallback } from "react";
 
 export default function Blackhole() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const centerRef = useRef({ x: 0, y: 0 });
   const blackholeRadiusRef = useRef(60);
 
@@ -62,7 +62,6 @@ export default function Blackhole() {
     ctx.arc(center.x, center.y, blackholeRadiusRef.current, 0, Math.PI * 2);
     ctx.fill();
 
-    animationRef.current = requestAnimationFrame(draw);
   }, [blackholeRadiusRef]);
 
   useEffect(() => {
@@ -87,11 +86,27 @@ export default function Blackhole() {
 
     resize();
     draw();
-    window.addEventListener("resize", resize);
+    let resizeFrame = 0;
+    const handleResize = () => {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => {
+        resize();
+        draw();
+      });
+    };
+    const handleVisibility = () => {
+      const video = videoRef.current;
+      if (!video) return;
+      if (document.hidden) video.pause();
+      else video.play().catch(() => {});
+    };
+    window.addEventListener("resize", handleResize);
+    document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(resizeFrame);
+      window.removeEventListener("resize", handleResize);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [draw]);
 
@@ -102,11 +117,13 @@ export default function Blackhole() {
         className="fixed top-0 left-0 w-full h-full -z-18 pointer-events-none"
       />
       <video
+        ref={videoRef}
         src="/images/blackhole.webm"
         autoPlay
         loop
         muted
         playsInline
+        preload="metadata"
         className="fixed top-3/4 left-1/2 sm:top-1/2 sm:left-[80%] w-210 h-210 object-contain -z-10 transform -translate-x-1/2 -translate-y-1/2 [transform-style:preserve-3d]"
         style={{
           transform: 'rotateX(0deg) rotateY(0deg) rotateZ(-20deg)',

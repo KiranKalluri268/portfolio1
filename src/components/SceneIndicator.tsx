@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSmoothScroll, type SectionId } from "@/context/SmoothScrollContext";
 import type { SceneIndex } from "@/types";
 
@@ -20,15 +20,17 @@ export default function SceneIndicator() {
   const { activeSection, scrollToSection } = useSmoothScroll();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const updateMouse = (e: MouseEvent) => {
-      setMouse({ x: e.clientX + 20, y: e.clientY + 20 });
+    if (hoveredIndex === null) return;
+    const updateMouse = (event: PointerEvent) => {
+      if (!tooltipRef.current) return;
+      tooltipRef.current.style.transform = `translate3d(${event.clientX + 20}px, ${event.clientY + 20}px, 0)`;
     };
-    window.addEventListener("mousemove", updateMouse);
-    return () => window.removeEventListener("mousemove", updateMouse);
-  }, []);
+    window.addEventListener("pointermove", updateMouse, { passive: true });
+    return () => window.removeEventListener("pointermove", updateMouse);
+  }, [hoveredIndex]);
 
   const handleDotClick = (section: SectionId) => {
     if (section !== activeSection) scrollToSection(section);
@@ -87,11 +89,11 @@ export default function SceneIndicator() {
       {/* Floating Cursor Tooltip */}
         {hoveredIndex !== null && (
           <div
+            ref={tooltipRef}
             style={{
               position: "fixed",
               left: 0,
               top: 0,
-              transform: `translate3d(${mouse.x}px, ${mouse.y}px, 0)`,
               pointerEvents: "none",
               zIndex: 9999, // Ensure it's on top of everything
             }}

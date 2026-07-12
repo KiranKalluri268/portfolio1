@@ -36,6 +36,7 @@ const AudioToggle = () => {
         className="hidden"
         src="/audio/final.mp3"
         loop
+        preload="none"
       />
       {[1, 2, 3, 4].map((bar) => (
         <div

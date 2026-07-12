@@ -223,7 +223,7 @@ export default function LoadingScreen({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     canvas.width = canvasSize.width * dpr;
     canvas.height = canvasSize.height * dpr;
@@ -249,8 +249,14 @@ export default function LoadingScreen({
         });
       });
 
-    function draw() {
+    let lastFrame = 0;
+    function draw(time = 0) {
       if (!canvas) return;
+      if (document.hidden || time - lastFrame < 1000 / 30) {
+        animationFrameRef.current = requestAnimationFrame(draw);
+        return;
+      }
+      lastFrame = time;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
@@ -284,7 +290,7 @@ export default function LoadingScreen({
       animationFrameRef.current = requestAnimationFrame(draw);
     }
 
-    draw();
+    animationFrameRef.current = requestAnimationFrame(draw);
 
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
