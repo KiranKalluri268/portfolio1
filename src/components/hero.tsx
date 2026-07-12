@@ -1,10 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useGlobalContext } from "@/context/GlobalContext";
+import { useSmoothScroll } from "@/context/SmoothScrollContext";
 
 export default function Hero() {
+  const { scrollNext } = useSmoothScroll();
   const words = useMemo(
     () => [
       "MERN FULL STACK DEVELOPER..",
@@ -32,10 +32,6 @@ export default function Hero() {
   const [h1State, setH1State] = useState<'typing_intro' | 'deleting_intro' | 'typing_name' | 'done'>('typing_intro');
 
   const heroRef = useRef<HTMLDivElement>(null);
-  const { currentScene, prevScene } = useGlobalContext();
-
-  // Determine navigation direction
-  const isForward = prevScene <= currentScene;
 
   const introText = "NAMASTE!";
   const mainText = "I'M,\nSAIKIRAN KALLURI";
@@ -112,16 +108,13 @@ export default function Hero() {
     return () => clearTimeout(timeout);
   }, [secondLine, isDeleting, isFirstLineDone, currentWordIndex, words]);
 
-  // Z-index: active scene on top, exiting scene below
-  const zIndex = currentScene === 0 ? 10 : 1;
-
   return (
     <section
       ref={heroRef}
       className="h-screen w-full relative overflow-hidden"
       id="hero"
       aria-label="Hero section - Introduction"
-      style={{ zIndex }}
+      style={{ zIndex: 10 }}
     >
       <div className="relative w-full h-full text-white">
         <div
@@ -173,18 +166,13 @@ export default function Hero() {
       </div>
 
       {/* Scroll Indicator */}
-      <motion.div
-        className="absolute bottom-1 left-1/2 -translate-x-1/2 text-white/50 flex flex-col items-center gap-0 cursor-pointer z-20"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1, y: [0, 10, 0] }}
-        transition={{
-          opacity: { delay: 1, duration: 1 },
-          y: { repeat: Infinity, duration: 1.5, ease: "easeInOut" },
+      <div
+        className="scroll-hint absolute bottom-1 left-1/2 -translate-x-1/2 text-white/50 flex flex-col items-center gap-0 cursor-pointer z-20"
+        onClick={scrollNext}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") scrollNext();
         }}
-        onClick={() => {
-          // Trigger scroll via UnifiedScrollManager if available, or just visual hint
-          window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown" }));
-        }}
+        tabIndex={0}
         aria-label="Scroll down"
         role="button"
       >
@@ -203,7 +191,7 @@ export default function Hero() {
             d="M19 14l-7 7m0 0l-7-7m7 7V3"
           />
         </svg>
-      </motion.div>
+      </div>
     </section >
   );
 }

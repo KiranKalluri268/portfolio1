@@ -1,20 +1,23 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
+import gsap from 'gsap';
 import AudioToggle from './AudioToggle';
 import Tooltip from './Tooltip';
 
 export default function NavBar() {
-
+  const headerRef = useRef<HTMLElement>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  useLayoutEffect(() => {
+    if (!headerRef.current) return;
+    const tween = gsap.fromTo(headerRef.current, { y: -100, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6, ease: 'power2.out' });
+    return () => { tween.kill(); };
+  }, []);
 
   return (
-    <motion.header
+    <header
+      ref={headerRef}
       className="w-full text-white pt-12 pb-0 px-12 sm:pt-15 sm:pb-0 sm:px-20 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-lg"
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
       role="banner"
     >
       <h1 className="text-3xl font-bold" id="site-title">
@@ -38,6 +41,6 @@ export default function NavBar() {
         </ul>
       </nav>
       <Tooltip text="Audio" isVisible={hoveredItem === "Audio"} />
-    </motion.header>
+    </header>
   );
 }

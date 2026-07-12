@@ -1,12 +1,12 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useGlobalContext } from "@/context/GlobalContext";
 import { useEffect, useState } from "react";
 import Tooltip from "./Tooltip";
+import { SECTION_IDS, useSmoothScroll } from "@/context/SmoothScrollContext";
 
 export default function NavigationControls() {
-    const { currentScene } = useGlobalContext();
+    const { activeSection, scrollNext, scrollPrev } = useSmoothScroll();
+    const activeIndex = SECTION_IDS.indexOf(activeSection);
     const [mounted, setMounted] = useState(false);
     const [hoveredButton, setHoveredButton] = useState<string | null>(null);
 
@@ -60,18 +60,27 @@ export default function NavigationControls() {
     }, []);
 
     // Define allowed keys per scene
-    const isUpEnabled = currentScene > 0; // Can go up/back from any scene except 0
-    const isDownEnabled = currentScene < 4; // Can go down/next from any scene except 4 (Contact)
+    const isUpEnabled = activeIndex > 0;
+    const isDownEnabled = activeIndex < SECTION_IDS.length - 1;
 
     // Left/Right only fully enabled in Projects (Scene 1)
     // In other scenes, we disable them to avoid confusion, or map them to Up/Down?
     // Requirements: "Ex: on Hero only arrow-down works, In projects all four arrows work, in other section up&down works"
-    const isLeftEnabled = currentScene === 1;
-    const isRightEnabled = currentScene === 1;
+    const isLeftEnabled = activeSection === "projects";
+    const isRightEnabled = activeSection === "projects";
 
     const handlePress = (key: string) => {
+        const forward = key === "ArrowDown" || key === "ArrowRight";
+        if (activeSection === "projects") {
+            window.scrollBy({ top: (forward ? 1 : -1) * window.innerHeight, behavior: "smooth" });
+        } else if (key === "ArrowDown") {
+            scrollNext();
+        } else if (key === "ArrowUp") {
+            scrollPrev();
+        }
+
         // Dispatch a global keydown event
-        // This allows UnifiedScrollManager and ProjectsSection to react exactly as if a physical key was pressed
+        // Dispatch key events to preserve the pressed-key visual feedback.
         window.dispatchEvent(
             new KeyboardEvent("keydown", {
                 key: key,
@@ -100,11 +109,8 @@ export default function NavigationControls() {
 
     return (
         <>
-            <motion.div
-                className="fixed bottom-8 right-8 w-[180px] h-[90px] z-50 hidden sm:block"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1, duration: 1 }}
+            <div
+                className="animate-delayed-fade fixed bottom-8 right-8 w-[180px] h-[90px] z-50 hidden sm:block"
             >
                 {/* Up */}
                 <ArrowButton
@@ -153,7 +159,7 @@ export default function NavigationControls() {
                     onMouseEnter={() => setHoveredButton("Right/Next")}
                     onMouseLeave={() => setHoveredButton(null)}
                 />
-            </motion.div>
+            </div>
             <Tooltip text={hoveredButton || ""} isVisible={!!hoveredButton} />
         </>
     );
@@ -181,7 +187,7 @@ const ArrowButton = ({
     onMouseLeave,
 }: ArrowButtonProps) => {
     return (
-        <motion.button
+        <button
             className={`absolute w-14 h-10 backdrop-blur-md rounded-md flex items-center justify-center border transition-all duration-100 ${enabled
                 ? "cursor-pointer pointer-events-auto"
                 : "opacity-30 cursor-not-allowed pointer-events-none"
@@ -189,8 +195,6 @@ const ArrowButton = ({
                     ? "bg-white border-white shadow-[0_0_15px_rgba(255,255,255,0.8)] scale-90"
                     : "bg-white/20 border-white/30 shadow-lg hover:bg-white/30 active:bg-white/30"
                 } ${className}`}
-            whileHover={enabled && !isPressed ? { scale: 1.05 } : {}}
-            whileTap={enabled ? { scale: 0.95 } : {}}
             onClick={() => enabled && onPress(direction)}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
@@ -210,6 +214,6 @@ const ArrowButton = ({
                     d={iconPath}
                 />
             </svg>
-        </motion.button>
+        </button>
     );
 };

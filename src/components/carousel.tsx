@@ -1,6 +1,5 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
-import { motion } from "framer-motion";
 
 const projects = [
   {
@@ -70,14 +69,11 @@ export default function Carousel() {
   }, [allowScroll]);
 
   return (
-    <motion.section
+    <section
       ref={containerRef}
       className={`h-screen w-full sticky top-0 bg-black text-white z-10 ${
         allowScroll ? "overflow-y-auto" : "overflow-hidden"
       }`}
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1 }}
     >
       <h2 className="text-5xl font-bold text-center pt-16">Projects</h2>
 
@@ -107,6 +103,6 @@ export default function Carousel() {
           </a>
         ))}
       </div>
-    </motion.section>
+    </section>
   );
 }

@@ -1,8 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { forwardRef, useState } from "react";
-import { useGlobalContext } from "@/context/GlobalContext";
 import type { ContactForm, FormErrors, SocialLink } from "@/types";
 
 import Tooltip from "./Tooltip";
@@ -69,13 +67,6 @@ const socialLinks: SocialLink[] = [
 ];
 
 const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref) => {
-  const { currentScene, prevScene } = useGlobalContext();
-
-  // Determine navigation direction
-  // Forward: prevScene < currentScene (moving down, e.g., 3→4 or 0→4)
-  // Backward: prevScene > currentScene (moving up, e.g., 4→3)
-  const isForward = prevScene < currentScene;
-
   const [form, setForm] = useState<ContactForm>({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
@@ -103,52 +94,27 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
     setForm({ name: "", email: "", message: "" });
   };
 
-  // Z-index: active scene on top, exiting scene below
-  const zIndex = currentScene === 4 ? 10 : 1;
-
   return (
     <section
       ref={ref}
       id="contact"
       className="h-screen text-white text-center flex flex-col justify-center items-center gap-12 px-4 sm:px-6 lg:px-8 overflow-hidden relative"
-      style={{ zIndex }}
+      style={{ zIndex: 10 }}
     >
-      <motion.div
-        initial={{
-          // Forward navigation (top→bottom): entry from bottom
-          // Backward navigation (bottom→top): entry from top
-          y: isForward ? "100vh" : "-100vh",
-          opacity: 0,
-        }}
-        animate={{
-          y: 0,
-          opacity: 1,
-        }}
-        exit={{
-          // Forward navigation: exit to top (moving up in viewport)
-          // Backward navigation: exit to bottom (moving down in viewport)
-          y: isForward ? "-100vh" : "100vh",
-          opacity: 0,
-        }}
-        transition={{
-          duration: 0.5,
-          ease: "easeInOut",
-        }}
-        className="relative w-full max-w-xs sm:max-w-sm flex flex-col items-center"
+      <div
+        className="animate-section-in relative w-full max-w-xs sm:max-w-sm flex flex-col items-center"
       >
         <h2 className="text-3xl font-bold sm:mb-4 mb-2">Contact Me</h2>
         <p className="text-gray-400 mb-8">Feel free to reach out!</p>
 
         {submitted ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mb-8 text-green-500 font-semibold"
+          <div
+            className="animate-fade-in mb-8 text-green-500 font-semibold"
             role="status"
             aria-live="polite"
           >
             Thanks for reaching out! I will get back to you soon.
-          </motion.div>
+          </div>
         ) : (
           <form onSubmit={handleSubmit} noValidate className="w-full space-y-6 text-left" aria-label="Contact form">
             <div>
@@ -203,13 +169,12 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
             </div>
 
             <div className="flex items-center justify-center gap-x-25">
-              <motion.button
+              <button
                 type="submit"
-                className="bg-white text-black px-6 py-3 rounded-lg hover:bg-black hover:text-white transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500"
-                whileHover={{ scale: 1.05 }}
+                className="bg-white text-black px-6 py-3 rounded-lg hover:bg-black hover:text-white hover:scale-105 transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 Send Message
-              </motion.button>
+              </button>
 
 
             </div>
@@ -232,17 +197,14 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
             </a>
           ))}
         </div>
-      </motion.div>
+      </div>
       <Tooltip text={hoveredLink || ""} isVisible={!!hoveredLink} />
 
-      <motion.footer
-        className="absolute bottom-4 left-0 w-full text-gray-500 text-sm py-4 text-center"
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+      <footer
+        className="animate-section-in absolute bottom-4 left-0 w-full text-gray-500 text-sm py-4 text-center"
       >
         © {new Date().getFullYear()} Kiran. All Rights Reserved.
-      </motion.footer>
+      </footer>
     </section>
   );
 });

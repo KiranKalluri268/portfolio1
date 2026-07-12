@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useAudio } from "../context/AudioContextProvider";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface ParticleProps {
   radius: number;
@@ -318,35 +317,26 @@ export default function LoadingScreen({
       />
 
       <div className="relative z-10 flex flex-col items-center justify-center h-[60px]">
-        <AnimatePresence mode="wait">
           {!isLoaded ? (
-            <motion.p
+            <p
               key="loading-text"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="text-2xl md:text-3xl font-bold font-mono"
+              className="animate-fade-in text-2xl md:text-3xl font-bold font-mono"
               style={{ color: color }}
             >
               {loadingProgress}%
-            </motion.p>
+            </p>
           ) : (
-            <motion.button
+            <button
               ref={buttonRef}
               key="enter-button"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
               onClick={handleEnableAudio}
-              className="text-2xl md:text-3xl font-bold cursor-pointer bg-transparent border-none select-none transition-transform duration-200 hover:scale-115 active:scale-95 p-4"
+              className="animate-pop-in text-2xl md:text-3xl font-bold cursor-pointer bg-transparent border-none select-none transition-transform duration-200 hover:scale-115 active:scale-95 p-4"
               style={{ color: color }}
               aria-label="Enable Audio and Enter"
             >
               Enter
-            </motion.button>
+            </button>
           )}
-        </AnimatePresence>
       </div>
 
       <p

@@ -9,6 +9,7 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  overflow-x: clip;
 }
 
 body {
@@ -42,6 +43,36 @@ canvas {
 
 .animate-fade-in {
   animation: fadeIn 2s ease-out;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes sectionIn {
+  from { opacity: 0; transform: translateY(50px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scrollHint {
+  0%, 100% { opacity: 1; transform: translate(-50%, 0); }
+  50% { opacity: 1; transform: translate(-50%, 10px); }
+}
+
+.animate-pop-in { animation: popIn 0.4s ease-out both; }
+.animate-section-in { animation: sectionIn 0.8s ease-out both; }
+.animate-delayed-fade { animation: fadeIn 1s ease-out 1s both; }
+.scroll-hint { animation: scrollHint 1.5s ease-in-out 1s infinite; opacity: 0; animation-fill-mode: forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pop-in,
+  .animate-section-in,
+  .animate-delayed-fade,
+  .scroll-hint {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
 }
 
 @keyframes loop {

@@ -2,15 +2,12 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Foldit, Tektur } from "next/font/google";
 import "./globals.css";
+import "lenis/dist/lenis.css";
 import CometsInBackground from '@/background/CometsInBackground';
 import BlackholeEffect from '@/background/BlackholeEffect';
 import StarfieldBackground from '@/background/StarfieldBackground';
 import { AudioProvider } from "@/context/AudioContextProvider";
-import { ScrollProvider } from "@/context/ScrollManager";
-import { ProjectViewProvider } from "@/context/ProjectViewContext";
-import { ScrollManagerProvider } from "@/context/ScrollManagerContext";
-import { GlobalProvider } from "@/context/GlobalContext";
-import { UnifiedScrollProvider } from "@/context/UnifiedScrollManager";
+import { SmoothScrollProvider } from "@/context/SmoothScrollContext";
 
 
 const geistSans = Geist({
@@ -90,31 +87,23 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <UnifiedScrollProvider>
-          <GlobalProvider>
-            <ScrollManagerProvider>
-              <ScrollProvider>
-                <ProjectViewProvider>
-                  <AudioProvider>
-                    {/* Starfield: Background stars */}
-                    <StarfieldBackground />
+        <SmoothScrollProvider>
+              <AudioProvider>
+                {/* Starfield: Background stars */}
+                <StarfieldBackground />
 
-                    {/* Comets: Particle layer */}
-                    <CometsInBackground />
+                {/* Comets: Particle layer */}
+                <CometsInBackground />
 
-                    {/* Blackhole: Interactive gravity field */}
-                    <BlackholeEffect />
+                {/* Blackhole: Interactive gravity field */}
+                <BlackholeEffect />
 
-                    {/* Your main content */}
-                    <div className="relative z-10">
-                      {children}
-                    </div>
-                  </AudioProvider>
-                </ProjectViewProvider>
-              </ScrollProvider>
-            </ScrollManagerProvider>
-          </GlobalProvider>
-        </UnifiedScrollProvider>
+                {/* Your main content */}
+                <div className="relative z-10">
+                  {children}
+                </div>
+              </AudioProvider>
+        </SmoothScrollProvider>
       </body>
     </html>
   );

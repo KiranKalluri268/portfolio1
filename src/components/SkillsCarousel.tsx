@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion, useMotionValue, useAnimationFrame } from "framer-motion";
-import { useGlobalContext } from "@/context/GlobalContext";
+import { useLayoutEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import type { SkillCategory } from "@/types";
 import {
   FaReact,
@@ -81,32 +81,30 @@ interface SkillRowProps {
 function SkillRow({ category, speed, direction }: SkillRowProps) {
   const repeatedSkills = Array(5).fill(category.skills).flat();
   const containerRef = useRef<HTMLDivElement>(null);
-  const x = useMotionValue(0);
-  const [isHovered, setIsHovered] = useState(false);
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     const container = containerRef.current;
-    if (container) {
-      const width = container.scrollWidth / 5;
-      x.set(direction === 1 ? -width : -width * 3);
-    }
-  }, [x, direction]);
-
-  useAnimationFrame((_, delta) => {
-    if (!isHovered && containerRef.current) {
-      const moveBy = (direction * speed * delta) / 1000;
-      const currentX = x.get();
-      const fullWidth = containerRef.current.scrollWidth / 5;
-
-      if (direction === 1 && currentX >= 0) {
-        x.set(-fullWidth);
-      } else if (direction === -1 && currentX <= -2 * fullWidth) {
-        x.set(-fullWidth);
-      } else {
-        x.set(currentX + moveBy);
-      }
-    }
-  });
+    if (!container) return;
+    const width = container.scrollWidth / 5;
+    const start = direction === 1 ? -width : -width * 2;
+    const end = direction === 1 ? 0 : -width;
+    gsap.set(container, { x: start });
+    const tween = gsap.to(container, {
+      x: end,
+      duration: width / speed,
+      ease: "none",
+      repeat: -1,
+      paused: false,
+    });
+    const pause = () => tween.pause();
+    const resume = () => tween.resume();
+    container.addEventListener("mouseenter", pause);
+    container.addEventListener("mouseleave", resume);
+    return () => {
+      container.removeEventListener("mouseenter", pause);
+      container.removeEventListener("mouseleave", resume);
+      tween.kill();
+    };
+  }, [direction, speed]);
 
   return (
     <div
@@ -120,13 +118,10 @@ function SkillRow({ category, speed, direction }: SkillRowProps) {
       <div
         className="relative overflow-hidden"
         aria-label={category.title}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
       >
-        <motion.div
+        <div
           className="inline-flex gap-0 sm:gap-8 items-center whitespace-nowrap"
           ref={containerRef}
-          style={{ x }}
         >
           {repeatedSkills.map((skill, i) => (
             <div
@@ -144,7 +139,7 @@ function SkillRow({ category, speed, direction }: SkillRowProps) {
               <span className="text-xs mt-1 select-none">{skill.name}</span>
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   );
@@ -152,15 +147,17 @@ function SkillRow({ category, speed, direction }: SkillRowProps) {
 
 export default function SkillsCarousel() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const { currentScene, prevScene } = useGlobalContext();
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  // Determine navigation direction
-  // Forward: prevScene < currentScene (moving down, e.g., 2→3 or 0→3)
-  // Backward: prevScene > currentScene (moving up, e.g., 4→3 or 2→3 backward)
-  const isForward = prevScene < currentScene;
-
-  // Z-index: active scene on top, exiting scene below
-  const zIndex = currentScene === 3 ? 10 : 1;
+  useLayoutEffect(() => {
+    if (!sectionRef.current || !contentRef.current) return;
+    gsap.registerPlugin(ScrollTrigger);
+    const tween = gsap.fromTo(contentRef.current, { y: 40, autoAlpha: 0 }, {
+      yPercent: 0, autoAlpha: 1, duration: 0.7, ease: "power2.out",
+      scrollTrigger: { trigger: sectionRef.current, start: "top 75%", once: true },
+    });
+    return () => { tween.kill(); };
+  }, []);
 
   return (
     <section
@@ -168,31 +165,9 @@ export default function SkillsCarousel() {
       ref={sectionRef}
       className="min-h-screen flex items-center justify-start px-4 text-white overflow-hidden relative"
       aria-label="Technical skills section"
-      style={{ zIndex }}
+      style={{ zIndex: 10 }}
     >
-      <motion.div
-        className="w-full sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[70%] space-y-6 sm:space-y-12 py-20"
-        initial={{
-          // Forward navigation (top→bottom): entry from bottom
-          // Backward navigation (bottom→top): entry from top
-          y: isForward ? "100%" : "-100%",
-          opacity: 0,
-        }}
-        animate={{
-          y: 0,
-          opacity: 1,
-        }}
-        exit={{
-          // Forward navigation: exit to top (moving up in viewport)
-          // Backward navigation: exit to bottom (moving down in viewport)
-          y: isForward ? "-100%" : "100%",
-          opacity: 0,
-        }}
-        transition={{
-          duration: 0.5,
-          ease: "easeInOut",
-        }}
-      >
+      <div ref={contentRef} className="invisible w-full sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[70%] space-y-6 sm:space-y-12 py-20">
         <h1 className="text-3xl sm:text-4xl font-bold text-center mb-10 sm:mb-20">Tech Stack</h1>
         {skillCategories.map((category, idx) => {
           const direction = idx % 2 === 0 ? 1 : -1;
@@ -206,7 +181,7 @@ export default function SkillsCarousel() {
             />
           );
         })}
-      </motion.div>
+      </div>
     </section>
   );
 }
