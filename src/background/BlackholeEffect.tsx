@@ -22,7 +22,6 @@ export default function Blackhole() {
     <div>
       <video
         ref={videoRef}
-        src="/images/blackhole.webm"
         autoPlay
         loop
         muted
@@ -30,9 +29,14 @@ export default function Blackhole() {
         preload="metadata"
         className="fixed top-3/4 left-1/2 sm:top-1/2 sm:left-[80%] w-210 h-210 object-contain -z-10 transform -translate-x-1/2 -translate-y-1/2 [transform-style:preserve-3d]"
         style={{
+          background: 'transparent',
           transform: 'rotateX(0deg) rotateY(0deg) rotateZ(-20deg)',
         }}
-      />
+      >
+        <source src="/images/optimized_safari.mov" type="video/quicktime" />
+        <source src="/images/optimized.webm" type="video/webm" />
+        Your browser does not support transparent video.
+      </video>
     </div>
   );
 }

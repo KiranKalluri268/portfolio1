@@ -29,7 +29,7 @@ const projects: Project[] = [
     title: "ResumeByAI",
     description:
       "A Next.js web app integrated with GPT-4 turbo and Razorpay that generates ATS-friendly resumes for users at a low cost.",
-    image: "/images/KS Logo.png",
+    image: "/images/KS Logo.webp",
     github: "https://github.com/KiranKalluri268",
   },
   {
