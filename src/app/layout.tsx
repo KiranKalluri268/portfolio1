@@ -3,9 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Foldit, Tektur } from "next/font/google";
 import "./globals.css";
 import "lenis/dist/lenis.css";
-import CometsInBackground from '@/background/CometsInBackground';
 import BlackholeEffect from '@/background/BlackholeEffect';
-import StarfieldBackground from '@/background/StarfieldBackground';
+import SpaceBackground from '@/background/SpaceBackground';
 import { AudioProvider } from "@/context/AudioContextProvider";
 import { SmoothScrollProvider } from "@/context/SmoothScrollContext";
 
@@ -89,11 +88,7 @@ export default function RootLayout({
         />
         <SmoothScrollProvider>
               <AudioProvider>
-                {/* Starfield: Background stars */}
-                <StarfieldBackground />
-
-                {/* Comets: Particle layer */}
-                <CometsInBackground />
+                <SpaceBackground />
 
                 {/* Blackhole: Interactive gravity field */}
                 <BlackholeEffect />
