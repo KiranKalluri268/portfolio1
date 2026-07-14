@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useSmoothScroll } from "@/context/SmoothScrollContext";
+import { useScrollActions } from "@/context/SmoothScrollContext";
 
 export default function Hero() {
-  const { scrollNext } = useSmoothScroll();
+  const { scrollNext } = useScrollActions();
   const words = useMemo(
     () => [
       "MERN FULL STACK DEVELOPER..",

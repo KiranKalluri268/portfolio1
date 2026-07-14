@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useSmoothScroll, type SectionId } from "@/context/SmoothScrollContext";
+import { useActiveSection, useScrollActions, type SectionId } from "@/context/SmoothScrollContext";
 import type { SceneIndex } from "@/types";
 
 interface SceneInfo {
@@ -17,7 +17,8 @@ const scenes: SceneInfo[] = [
 ];
 
 export default function SceneIndicator() {
-  const { activeSection, scrollToSection } = useSmoothScroll();
+  const activeSection = useActiveSection();
+  const { scrollToSection } = useScrollActions();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -66,16 +67,16 @@ export default function SceneIndicator() {
                 >
                   {/* Dot */}
                   <div
-                    className="relative rounded-full shadow-lg transition-all duration-150"
+                    className="relative rounded-full"
                     style={{
                       width: dotSize,
                       height: dotSize,
                       backgroundColor: isActive ? "#ef4444" : "white", // Red-500 if active, else white
                       boxShadow: isActive
-                        ? "0 0 5px rgba(250, 3, 3, 1),0 0 5px rgba(250, 3, 3, 1),0 0 5px rgba(250, 3, 3, 1),0 0 5px rgba(250, 3, 3, 1), 0 0 10px rgba(250, 3, 3, 1), 0 0 10px rgba(250, 3, 3, 1), 0 0 10px rgba(250, 3, 3, 1), 0 0 10px rgba(250, 3, 3, 1), 0 0 15px rgba(250, 3, 3, 1), 0 0 15px rgba(250, 3, 3, 1), 0 0 15px rgba(250, 3, 3, 1), 0 0 15px rgba(250, 3, 3, 1), 0 0 20px rgba(250, 3, 3, 1), 0 0 20px rgba(250, 3, 3, 1), 0 0 20px rgba(250, 3, 3, 1), 0 0 20px rgba(250, 3, 3, 1), 0 0 30px rgba(250, 3, 3, 1), 0 0 30px rgba(250, 3, 3, 1), 0 0 30px rgba(250, 3, 3, 1), 0 0 40px rgba(250, 3, 3, 1), 0 0 40px rgba(250, 3, 3, 1), 0 0 50px rgba(250, 3, 3, 1), 0 0 50px rgba(250, 3, 3, 1), 0 0 60px rgba(250, 3, 3, 1), 0 0 60px rgba(250, 3, 3, 1), 0 0 80px rgba(250, 3, 3, 1)" // Intense Red shine
+                        ? "0 0 16px 4px rgba(250, 3, 3, 0.9)"
                         : isHovered
-                          ? "0 0 10px rgba(255, 255, 255, 1),0 0 10px rgba(255, 255, 255, 1),0 0 10px rgba(255, 255, 255, 1),0 0 10px rgba(255, 255, 255, 1),0 0 10px rgba(255, 255, 255, 1),0 0 15px rgba(255, 255, 255, 1),0 0 15px rgba(255, 255, 255, 1),0 0 15px rgba(255, 255, 255, 1),0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1)" // Intense White shine
-                          : "0 0 10px rgba(255, 255, 255, 0.3)", // Subtle shine
+                          ? "0 0 10px 2px rgba(255, 255, 255, 0.8)"
+                          : "0 0 6px rgba(255, 255, 255, 0.35)",
                     }}
                   >
                   </div>

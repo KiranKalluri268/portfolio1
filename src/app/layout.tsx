@@ -4,7 +4,6 @@ import { Foldit, Tektur } from "next/font/google";
 import "./globals.css";
 import "lenis/dist/lenis.css";
 import BlackholeEffect from '@/background/BlackholeEffect';
-import SpaceBackground from '@/background/SpaceBackground';
 import { AudioProvider } from "@/context/AudioContextProvider";
 import { SmoothScrollProvider } from "@/context/SmoothScrollContext";
 
@@ -88,8 +87,6 @@ export default function RootLayout({
         />
         <SmoothScrollProvider>
               <AudioProvider>
-                <SpaceBackground />
-
                 {/* Blackhole: Interactive gravity field */}
                 <BlackholeEffect />
 

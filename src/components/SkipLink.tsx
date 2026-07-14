@@ -1,6 +1,6 @@
 "use client";
 
-import { useSmoothScroll, type SectionId } from "@/context/SmoothScrollContext";
+import { useScrollActions, type SectionId } from "@/context/SmoothScrollContext";
 
 interface SkipLinkProps {
   href: string;
@@ -10,7 +10,7 @@ interface SkipLinkProps {
 const SECTION_IDS = new Set<SectionId>(["hero", "projects", "experience", "skills", "contact"]);
 
 export default function SkipLink({ href, children }: SkipLinkProps) {
-  const { scrollToSection } = useSmoothScroll();
+  const { scrollToSection } = useScrollActions();
 
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     const id = href.slice(1);

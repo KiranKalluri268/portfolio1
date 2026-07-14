@@ -17,18 +17,19 @@ import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 export const SECTION_IDS = ["hero", "projects", "experience", "skills", "contact"] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
 
-interface SmoothScrollContextValue {
-  activeSection: SectionId;
+interface ScrollActionsContextValue {
   lenis: Lenis | null;
   scrollToSection: (section: SectionId) => void;
   scrollNext: () => void;
   scrollPrev: () => void;
 }
 
-const SmoothScrollContext = createContext<SmoothScrollContextValue | undefined>(undefined);
+const ScrollActionsContext = createContext<ScrollActionsContextValue | undefined>(undefined);
+const ActiveSectionContext = createContext<SectionId | undefined>(undefined);
 
 export function SmoothScrollProvider({ children }: { children: ReactNode }) {
   const [activeSection, setActiveSection] = useState<SectionId>("hero");
+  const activeSectionRef = useRef<SectionId>("hero");
   const [lenis, setLenis] = useState<Lenis | null>(null);
   const lenisRef = useRef<Lenis | null>(null);
 
@@ -64,7 +65,10 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
           start: "top center",
           end: "bottom center",
           onToggle: (self) => {
-            if (self.isActive) setActiveSection(id);
+            if (self.isActive && activeSectionRef.current !== id) {
+              activeSectionRef.current = id;
+              setActiveSection(id);
+            }
           },
         })];
       });
@@ -98,23 +102,39 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const scrollNext = useCallback(() => {
-    const index = SECTION_IDS.indexOf(activeSection);
+    const index = SECTION_IDS.indexOf(activeSectionRef.current);
     scrollToSection(SECTION_IDS[Math.min(index + 1, SECTION_IDS.length - 1)]);
-  }, [activeSection, scrollToSection]);
+  }, [scrollToSection]);
 
   const scrollPrev = useCallback(() => {
-    const index = SECTION_IDS.indexOf(activeSection);
+    const index = SECTION_IDS.indexOf(activeSectionRef.current);
     scrollToSection(SECTION_IDS[Math.max(index - 1, 0)]);
-  }, [activeSection, scrollToSection]);
+  }, [scrollToSection]);
 
-  const value = useMemo(() => ({ activeSection, lenis, scrollToSection, scrollNext, scrollPrev }),
-    [activeSection, lenis, scrollToSection, scrollNext, scrollPrev]);
+  const actions = useMemo(() => ({ lenis, scrollToSection, scrollNext, scrollPrev }),
+    [lenis, scrollToSection, scrollNext, scrollPrev]);
 
-  return <SmoothScrollContext.Provider value={value}>{children}</SmoothScrollContext.Provider>;
+  return (
+    <ScrollActionsContext.Provider value={actions}>
+      <ActiveSectionContext.Provider value={activeSection}>
+        {children}
+      </ActiveSectionContext.Provider>
+    </ScrollActionsContext.Provider>
+  );
+}
+
+export function useScrollActions() {
+  const context = useContext(ScrollActionsContext);
+  if (!context) throw new Error("useScrollActions must be used within SmoothScrollProvider");
+  return context;
+}
+
+export function useActiveSection() {
+  const context = useContext(ActiveSectionContext);
+  if (!context) throw new Error("useActiveSection must be used within SmoothScrollProvider");
+  return context;
 }
 
 export function useSmoothScroll() {
-  const context = useContext(SmoothScrollContext);
-  if (!context) throw new Error("useSmoothScroll must be used within SmoothScrollProvider");
-  return context;
+  return { activeSection: useActiveSection(), ...useScrollActions() };
 }

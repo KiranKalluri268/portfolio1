@@ -1,8 +1,5 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import type { Experience } from "@/types";
 
 const experiences: Experience[] = [
@@ -31,32 +28,14 @@ const experiences: Experience[] = [
 ];
 
 const ExperienceTimeline = () => {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    if (!sectionRef.current) return;
-    gsap.registerPlugin(ScrollTrigger);
-    const context = gsap.context(() => {
-      gsap.fromTo(".experience-content", { y: 40, autoAlpha: 0 }, {
-        yPercent: 0, autoAlpha: 1, duration: 0.7, ease: "power2.out",
-        scrollTrigger: { trigger: sectionRef.current, start: "top 75%", once: true },
-      });
-      gsap.fromTo(".timeline-item", { y: 40, autoAlpha: 0 }, {
-        y: 0, autoAlpha: 1, duration: 0.65, stagger: 0.1, ease: "power2.out",
-        scrollTrigger: { trigger: sectionRef.current, start: "top 65%", once: true },
-      });
-    }, sectionRef);
-    return () => context.revert();
-  }, []);
-
   return (
     <section
       id="experience"
-      ref={sectionRef}
       className="min-h-screen flex items-center justify-center px-4 text-white overflow-hidden relative"
       aria-label="Experience timeline section"
       style={{ zIndex: 10 }}
     >
-      <div className="experience-content invisible w-full max-w-4xl">
+      <div className="w-full max-w-4xl">
         <h2 className="text-3xl sm:text-4xl font-bold text-center mb-8">Experience Timeline</h2>
         <div
           className="relative max-w-3xl mx-auto"
@@ -84,7 +63,7 @@ interface TimelineItemProps {
 const TimelineItem = ({ experience, index }: TimelineItemProps) => {
   return (
     <li
-      className="timeline-item relative pl-12 sm:pl-16 list-none group"
+      className="relative pl-12 sm:pl-16 list-none group"
       role="listitem"
       aria-label={`Experience ${index + 1}: ${experience.title} at ${experience.company}`}
     >

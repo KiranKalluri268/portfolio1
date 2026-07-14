@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Tooltip from "./Tooltip";
-import { SECTION_IDS, useSmoothScroll } from "@/context/SmoothScrollContext";
+import { SECTION_IDS, useActiveSection, useScrollActions } from "@/context/SmoothScrollContext";
 
 export default function NavigationControls() {
-    const { activeSection, scrollNext, scrollPrev } = useSmoothScroll();
+    const activeSection = useActiveSection();
+    const { scrollNext, scrollPrev } = useScrollActions();
     const activeIndex = SECTION_IDS.indexOf(activeSection);
     const [mounted, setMounted] = useState(false);
     const [hoveredButton, setHoveredButton] = useState<string | null>(null);
@@ -110,7 +111,7 @@ export default function NavigationControls() {
     return (
         <>
             <div
-                className="animate-delayed-fade fixed bottom-8 right-8 w-[180px] h-[90px] z-50 hidden sm:block"
+                className="fixed bottom-8 right-8 w-[180px] h-[90px] z-50 hidden sm:block"
             >
                 {/* Up */}
                 <ArrowButton
@@ -188,12 +189,12 @@ const ArrowButton = ({
 }: ArrowButtonProps) => {
     return (
         <button
-            className={`absolute w-14 h-10 backdrop-blur-md rounded-md flex items-center justify-center border transition-all duration-100 ${enabled
+            className={`absolute w-14 h-10 rounded-md flex items-center justify-center border ${enabled
                 ? "cursor-pointer pointer-events-auto"
                 : "opacity-30 cursor-not-allowed pointer-events-none"
                 } ${isPressed
                     ? "bg-white border-white shadow-[0_0_15px_rgba(255,255,255,0.8)] scale-90"
-                    : "bg-white/20 border-white/30 shadow-lg hover:bg-white/30 active:bg-white/30"
+                    : "bg-black/50 border-white/30 shadow-lg hover:bg-white/20 active:bg-white/20"
                 } ${className}`}
             onClick={() => enabled && onPress(direction)}
             onMouseEnter={onMouseEnter}

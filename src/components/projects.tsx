@@ -56,9 +56,10 @@ const ProjectsSection = () => {
     gsap.registerPlugin(ScrollTrigger);
     const steps = projects.length + 1;
     const context = gsap.context(() => {
-      gsap.set(title, { xPercent: -50, yPercent: -50, autoAlpha: 1 });
+      gsap.set(title, { xPercent: -50, yPercent: -50, y: "18vh", autoAlpha: 0 });
       gsap.set(seeAll, { xPercent: -50, yPercent: -50, x: "110vw", autoAlpha: 0 });
-      gsap.set(".project-card", { xPercent: 110, autoAlpha: 0, scale: 0.9 });
+      gsap.set([title, seeAll, ".project-card"], { willChange: "transform,opacity" });
+      gsap.set(".project-card", { xPercent: 145, autoAlpha: 0 });
 
       const timeline = gsap.timeline({
         scrollTrigger: {
@@ -66,28 +67,23 @@ const ProjectsSection = () => {
           start: "top top",
           end: () => `+=${window.innerHeight * steps}`,
           pin: true,
-          scrub: 0.7,
-          anticipatePin: 1,
+          scrub: true,
           invalidateOnRefresh: true,
-          onUpdate: ({ progress }) => {
-            const cardProgress = gsap.utils.mapRange(0.13, 0.87, 0, projects.length - 1, progress);
-            gsap.utils.toArray<HTMLElement>(".project-card").forEach((card, index) => {
-              const distance = index - cardProgress;
-              gsap.set(card, {
-                xPercent: distance * 100,
-                autoAlpha: Math.max(0, 1 - Math.abs(distance)),
-                scale: Math.max(0.9, 1 - Math.abs(distance) * 0.1),
-                zIndex: projects.length - Math.round(Math.abs(distance)),
-              });
-            });
-          },
         },
       });
 
       timeline
-        .to(title, { x: () => window.innerWidth < 640 ? "-20vw" : "-40vw", y: () => window.innerWidth < 640 ? "-28vh" : "-24vh", scale: () => window.innerWidth < 640 ? 0.7 : 1, duration: 0.16, ease: "power2.inOut" }, 0.04)
-        .to(title, { x: "-110vw", autoAlpha: 0, duration: 0.12, ease: "power2.in" }, 0.82)
-        .to(seeAll, { x: 0, autoAlpha: 1, duration: 0.14, ease: "power2.out" }, 0.84);
+        .to(title, { y: 0, autoAlpha: 1, duration: 0.06, ease: "none" }, 0)
+        .to(title, { x: () => window.innerWidth < 640 ? "-20vw" : "-40vw", y: () => window.innerWidth < 640 ? "-28vh" : "-24vh", duration: 0.12, ease: "none" }, 0.06)
+        .to(title, { x: "-110vw", autoAlpha: 0, duration: 0.1, ease: "none" }, 0.78)
+        .to(seeAll, { x: 0, autoAlpha: 1, duration: 0.12, ease: "none" }, 0.84);
+
+      gsap.utils.toArray<HTMLElement>(".project-card").forEach((card, index) => {
+        const start = 0.18 + index * 0.15;
+        timeline
+          .to(card, { xPercent: 0, autoAlpha: 1, duration: 0.075, ease: "none" }, start)
+          .to(card, { xPercent: -145, autoAlpha: 0, duration: 0.075, ease: "none" }, start + 0.09);
+      });
     }, container);
 
     return () => context.revert();

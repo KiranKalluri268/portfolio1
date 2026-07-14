@@ -102,10 +102,12 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
       style={{ zIndex: 10 }}
     >
       <div
-        className="animate-section-in relative w-full max-w-xs sm:max-w-sm flex flex-col items-center"
+        className="relative w-full max-w-xs sm:max-w-sm flex flex-col items-center"
       >
-        <h2 className="text-3xl font-bold sm:mb-4 mb-2">Contact Me</h2>
-        <p className="text-gray-400 mb-8">Feel free to reach out!</p>
+        <div>
+          <h2 className="text-3xl font-bold sm:mb-4 mb-2">Contact Me</h2>
+          <p className="text-gray-400 mb-8">Feel free to reach out!</p>
+        </div>
 
         {submitted ? (
           <div
@@ -201,7 +203,7 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
       <Tooltip text={hoveredLink || ""} isVisible={!!hoveredLink} />
 
       <footer
-        className="animate-section-in absolute bottom-4 left-0 w-full text-gray-500 text-sm py-4 text-center"
+        className="absolute bottom-4 left-0 w-full text-gray-500 text-sm py-4 text-center"
       >
         © {new Date().getFullYear()} Kiran. All Rights Reserved.
       </footer>
