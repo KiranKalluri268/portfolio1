@@ -197,14 +197,14 @@ export default function Hero() {
       {/* Scroll Indicator */}
       <button
         type="button"
-        className="scroll-hint absolute bottom-1 left-1/2 z-20 flex -translate-x-1/2 cursor-pointer flex-col items-center gap-0 rounded bg-transparent p-1 text-white/50"
+        className="scroll-hint absolute bottom-[env(safe-area-inset-bottom)] left-1/2 z-20 flex -translate-x-1/2 cursor-pointer flex-col items-center gap-0 rounded bg-transparent text-white/50 sm:bottom-1 sm:p-1"
         onClick={scrollNext}
         aria-label="Scroll down"
       >
-        <span className="text-sm font-light tracking-widest">Scroll Down or</span>
-        <span className="text-sm font-light tracking-widest">Press Arrow Down</span>
+        <span className="text-xs font-light tracking-widest sm:text-sm">Scroll Down or</span>
+        <span className="text-xs font-light tracking-widest sm:text-sm">Press Arrow Down</span>
         <svg
-          className="w-6 h-6"
+          className="h-4 w-4 sm:h-6 sm:w-6"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

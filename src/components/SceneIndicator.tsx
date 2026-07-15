@@ -45,7 +45,7 @@ export default function SceneIndicator() {
   return (
     <>
       <nav
-        className="fixed bottom-16 left-1/2 z-50 -translate-x-1/2 sm:bottom-auto sm:top-8"
+        className="fixed bottom-[calc(3rem+env(safe-area-inset-bottom))] left-1/2 z-50 -translate-x-1/2 sm:bottom-auto sm:top-8"
         aria-label="Scene navigation indicator"
         role="navigation"
       >
