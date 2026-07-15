@@ -116,7 +116,7 @@ export default function ContactSection() {
   return (
     <section
       id="contact"
-      className="h-screen text-white text-center flex flex-col justify-center items-center gap-12 px-4 sm:px-6 lg:px-8 overflow-hidden relative"
+      className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-4 py-24 text-center text-white sm:px-6 sm:py-28 lg:px-8"
       style={{ zIndex: 10 }}
     >
       <div
@@ -136,7 +136,7 @@ export default function ContactSection() {
             Thanks for reaching out! I will get back to you soon.
           </div>
         ) : (
-          <form onSubmit={handleSubmit} noValidate className="w-full space-y-6 text-left" aria-label="Contact form">
+          <form onSubmit={handleSubmit} noValidate className="w-full space-y-4 text-left sm:space-y-6" aria-label="Contact form">
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-1">
                 Name <span className="text-red-500">*</span>
@@ -207,7 +207,7 @@ export default function ContactSection() {
           </form>
         )}
 
-        <div className="mt-20 flex justify-center sm:space-x-20 space-x-16 text-gray-200">
+        <div className="mt-12 flex w-full justify-center gap-8 text-gray-200 sm:mt-20 sm:gap-16">
           {socialLinks.map(({ name, url, svg }) => (
             <a
               key={name}
@@ -227,7 +227,7 @@ export default function ContactSection() {
       <Tooltip text={hoveredLink || ""} isVisible={!!hoveredLink} />
 
       <footer
-        className="absolute bottom-4 left-0 w-full text-gray-500 text-sm py-4 text-center"
+        className="absolute bottom-2 left-0 w-full px-4 py-3 text-center text-xs text-gray-500 sm:bottom-4 sm:py-4 sm:text-sm"
       >
         © {new Date().getFullYear()} Kiran. All Rights Reserved.
       </footer>

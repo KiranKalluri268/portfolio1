@@ -9,10 +9,10 @@ export default function NavBar() {
 
   return (
     <header
-      className="w-full text-white pt-12 pb-0 px-12 sm:pt-15 sm:pb-0 sm:px-20 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-lg"
+      className="fixed top-0 left-0 right-0 z-50 flex w-full items-center justify-between px-5 pt-6 pb-0 text-white shadow-lg sm:px-12 sm:pt-10 lg:px-20 lg:pt-15"
       role="banner"
     >
-      <h1 className="text-3xl font-bold" id="site-title">
+      <h1 className="text-2xl font-bold sm:text-3xl" id="site-title">
         <a href="#main-content" aria-label="Saikiran Kalluri Portfolio - Home" className="outline-none">
           KS
         </a>

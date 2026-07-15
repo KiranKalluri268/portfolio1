@@ -117,10 +117,13 @@ export default function ProjectsSection() {
       let settleTimer: ReturnType<typeof setTimeout> | undefined;
       let gestureStartIndex: number | null = null;
       let gestureDelta = 0;
+      let touchStartY = 0;
+      let isTouchGesture = false;
 
       const resetGesture = () => {
         gestureStartIndex = null;
         gestureDelta = 0;
+        isTouchGesture = false;
       };
 
       const settle = () => {
@@ -140,10 +143,11 @@ export default function ProjectsSection() {
         }
 
         const range = trigger.end - trigger.start;
+        const intendedScroll = isTouchGesture ? window.scrollY : lenis.targetScroll;
         const intendedProgress = gsap.utils.clamp(
           0,
           1,
-          (lenis.targetScroll - trigger.start) / range,
+          (intendedScroll - trigger.start) / range,
         );
         let destinationIndex = currentIndex;
 
@@ -187,10 +191,34 @@ export default function ProjectsSection() {
         settleTimer = setTimeout(settle, 100);
       };
 
+      const handleTouchStart = (event: TouchEvent) => {
+        if (!trigger.isActive || event.touches.length !== 1) return;
+        isTouchGesture = true;
+        touchStartY = event.touches[0].clientY;
+        gestureStartIndex = nearestAnchorIndex(trigger.progress);
+        gestureDelta = 0;
+      };
+
+      const handleTouchMove = (event: TouchEvent) => {
+        if (!isTouchGesture || event.touches.length !== 1) return;
+        gestureDelta = touchStartY - event.touches[0].clientY;
+      };
+
+      const handleTouchEnd = () => {
+        if (!isTouchGesture) return;
+        settle();
+      };
+
       lenis.on("virtual-scroll", handleVirtualScroll);
+      section.addEventListener("touchstart", handleTouchStart, { passive: true });
+      section.addEventListener("touchmove", handleTouchMove, { passive: true });
+      section.addEventListener("touchend", handleTouchEnd, { passive: true });
       cleanupSnap = () => {
         if (settleTimer) clearTimeout(settleTimer);
         lenis.off("virtual-scroll", handleVirtualScroll);
+        section.removeEventListener("touchstart", handleTouchStart);
+        section.removeEventListener("touchmove", handleTouchMove);
+        section.removeEventListener("touchend", handleTouchEnd);
       };
     }, section);
 
@@ -204,7 +232,7 @@ export default function ProjectsSection() {
     <section
       ref={sectionRef}
       id="projects"
-      className="relative h-screen overflow-hidden text-white"
+      className="relative h-[100dvh] min-h-[100svh] overflow-hidden text-white"
       aria-label="Projects section"
       style={{ zIndex: 10 }}
     >
@@ -216,16 +244,16 @@ export default function ProjectsSection() {
       </h2>
 
       <div ref={trackRef} className="flex h-full w-max">
-        <div className="h-screen w-screen shrink-0" aria-hidden="true" />
+        <div className="h-[100dvh] min-h-[100svh] w-screen shrink-0" aria-hidden="true" />
 
         {projects.map((project) => (
           <article
             key={project.id}
-            className="flex h-screen w-screen shrink-0 flex-col items-center justify-center p-12 text-center"
+            className="flex h-[100dvh] min-h-[100svh] w-screen shrink-0 flex-col items-center justify-center px-4 py-16 text-center sm:px-8 lg:p-12"
           >
-            <h3 className="mb-4 text-lg font-semibold sm:text-3xl">{project.title}</h3>
+            <h3 className="mb-[clamp(0.5rem,2dvh,1rem)] max-w-3xl text-base font-semibold sm:text-2xl lg:text-3xl">{project.title}</h3>
             <div
-              className="relative mb-4 h-[200px] w-full max-w-3xl sm:h-[300px]"
+              className="relative mb-[clamp(0.5rem,2dvh,1rem)] h-[clamp(7.5rem,30dvh,18.75rem)] w-full max-w-3xl"
               role="img"
               aria-label={`Screenshot of ${project.title}`}
             >
@@ -235,10 +263,11 @@ export default function ProjectsSection() {
                 fill
                 className="rounded-xl object-cover shadow-lg"
                 quality={90}
-                loading="eager"
+                sizes="(max-width: 640px) calc(100vw - 2rem), 768px"
+                loading={project.id === 1 ? "eager" : "lazy"}
               />
             </div>
-            <p className="mb-6 max-w-xl text-base sm:text-lg">{project.description}</p>
+            <p className="mb-[clamp(0.75rem,2.5dvh,1.5rem)] max-w-xl text-sm leading-relaxed sm:text-base lg:text-lg">{project.description}</p>
             <nav className="space-x-4" aria-label={`Links for ${project.title}`}>
               {project.github && (
                 <a
@@ -266,7 +295,7 @@ export default function ProjectsSection() {
           </article>
         ))}
 
-        <div className="flex h-screen w-screen shrink-0 items-center justify-center">
+        <div className="flex h-[100dvh] min-h-[100svh] w-screen shrink-0 items-center justify-center px-4">
           <h2 className="whitespace-nowrap text-center text-4xl font-bold tracking-tight sm:text-5xl">
             See all projects
           </h2>

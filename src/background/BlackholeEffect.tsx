@@ -27,7 +27,7 @@ export default function Blackhole() {
         muted
         playsInline
         preload="metadata"
-        className="fixed top-3/4 left-1/2 sm:top-1/2 sm:left-[80%] w-210 h-210 object-contain -z-10 transform -translate-x-1/2 -translate-y-1/2 [transform-style:preserve-3d]"
+        className="fixed top-3/4 left-1/2 -z-10 aspect-square w-[min(220vw,52.5rem)] -translate-x-1/2 -translate-y-1/2 transform object-contain [transform-style:preserve-3d] sm:top-1/2 sm:left-[80%] sm:w-[52.5rem]"
         style={{
           background: 'transparent',
           transform: 'rotateX(0deg) rotateY(0deg) rotateZ(-20deg)',

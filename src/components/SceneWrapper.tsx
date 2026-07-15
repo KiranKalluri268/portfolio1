@@ -9,7 +9,7 @@ interface SceneWrapperProps {
 
 export default function SceneWrapper({ children, index }: SceneWrapperProps) {
   return (
-    <div className="relative min-h-screen w-full" data-scene={index}>
+    <div className="relative min-h-[100svh] w-full" data-scene={index}>
       {children}
     </div>
   );

@@ -309,10 +309,10 @@ export default function LoadingScreen({
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex justify-center items-center z-[9999]">
+    <div className="fixed inset-0 z-[9999] flex min-h-[100svh] items-center justify-center bg-black/30 backdrop-blur-md">
       <canvas
         ref={canvasRef}
-        className="rounded-full bg-transparent w-screen h-screen absolute top-0 left-0 pointer-events-none"
+        className="pointer-events-none absolute top-0 left-0 h-[100dvh] w-screen rounded-full bg-transparent"
       />
 
       <div className="relative z-10 flex flex-col items-center justify-center h-[60px]">
@@ -339,7 +339,7 @@ export default function LoadingScreen({
       </div>
 
       <p
-        className="absolute bottom-8 left-0 w-full text-center text-sm md:text-base font-light tracking-wider select-none px-4 pb-safe"
+        className="absolute bottom-[max(1rem,env(safe-area-inset-bottom))] left-0 w-full px-4 text-center text-xs font-light tracking-wider select-none sm:text-sm md:text-base"
         style={{ color: colorToRgba(color, 0.7) }}
       >
         NOTE: You can also use arrow keys (or WASD keys like in Games) for navigation, Clicking &quot;ENTER&quot; will turn on audio

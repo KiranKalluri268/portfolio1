@@ -40,7 +40,7 @@ export default function SceneIndicator() {
   return (
     <>
       <nav
-        className="fixed sm:left-6/16 left-1/5 sm:top-1/20 top-1/9 z-50"
+        className="fixed top-16 left-1/2 z-50 -translate-x-1/2 sm:top-8"
         aria-label="Scene navigation indicator"
         role="navigation"
       >
@@ -57,7 +57,7 @@ export default function SceneIndicator() {
             return (
               <div key={scene.index} className="relative flex flex-col items-center">
                 <button
-                  className="relative z-10 flex items-center justify-center bg-transparent border-none sm:p-9 p-6 cursor-pointer outline-none"
+                  className="relative z-10 flex min-h-10 min-w-10 cursor-pointer items-center justify-center border-none bg-transparent p-4 outline-none sm:min-h-12 sm:min-w-12 sm:p-6"
                   aria-label={`Go to ${scene.name} section${isActive ? " (current)" : ""}`}
                   aria-current={isActive ? "page" : undefined}
                   onClick={() => handleDotClick(scene.id)}

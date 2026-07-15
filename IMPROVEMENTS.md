@@ -211,7 +211,7 @@ CI should run type-checking, ESLint, production build, and accessibility/perform
 
 After navigation consolidation, remove unused contexts, commented-out audio code, unused constants, unused props, and stale implementation notes.
 
-### 23. Improve mobile layout and touch discoverability
+### ~~23. Improve mobile layout and touch discoverability~~ — Completed (real-device QA recommended)
 
 Test small phones, landscape orientation, browser zoom, reduced viewport heights, and touch scrolling. Avoid relying only on “scroll down” text and hidden scene controls.
 

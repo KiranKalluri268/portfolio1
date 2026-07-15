@@ -131,7 +131,7 @@ export default function ExperienceTimeline() {
     <section
       id="experience"
       ref={sectionRef}
-      className="relative z-10 min-h-screen overflow-hidden px-4 py-24 text-white sm:px-6 lg:px-8"
+      className="relative z-10 min-h-[100svh] overflow-hidden px-4 py-20 text-white sm:px-6 sm:py-24 lg:px-8"
       aria-label="Experience timeline section"
     >
       <div className="relative mx-auto w-full max-w-[1080px] lg:-left-[6vw]">

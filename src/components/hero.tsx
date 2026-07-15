@@ -112,14 +112,14 @@ export default function Hero() {
   return (
     <section
       ref={heroRef}
-      className="h-screen w-full relative overflow-hidden"
+      className="relative h-[100dvh] min-h-[100svh] w-full overflow-hidden"
       id="hero"
       aria-label="Hero section - Introduction"
       style={{ zIndex: 10 }}
     >
       <div className="relative w-full h-full text-white">
         <div
-          className={`absolute left-1/2 -translate-x-1/2 w-full max-w-5xl px-18 pt-8 sm:pt-0 sm:px-0 text-left transition-all duration-1000 ease-in-out ${h1State === 'done' ? 'top-[20vh] translate-y-0' : 'top-1/2 -translate-y-1/2'
+          className={`hero-copy absolute left-1/2 w-full max-w-5xl -translate-x-1/2 px-[clamp(1.25rem,7vw,4.5rem)] pt-8 text-left transition-all duration-1000 ease-in-out sm:px-8 sm:pt-0 lg:px-0 ${h1State === 'done' ? 'top-[20dvh] translate-y-0' : 'top-1/2 -translate-y-1/2'
             }`}
         >
           <h1
@@ -133,8 +133,12 @@ export default function Hero() {
               <span
                 key={index}
                 className={`transition-all duration-1000 ease-in-out ${index === 0
-                  ? `sm:text-[3rem] ${h1State === 'done' ? 'text-[2.3rem] md:text-[4.5rem]' : 'text-[3rem] md:text-[8rem]'}`
-                  : `text-[3rem] sm:text-[3rem] ${h1State === 'done' ? 'md:text-[6rem]' : 'md:text-[8rem]'}`
+                  ? h1State === 'done'
+                    ? "text-[clamp(2.1rem,9vw,4.5rem)]"
+                    : "text-[clamp(3rem,13vw,8rem)]"
+                  : h1State === 'done'
+                    ? "text-[clamp(2.7rem,11vw,6rem)]"
+                    : "text-[clamp(3rem,13vw,8rem)]"
                   }`}
               >
                 {part}
@@ -143,7 +147,7 @@ export default function Hero() {
             ))}
             {h1State !== 'done' && (
               <span
-                className="text-blue-500 animate-blink text-[2.5rem] sm:text-[3rem] md:text-[8rem]"
+                className="animate-blink text-[clamp(2.5rem,13vw,8rem)] text-blue-500"
                 aria-hidden="true"
               >
                 |
@@ -152,7 +156,7 @@ export default function Hero() {
           </h1>
 
           <h2
-            className="text-[3.1rem] sm:text-[3rem] md:text-[7.5rem] font-bold mt-4 font-[family-name:var(--font-foldit)] leading-none"
+            className="hero-role mt-4 max-w-full break-words text-[clamp(2.15rem,10vw,7.5rem)] font-bold font-[family-name:var(--font-foldit)] leading-none"
             style={{
               textShadow:
                 "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",

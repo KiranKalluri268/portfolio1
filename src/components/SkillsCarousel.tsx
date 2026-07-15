@@ -218,11 +218,11 @@ export default function SkillsCarousel() {
   return (
     <section
       id="skills"
-      className="relative flex min-h-screen items-center justify-start overflow-hidden px-4 text-white"
+      className="relative flex min-h-[100svh] items-center justify-start overflow-hidden px-4 text-white"
       aria-label="Technical skills section"
       style={{ zIndex: 10 }}
     >
-      <div className="relative left-[5vw] w-full space-y-7 py-20 sm:w-[82%] sm:space-y-10 md:w-[72%] lg:w-[62%] xl:w-[62%]">
+      <div className="relative left-[2vw] w-full space-y-6 py-16 sm:left-[5vw] sm:w-[82%] sm:space-y-10 sm:py-20 md:w-[72%] lg:w-[62%] xl:w-[62%]">
         <h1 className="mb-6 text-center text-3xl font-bold sm:mb-10 sm:text-4xl">Tech Stack</h1>
         {skillCategories.map((category, index) => (
           <SkillRow key={category.title} category={category} reverse={index % 2 === 1} />
