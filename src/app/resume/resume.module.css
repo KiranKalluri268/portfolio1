@@ -6,6 +6,7 @@
 }
 
 .actions {
+  box-sizing: border-box;
   display: flex;
   width: min(210mm, 100%);
   margin: 0 auto 1rem;
@@ -33,7 +34,11 @@
 
 .backLink {
   flex: 0 0 auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
   color: #e5e5e5;
+  cursor: pointer;
   font-size: 0.8rem;
   font-weight: 600;
   text-decoration: underline;
@@ -152,34 +157,84 @@
     top: 0;
     z-index: 10;
     margin: 0;
-    padding: 0.75rem 1rem;
-    flex-wrap: wrap;
-    gap: 0.65rem 1rem;
+    padding: 0.75rem max(0.75rem, env(safe-area-inset-right)) 0.75rem max(0.75rem, env(safe-area-inset-left));
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    gap: 0.75rem;
     background: rgb(23 23 23 / 90%);
     backdrop-filter: blur(8px);
   }
 
   .resumeNote {
-    flex: 1 1 14rem;
-    font-size: 0.7rem;
+    max-width: 13rem;
+    font-size: 0.65rem;
+    line-height: 1.35;
+  }
+
+  .actionCopy {
+    gap: 0.3rem;
+  }
+
+  .backLink {
+    font-size: 0.72rem;
   }
 
   .paper {
     min-width: 100%;
     min-height: auto;
-    padding: 1.25rem 1rem;
+    justify-content: flex-start;
+    padding: 1.25rem max(1rem, env(safe-area-inset-right)) 1.5rem max(1rem, env(safe-area-inset-left));
     box-shadow: none;
-    font-size: 12px;
-    line-height: 1.35;
+    font-size: 14px;
+    line-height: 1.48;
   }
 
   .name {
-    font-size: 15px;
+    margin-bottom: 0.2rem;
+    font-size: 18px;
   }
 
   .sectionTitle,
   .entryTitle {
-    font-size: 12px;
+    font-size: 14px;
+  }
+
+  .section {
+    margin-top: 0.7rem;
+  }
+
+  .sectionTitle {
+    margin-bottom: 0.3rem;
+    padding-top: 0.45rem;
+  }
+
+  .entryTitle {
+    margin-top: 0.4rem;
+    line-height: 1.35;
+  }
+
+  .list {
+    margin: 0.25rem 0 0.65rem;
+    padding-left: 1.15rem;
+  }
+
+  .list li {
+    margin-bottom: 0.25rem;
+    padding-left: 0.15rem;
+  }
+
+  .contactLine,
+  .links,
+  .paragraph,
+  .skill,
+  .education,
+  .footerLine {
+    overflow-wrap: anywhere;
+  }
+
+  .footer {
+    margin-top: 0.7rem;
+    padding-top: 0.45rem;
   }
 }
 
