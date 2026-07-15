@@ -14,7 +14,7 @@ This document records the recommended improvements in priority order. The orderi
 
 **Relevant areas:** `src/app/page.tsx`, `src/components/LoadingScreen.tsx`, `src/context/AudioContextProvider.tsx`.
 
-### 2. Make the contact form functional or remove the success claim
+### ~~2. Make the contact form functional or remove the success claim~~ — Completed
 
 **Problem:** The contact form clears its fields and displays a success message without sending data anywhere.
 
@@ -66,7 +66,7 @@ This document records the recommended improvements in priority order. The orderi
 
 **Relevant areas:** `src/app/page.tsx`, scene components, navigation manager.
 
-### 7. Simplify navigation state management
+### ~~7. Simplify navigation state management~~ — Completed
 
 **Problem:** Several contexts and global event listeners overlap: `UnifiedScrollManager`, `ScrollManager`, `ScrollManagerContext`, `GlobalContext`, and project view state.
 
@@ -76,7 +76,7 @@ This document records the recommended improvements in priority order. The orderi
 
 **Relevant areas:** `src/context/*`, `SceneWrapper`, `ProjectsSection`.
 
-### 8. Protect form and text inputs from global keyboard shortcuts
+### ~~8. Protect form and text inputs from global keyboard shortcuts~~ — Completed
 
 **Problem:** Global handling of Arrow keys, `W`, and `S` can interfere with typing, cursor movement, and scrolling inside form controls.
 
@@ -86,7 +86,7 @@ This document records the recommended improvements in priority order. The orderi
 
 **Relevant area:** `src/context/UnifiedScrollManager.tsx`.
 
-### 9. Reduce background rendering cost
+### ~~9. Reduce background rendering cost~~ — Completed
 
 **Problem:** Multiple full-screen canvas animation loops and a looping video run continuously, including when they are not necessary.
 
@@ -96,7 +96,7 @@ This document records the recommended improvements in priority order. The orderi
 
 **Relevant areas:** `StarfieldBackground`, `CometsInBackground`, `BlackholeEffect`, video background.
 
-### 10. Fix linting and enforce quality checks
+### ~~10. Fix linting and enforce quality checks~~ — Completed
 
 **Problem:** `npm run lint` is broken because it calls the removed `next lint` command. Direct ESLint currently reports five unused-variable errors.
 
@@ -112,7 +112,7 @@ This document records the recommended improvements in priority order. The orderi
 - Unused `TRANSITION_DURATION` in `UnifiedScrollManager.tsx`
 - Unused `SCENE_DISPLAY_TIME` in `UnifiedScrollManager.tsx`
 
-### 11. Align and audit dependencies
+### ~~11. Align and audit dependencies~~ — Completed
 
 **Problem:** `next` is version 16 while `eslint-config-next` is version 15. Some dependencies may be unused or accidental (`lib`, `util`, and potentially others).
 
@@ -122,7 +122,7 @@ This document records the recommended improvements in priority order. The orderi
 
 **Relevant area:** `package.json` and `package-lock.json`.
 
-### 12. Fix deployment configuration
+### ~~12. Fix deployment configuration~~ — Completed
 
 **Problem:** The GitHub Pages workflow uploads `./out`, but Next.js is not configured with static export output. SEO URLs also point to Vercel.
 
@@ -179,7 +179,7 @@ Use valid `dateTime` values such as `2026-01` or separate start/end dates instea
 
 ## Priority 3 — Maintainability and polish
 
-### 19. Remove duplicate font loading
+### ~~19. Remove duplicate font loading~~ — Completed
 
 Fonts are loaded using both `next/font/google` and a Google Fonts CSS import. Keep the Next.js font integration and remove the duplicate import.
 
@@ -207,7 +207,7 @@ At minimum, test:
 
 CI should run type-checking, ESLint, production build, and accessibility/performance checks where practical.
 
-### 22. Remove unused code and legacy context paths
+### ~~22. Remove unused code and legacy context paths~~ — Completed (`SpaceBackground.tsx` intentionally retained)
 
 After navigation consolidation, remove unused contexts, commented-out audio code, unused constants, unused props, and stale implementation notes.
 
@@ -231,4 +231,3 @@ Add error reporting or at least structured client-side logging for failed form s
 8. Simplify navigation and render semantic sections.
 9. Optimize background animation and mobile performance.
 10. Improve SEO metadata, project content, résumé CTA, copy, tests, and documentation.
-

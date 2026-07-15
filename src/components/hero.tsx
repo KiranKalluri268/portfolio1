@@ -18,7 +18,6 @@ export default function Hero() {
   const typingSpeed = 100;
   const deleteSpeed = 100;
   const delayBeforeDeletingCurrent = 2000;
-  const delayBetweenLines = 500;
 
   // Animation States
   const [displayText, setDisplayText] = useState("");
@@ -58,7 +57,7 @@ export default function Hero() {
             setDisplayText(displayText.slice(0, -1));
           }, deleteSpeed / 2); // Delete slightly faster
         } else {
-          setH1State('typing_name');
+          timeout = setTimeout(() => setH1State('typing_name'), 0);
         }
         break;
 
@@ -101,8 +100,10 @@ export default function Hero() {
         setSecondLine((prev) => prev.slice(0, prev.length - 1));
       }, deleteSpeed);
     } else {
-      setIsDeleting(false);
-      setCurrentWordIndex((prev) => (prev + 1) % words.length);
+      timeout = setTimeout(() => {
+        setIsDeleting(false);
+        setCurrentWordIndex((prev) => (prev + 1) % words.length);
+      }, 0);
     }
 
     return () => clearTimeout(timeout);
@@ -122,7 +123,7 @@ export default function Hero() {
             }`}
         >
           <h1
-            className="font-bold font-['Foldit'] whitespace-pre-line leading-none"
+            className="font-bold font-[family-name:var(--font-foldit)] whitespace-pre-line leading-none"
             style={{
               textShadow:
                 "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
@@ -151,7 +152,7 @@ export default function Hero() {
           </h1>
 
           <h2
-            className="text-[3.1rem] sm:text-[3rem] md:text-[7.5rem] font-bold mt-4 font-['Foldit'] leading-none"
+            className="text-[3.1rem] sm:text-[3rem] md:text-[7.5rem] font-bold mt-4 font-[family-name:var(--font-foldit)] leading-none"
             style={{
               textShadow:
                 "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",

@@ -8,12 +8,7 @@ export default function NavigationControls() {
     const activeSection = useActiveSection();
     const { scrollNext, scrollPrev } = useScrollActions();
     const activeIndex = SECTION_IDS.indexOf(activeSection);
-    const [mounted, setMounted] = useState(false);
     const [hoveredButton, setHoveredButton] = useState<string | null>(null);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     // Track physical key presses
     const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
@@ -105,8 +100,6 @@ export default function NavigationControls() {
             );
         }, 150);
     };
-
-    if (!mounted) return null;
 
     return (
         <>

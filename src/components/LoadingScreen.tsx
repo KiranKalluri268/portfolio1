@@ -165,13 +165,7 @@ export default function LoadingScreen({
       // We still want to verify fonts if possible.
     }
 
-    // 1. Listen for window load event (absolute 100%)
-    const handleLoad = () => {
-      // Window loaded
-    };
-    window.addEventListener("load", handleLoad);
-
-    // 2. Poll for image loading progress + drift
+    // Poll for image loading progress + drift
     let currentDrift = 0;
     const interval = setInterval(() => {
       const realProgress = checkProgress();
@@ -210,7 +204,6 @@ export default function LoadingScreen({
     }, 200);
 
     return () => {
-      window.removeEventListener("load", handleLoad);
       clearInterval(interval);
     };
   }, [visible]);

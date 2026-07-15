@@ -49,6 +49,8 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       wheelMultiplier: 0.9,
     });
     lenisRef.current = instance;
+    // The browser-only Lenis instance must be published after it is created.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLenis(instance);
 
     const updateScrollTrigger = () => ScrollTrigger.update();

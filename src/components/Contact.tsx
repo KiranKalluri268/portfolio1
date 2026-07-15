@@ -1,11 +1,9 @@
 "use client";
 
-import { forwardRef, useState } from "react";
+import { useState } from "react";
 import type { ContactForm, FormErrors, SocialLink } from "@/types";
 
 import Tooltip from "./Tooltip";
-
-type ContactSectionProps = Record<string, never>;
 
 const socialLinks: SocialLink[] = [
   {
@@ -66,7 +64,7 @@ const socialLinks: SocialLink[] = [
   },
 ];
 
-const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref) => {
+export default function ContactSection() {
   const [form, setForm] = useState<ContactForm>({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
@@ -117,7 +115,6 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
 
   return (
     <section
-      ref={ref}
       id="contact"
       className="h-screen text-white text-center flex flex-col justify-center items-center gap-12 px-4 sm:px-6 lg:px-8 overflow-hidden relative"
       style={{ zIndex: 10 }}
@@ -236,8 +233,4 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
       </footer>
     </section>
   );
-});
-
-ContactSection.displayName = "ContactSection";
-
-export default ContactSection;
+}

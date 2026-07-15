@@ -1,22 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { Foldit, Tektur } from "next/font/google";
 import "./globals.css";
 import "lenis/dist/lenis.css";
 import BlackholeEffect from '@/background/BlackholeEffect';
 import { AudioProvider } from "@/context/AudioContextProvider";
 import { SmoothScrollProvider } from "@/context/SmoothScrollContext";
-
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const foldit = Foldit({
   variable: "--font-foldit",
@@ -29,7 +17,7 @@ const tektur = Tektur({
   variable: "--font-tektur",
   subsets: ["latin"],
   display: 'swap',
-  weight: "400", // Or specify exact weights needed
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -79,7 +67,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${foldit.variable} ${tektur.variable}`}>
+    <html lang="en" className={`${foldit.variable} ${tektur.variable}`}>
       <body className="relative bg-black">
         <script
           type="application/ld+json"
