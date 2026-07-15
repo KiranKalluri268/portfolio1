@@ -32,10 +32,11 @@ const AudioToggle = () => {
     >
       <audio
         ref={audioElementRef}
+        data-portfolio-audio
         className="hidden"
         src="/audio/final.mp3"
         loop
-        preload="none"
+        preload="auto"
       />
       {[1, 2, 3, 4].map((bar) => (
         <div

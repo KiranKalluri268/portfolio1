@@ -20,51 +20,53 @@ export default function Home() {
         <LoadingScreen />
       </ErrorBoundary>
 
-      <SkipLink href="#main-content">Skip to main content</SkipLink>
-      <SkipLink href="#projects">Skip to projects</SkipLink>
-      <SkipLink href="#experience">Skip to experience</SkipLink>
-      <SkipLink href="#skills">Skip to skills</SkipLink>
-      <SkipLink href="#contact">Skip to contact</SkipLink>
+      <div id="portfolio-content">
+        <SkipLink href="#main-content">Skip to main content</SkipLink>
+        <SkipLink href="#projects">Skip to projects</SkipLink>
+        <SkipLink href="#experience">Skip to experience</SkipLink>
+        <SkipLink href="#skills">Skip to skills</SkipLink>
+        <SkipLink href="#contact">Skip to contact</SkipLink>
 
-      <ErrorBoundary>
-        <NavBar />
-      </ErrorBoundary>
+        <ErrorBoundary>
+          <NavBar />
+        </ErrorBoundary>
 
-      <ErrorBoundary>
-        <SceneIndicator />
-      </ErrorBoundary>
+        <ErrorBoundary>
+          <SceneIndicator />
+        </ErrorBoundary>
 
-      <ErrorBoundary>
-        <NavigationControls />
-      </ErrorBoundary>
+        <ErrorBoundary>
+          <NavigationControls />
+        </ErrorBoundary>
 
-      <main id="main-content" aria-label="Main content">
-        <SceneWrapper index={0}>
-          <ErrorBoundary>
-            <Hero />
-          </ErrorBoundary>
-        </SceneWrapper>
-        <SceneWrapper index={1}>
-          <ErrorBoundary>
-            <ProjectsSection />
-          </ErrorBoundary>
-        </SceneWrapper>
-        <SceneWrapper index={2}>
-          <ErrorBoundary>
-            <ExperienceTimeline />
-          </ErrorBoundary>
-        </SceneWrapper>
-        <SceneWrapper index={3}>
-          <ErrorBoundary>
-            <SkillsCarousel />
-          </ErrorBoundary>
-        </SceneWrapper>
-        <SceneWrapper index={4}>
-          <ErrorBoundary>
-            <ContactSection />
-          </ErrorBoundary>
-        </SceneWrapper>
-      </main>
+        <main id="main-content" aria-label="Main content">
+          <SceneWrapper index={0}>
+            <ErrorBoundary>
+              <Hero />
+            </ErrorBoundary>
+          </SceneWrapper>
+          <SceneWrapper index={1}>
+            <ErrorBoundary>
+              <ProjectsSection />
+            </ErrorBoundary>
+          </SceneWrapper>
+          <SceneWrapper index={2}>
+            <ErrorBoundary>
+              <ExperienceTimeline />
+            </ErrorBoundary>
+          </SceneWrapper>
+          <SceneWrapper index={3}>
+            <ErrorBoundary>
+              <SkillsCarousel />
+            </ErrorBoundary>
+          </SceneWrapper>
+          <SceneWrapper index={4}>
+            <ErrorBoundary>
+              <ContactSection />
+            </ErrorBoundary>
+          </SceneWrapper>
+        </main>
+      </div>
     </>
   );
 }

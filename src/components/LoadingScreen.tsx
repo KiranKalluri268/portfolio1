@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useAudio } from "@/context/AudioContextProvider";
+import { useScrollActions } from "@/context/SmoothScrollContext";
 
 interface ParticleProps {
   radius: number;
@@ -59,6 +60,8 @@ interface LoadingScreenProps {
   particleRadius?: number;
 }
 
+const DEFAULT_ORBIT_RADII = [80, 90];
+
 function hexToRgb(hex: string) {
   const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
   hex = hex.replace(shorthandRegex, (_, r, g, b) => r + r + g + g + b + b);
@@ -81,20 +84,24 @@ function colorToRgba(color: string, alpha: number) {
 }
 
 export default function LoadingScreen({
-  tailLength = 100,
+  tailLength = 60,
   thickness = 2.2,
   speed = 0.05,
   numParticles = 2,
   color = "white",
-  orbitRadii = [80, 90],
+  orbitRadii = DEFAULT_ORBIT_RADII,
   particleRadius = 1.8,
 }: LoadingScreenProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef<LoadingParticle[]>([]);
   const animationFrameRef = useRef<number | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { hasEntered, enterPortfolio } = useAudio();
-  const [visible, setVisible] = useState(!hasEntered);
+  const { lenis } = useScrollActions();
+  const [dismissed, setDismissed] = useState(hasEntered);
+  const [isExiting, setIsExiting] = useState(false);
 
   // Loading progress state
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -122,90 +129,103 @@ export default function LoadingScreen({
     return () => window.removeEventListener("resize", updateCanvasSize);
   }, []);
 
-  // Actual loading progress tracking
-  useEffect(() => {
-    if (!visible) return;
+  // Prepare only assets needed for the first frame and entry experience.
+  useLayoutEffect(() => {
+    if (dismissed) return;
 
-    let fontsReady = false;
+    const startedAt = performance.now();
+    const completed = new Set<string>();
+    const cleanups: Array<() => void> = [];
+    let readyTimer: ReturnType<typeof setTimeout> | undefined;
+    let cancelled = false;
+    let readyScheduled = false;
 
-    // Helper to calculate progress based on images loaded
-    const checkProgress = () => {
-      // If document is already complete, we're at 100% (but check fonts!)
-      if (document.readyState === "complete" && fontsReady) {
-        return 100;
-      }
-
-      const images = document.images;
-      const total = images.length;
-
-      if (total === 0) return 0;
-
-      let loaded = 0;
-      for (let i = 0; i < total; i++) {
-        if (images[i].complete) {
-          loaded++;
-        }
-      }
-
-      return Math.floor((loaded / total) * 100);
-    };
-
-    // Track fonts separately
-    document.fonts.ready.then(() => {
-      fontsReady = true;
-    });
-
-    // 0. Initial check: might already be done if came from another page
-    // or if the browser cached everything instantly.
-    if (document.readyState === "complete") {
-      // We still want to verify fonts if possible.
-    }
-
-    // Poll for image loading progress + drift
-    let currentDrift = 0;
-    const interval = setInterval(() => {
-      const realProgress = checkProgress();
-
-      // Add a small "drift" so it doesn't look frozen if waiting for one big asset
-      if (currentDrift < 90) {
-        currentDrift += 0.5; // slow automated tick
-      }
-
-      // Use the higher of the two values to ensure we never go backwards
-      // but favor real progress if it jumps ahead.
-      // We cap drift at 99 so it never hits 100 purely by drifting.
-      let displayProgress = Math.min(
-        99,
-        Math.max(Math.floor(currentDrift), realProgress)
-      );
-
-      // CAP at 90% if fonts are not ready yet
-      if (!fontsReady && displayProgress > 90) {
-        displayProgress = 90;
-      }
-
-      setLoadingProgress((prev) => {
-        // If we hit 100, stay there
-        if (prev >= 100) return 100;
-        // Never go backwards
-        return Math.max(prev, displayProgress);
-      });
-
-      // If we confirm real progress reaches 100 via check (includes fonts), finish early
-      if (realProgress === 100 && fontsReady) {
+    const finish = () => {
+      if (readyScheduled) return;
+      readyScheduled = true;
+      const minimumDelay = Math.max(0, 700 - (performance.now() - startedAt));
+      readyTimer = setTimeout(() => {
+        if (cancelled) return;
         setLoadingProgress(100);
         setIsLoaded(true);
-        clearInterval(interval);
+      }, minimumDelay);
+    };
+
+    const complete = (key: string, progress: number) => {
+      if (cancelled || completed.has(key)) return;
+      completed.add(key);
+      setLoadingProgress((current) => Math.max(current, progress));
+      if (completed.size === 3) finish();
+    };
+
+    document.fonts.ready.then(() => complete("fonts", 30)).catch(() => complete("fonts", 30));
+
+    const prepareMedia = (
+      selector: string,
+      key: string,
+      progress: number,
+      readyState: number,
+      eventName: "loadeddata" | "canplay",
+    ) => {
+      const media = document.querySelector<HTMLMediaElement>(selector);
+      if (!media) {
+        complete(key, progress);
+        return;
       }
-    }, 200);
+      const handleReady = () => complete(key, progress);
+      if (media.readyState >= readyState) handleReady();
+      else {
+        media.addEventListener(eventName, handleReady, { once: true });
+        media.addEventListener("error", handleReady, { once: true });
+        media.load();
+        cleanups.push(() => {
+          media.removeEventListener(eventName, handleReady);
+          media.removeEventListener("error", handleReady);
+        });
+      }
+    };
+
+    prepareMedia("[data-blackhole-video]", "video", 75, HTMLMediaElement.HAVE_CURRENT_DATA, "loadeddata");
+    prepareMedia("[data-portfolio-audio]", "audio", 100, HTMLMediaElement.HAVE_FUTURE_DATA, "canplay");
+
+    const fallbackTimer = setTimeout(() => {
+      if (!cancelled) finish();
+    }, 8000);
 
     return () => {
-      clearInterval(interval);
+      cancelled = true;
+      clearTimeout(fallbackTimer);
+      if (readyTimer) clearTimeout(readyTimer);
+      cleanups.forEach((cleanup) => cleanup());
     };
-  }, [visible]);
+  }, [dismissed]);
 
   useEffect(() => {
-    if (!visible) return; // don't run animation if hidden
+    if (dismissed) return;
+    const body = document.body;
+    const portfolio = document.getElementById("portfolio-content");
+    const previousOverflow = body.style.overflow;
+    body.style.overflow = "hidden";
+    window.scrollTo(0, 0);
+    lenis?.scrollTo(0, { immediate: true });
+    lenis?.stop();
+    if (portfolio) {
+      portfolio.inert = true;
+      portfolio.setAttribute("aria-hidden", "true");
+    }
+
+    return () => {
+      body.style.overflow = previousOverflow;
+      lenis?.start();
+      if (portfolio) {
+        portfolio.inert = false;
+        portfolio.removeAttribute("aria-hidden");
+      }
+    };
+  }, [dismissed, lenis]);
+
+  useEffect(() => {
+    if (dismissed) return; // don't run animation if hidden
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
@@ -286,25 +306,47 @@ export default function LoadingScreen({
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [canvasSize, color, thickness, speed, numParticles, orbitRadii, particleRadius, tailLength, visible]);
+  }, [canvasSize, color, thickness, speed, numParticles, orbitRadii, particleRadius, tailLength, dismissed]);
+
+  useEffect(() => {
+    if (!dismissed) overlayRef.current?.focus({ preventScroll: true });
+  }, [dismissed]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Enter" && visible && isLoaded) buttonRef.current?.click();
+      if (event.key === "Enter" && !dismissed && !isExiting && isLoaded) buttonRef.current?.click();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [visible, isLoaded]);
+  }, [dismissed, isExiting, isLoaded]);
+
+  useEffect(() => () => {
+    if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
+  }, []);
 
   const handleEnter = () => {
+    if (!isLoaded || isExiting) return;
+    setIsExiting(true);
+
+    // These calls stay inside the user interaction for strict autoplay policies.
+    document.querySelector<HTMLAudioElement>("[data-portfolio-audio]")?.play().catch(() => {});
+    document.querySelector<HTMLVideoElement>("[data-blackhole-video]")?.play().catch(() => {});
     enterPortfolio();
-    setVisible(false);
+    exitTimerRef.current = setTimeout(() => setDismissed(true), 700);
   };
 
-  if (!visible) return null;
+  if (dismissed) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex min-h-[100svh] items-center justify-center bg-black">
+    <div
+      ref={overlayRef}
+      tabIndex={-1}
+      className={`fixed inset-0 z-[9999] flex min-h-[100svh] items-center justify-center bg-black outline-none transition-opacity duration-700 ease-out ${isExiting ? "pointer-events-none opacity-0" : "opacity-100"}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Portfolio entry"
+      aria-busy={!isLoaded}
+    >
       <canvas
         ref={canvasRef}
         className="pointer-events-none absolute top-0 left-0 h-[100dvh] w-screen rounded-full bg-transparent"
@@ -317,7 +359,7 @@ export default function LoadingScreen({
               className="animate-fade-in text-2xl md:text-3xl font-bold font-mono"
               style={{ color: color }}
             >
-              {loadingProgress}%
+              <span aria-live="polite">{loadingProgress}%</span>
             </p>
           ) : (
             <button

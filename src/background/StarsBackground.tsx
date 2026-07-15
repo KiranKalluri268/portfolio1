@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useAudio } from "@/context/AudioContextProvider";
 
 const STAR_COLORS = ["255,255,255", "255,233,196", "212,251,255"];
 const MIN_STARS = 45;
@@ -78,8 +79,10 @@ function drawStar(context: CanvasRenderingContext2D, star: Star) {
 
 export default function StarsBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { hasEntered } = useAudio();
 
   useEffect(() => {
+    if (!hasEntered) return;
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d", { alpha: true });
     if (!canvas || !context) return;
@@ -319,7 +322,7 @@ export default function StarsBackground() {
       document.removeEventListener("visibilitychange", resetAnimation);
       reducedMotion.removeEventListener("change", resetAnimation);
     };
-  }, []);
+  }, [hasEntered]);
 
   return (
     <canvas

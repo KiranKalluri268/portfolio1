@@ -28,11 +28,12 @@ export default function Blackhole() {
     <div>
       <video
         ref={videoRef}
+        data-blackhole-video
         autoPlay={hasEntered}
         loop
         muted
         playsInline
-        preload="metadata"
+        preload="auto"
         className="fixed top-3/4 left-1/2 -z-10 aspect-square w-[min(220vw,52.5rem)] -translate-x-1/2 -translate-y-1/2 transform object-contain [transform-style:preserve-3d] sm:top-1/2 sm:left-[80%] sm:w-[52.5rem]"
         style={{
           background: 'transparent',
