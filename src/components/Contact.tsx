@@ -70,6 +70,8 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
   const [form, setForm] = useState<ContactForm>({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
 
   const validate = (): boolean => {
@@ -87,11 +89,30 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    setSubmitted(true);
-    setForm({ name: "", email: "", message: "" });
+
+    setIsSubmitting(true);
+    setSubmitError("");
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const result = (await response.json()) as { error?: string };
+
+      if (!response.ok) throw new Error(result.error || "Unable to send your message.");
+
+      setSubmitted(true);
+      setForm({ name: "", email: "", message: "" });
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Unable to send your message.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -173,13 +194,19 @@ const ContactSection = forwardRef<HTMLElement, ContactSectionProps>((props, ref)
             <div className="flex items-center justify-center gap-x-25">
               <button
                 type="submit"
-                className="bg-white text-black px-6 py-3 rounded-lg hover:bg-black hover:text-white hover:scale-105 transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isSubmitting}
+                className="bg-white text-black px-6 py-3 rounded-lg hover:bg-black hover:text-white hover:scale-105 transition-transform transform focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-wait disabled:opacity-60 disabled:hover:scale-100"
               >
-                Send Message
+                {isSubmitting ? "Sending..." : "Send Message"}
               </button>
 
 
             </div>
+            {submitError && (
+              <p className="text-center text-sm text-red-500" role="alert" aria-live="assertive">
+                {submitError}
+              </p>
+            )}
           </form>
         )}
 
