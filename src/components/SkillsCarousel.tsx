@@ -2,6 +2,7 @@
 
 import { type Ref, useLayoutEffect, useRef } from "react";
 import type { SkillCategory } from "@/types";
+import { useScrollActions } from "@/context/SmoothScrollContext";
 import gsap from "gsap";
 import {
   FaCss3Alt,
@@ -130,6 +131,7 @@ function SkillGroup({
 }
 
 function SkillRow({ category, reverse }: SkillRowProps) {
+  const { lenis } = useScrollActions();
   const rowRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const groupRef = useRef<HTMLDivElement>(null);
@@ -144,13 +146,37 @@ function SkillRow({ category, reverse }: SkillRowProps) {
     if (reduceMotion.matches) return;
 
     let tween: gsap.core.Tween | undefined;
+    let speedTween: gsap.core.Tween | undefined;
+    let resetSpeedTimer = 0;
     let visible = false;
+    let scrollDirection = 1;
+
+    const setSpeed = (timeScale: number) => {
+      if (!tween) return;
+      speedTween?.kill();
+      speedTween = gsap.to(tween, {
+        timeScale,
+        duration: Math.abs(timeScale) > 1 ? 0.18 : 0.55,
+        ease: "power2.out",
+        overwrite: true,
+      });
+    };
+
+    const handleScroll = ({ velocity }: { velocity: number }) => {
+      if (!visible || !tween) return;
+      if (Math.abs(velocity) > 0.01) scrollDirection = velocity < 0 ? -1 : 1;
+      const acceleratedSpeed = scrollDirection * (1 + Math.min(3, Math.abs(velocity) * 0.2));
+      setSpeed(acceleratedSpeed);
+      window.clearTimeout(resetSpeedTimer);
+      resetSpeedTimer = window.setTimeout(() => setSpeed(scrollDirection), 140);
+    };
 
     const createTween = () => {
       const distance = group.getBoundingClientRect().width;
       if (!distance) return;
 
       tween?.kill();
+      speedTween?.kill();
       gsap.set(track, { x: reverse ? -distance : 0 });
       tween = gsap.to(track, {
         x: reverse ? 0 : -distance,
@@ -167,22 +193,30 @@ function SkillRow({ category, reverse }: SkillRowProps) {
         visible = entry.isIntersecting;
         if (!tween) createTween();
         else if (visible) tween.play();
-        else tween.pause();
+        else {
+          window.clearTimeout(resetSpeedTimer);
+          scrollDirection = 1;
+          tween.timeScale(1).pause();
+        }
       },
-      { rootMargin: "120px 0px" },
+      { threshold: 0 },
     );
     const resizeObserver = new ResizeObserver(createTween);
 
     visibilityObserver.observe(row);
     resizeObserver.observe(group);
+    lenis?.on("scroll", handleScroll);
 
     return () => {
+      window.clearTimeout(resetSpeedTimer);
       visibilityObserver.disconnect();
       resizeObserver.disconnect();
+      lenis?.off("scroll", handleScroll);
+      speedTween?.kill();
       tween?.kill();
       gsap.set(track, { clearProps: "transform" });
     };
-  }, [reverse]);
+  }, [lenis, reverse]);
 
   return (
     <div
