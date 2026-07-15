@@ -1,26 +1,14 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import clsx from 'clsx';
 import { useAudio } from '@/context/AudioContextProvider';
 
 const AudioToggle = () => {
   const { audioEnabled, setAudioEnabled } = useAudio();
 
-  const audioElementRef = useRef<HTMLAudioElement | null>(null);
-
   const toggleAudioIndicator = () => {
     setAudioEnabled(!audioEnabled);
   };
-
-  useEffect(() => {
-    if (!audioElementRef.current) return;
-    if (audioEnabled) {
-      audioElementRef.current.play().catch((err) => console.error("Audio error:", err));
-    } else {
-      audioElementRef.current.pause();
-    }
-  }, [audioEnabled]);
 
   return (
     <button
@@ -30,14 +18,6 @@ const AudioToggle = () => {
       aria-pressed={audioEnabled}
       type="button"
     >
-      <audio
-        ref={audioElementRef}
-        data-portfolio-audio
-        className="hidden"
-        src="/audio/final.mp3"
-        loop
-        preload="auto"
-      />
       {[1, 2, 3, 4].map((bar) => (
         <div
           key={bar}
