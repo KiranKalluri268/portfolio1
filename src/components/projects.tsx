@@ -4,6 +4,7 @@ import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import Image from "next/image";
+import Link from "next/link";
 import type { VirtualScrollData } from "lenis";
 import type { Project } from "@/types";
 import { useScrollActions } from "@/context/SmoothScrollContext";
@@ -298,7 +299,9 @@ export default function ProjectsSection() {
 
         <div className="flex h-[100dvh] min-h-[100svh] w-screen shrink-0 items-center justify-center px-4">
           <h2 className="whitespace-nowrap text-center text-4xl font-bold tracking-tight sm:text-5xl">
-            See all projects
+            <Link href="/projects" className="rounded underline underline-offset-8">
+              See all projects
+            </Link>
           </h2>
         </div>
       </div>
