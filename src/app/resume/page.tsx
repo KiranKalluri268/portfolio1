@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import Link from "next/link";
 import resume from "@/data/resume.json";
 import DownloadResumeButton from "./DownloadResumeButton";
 import styles from "./resume.module.css";
@@ -22,6 +23,14 @@ export default function ResumePage() {
   return (
     <main className={styles.page}>
       <div className={styles.actions}>
+        <div className={styles.actionCopy}>
+          <Link href="/" className={styles.backLink}>
+            ← Back to portfolio
+          </Link>
+          <p className={styles.resumeNote}>
+            This is not an embedded PDF. The resume is built from structured JSON and rendered as accessible HTML
+          </p>
+        </div>
         <DownloadResumeButton />
       </div>
       <article className={styles.paper} aria-label={`${resume.basics.name} resume`}>

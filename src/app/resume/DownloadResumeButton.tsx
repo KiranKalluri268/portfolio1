@@ -35,7 +35,7 @@ export default function DownloadResumeButton() {
       className="rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-black shadow-lg transition-transform hover:scale-105 active:scale-95 disabled:cursor-wait disabled:opacity-70 disabled:hover:scale-100"
       aria-label="Download resume as a PDF"
     >
-      {isGenerating ? "Preparing PDF…" : "Download PDF"}
+      {isGenerating ? "Preparing PDF…" : "Download as PDF"}
     </button>
   );
 }

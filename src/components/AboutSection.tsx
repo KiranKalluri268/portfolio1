@@ -1,0 +1,180 @@
+"use client";
+
+import { useLayoutEffect, useMemo, useRef } from "react";
+import Link from "next/link";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+import about from "@/data/about.json";
+import { useAudio } from "@/context/AudioContextProvider";
+
+export default function AboutSection() {
+  const { hasEntered } = useAudio();
+  const sectionRef = useRef<HTMLElement>(null);
+  const copyRef = useRef<HTMLDivElement>(null);
+  const resumeLinkRef = useRef<HTMLAnchorElement>(null);
+  const wordRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  const fullDescription = useMemo(
+    () => about.segments.map(({ text }) => text).join(" "),
+    [],
+  );
+  const descriptionWords = useMemo(
+    () => about.segments.flatMap((segment, segmentIndex) =>
+      segment.text.split(/\s+/).map((word, index, words) => ({
+        word,
+        accent: segment.accent,
+        key: `${segmentIndex}-${index}-${word}`,
+        needsSpace: segmentIndex < about.segments.length - 1 || index < words.length - 1,
+      })),
+    ),
+    [],
+  );
+
+  useLayoutEffect(() => {
+    if (!hasEntered) return;
+    const section = sectionRef.current;
+    const copy = copyRef.current;
+    const resumeLink = resumeLinkRef.current;
+    const words = wordRefs.current.filter((word): word is HTMLSpanElement => word !== null);
+    if (!section || !copy || !resumeLink || words.length === 0) return;
+
+    gsap.registerPlugin(ScrollTrigger);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const context = gsap.context(() => {
+      if (reducedMotion) {
+        gsap.set(words, {
+          opacity: 1,
+          color: (_, word: HTMLSpanElement) =>
+            word.dataset.accent === "true" ? "#60a5fa" : "#ffffff",
+        });
+        gsap.set(resumeLink, { opacity: 1, pointerEvents: "auto" });
+        resumeLink.tabIndex = 0;
+        return;
+      }
+
+      gsap.fromTo(copy, { y: 0 }, {
+        y: () => -window.innerHeight * 0.05,
+        ease: "none",
+        force3D: true,
+        scrollTrigger: {
+          trigger: section,
+          start: "top 20%",
+          end: "bottom 35%",
+          scrub: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      let wordLines: number[] = [];
+
+      const measureLines = () => {
+        let currentLine = -1;
+        let previousTop = Number.NEGATIVE_INFINITY;
+        wordLines = words.map((word) => {
+          if (Math.abs(word.offsetTop - previousTop) > 2) {
+            currentLine += 1;
+            previousTop = word.offsetTop;
+          }
+          return currentLine;
+        });
+      };
+
+      const renderProgress = (progress: number) => {
+        const paragraphProgress = gsap.utils.clamp(0, 1, progress / 0.88);
+        const revealPosition = paragraphProgress * words.length;
+        const activeWordIndex = Math.min(
+          words.length - 1,
+          Math.max(0, Math.floor(revealPosition)),
+        );
+        const activeLine = wordLines[activeWordIndex] ?? 0;
+        const activeLineStart = wordLines.indexOf(activeLine);
+        const activeLineEnd = wordLines.lastIndexOf(activeLine);
+        const activeLineProgress = gsap.utils.clamp(
+          0,
+          1,
+          (revealPosition - activeLineStart) / Math.max(1, activeLineEnd - activeLineStart + 1),
+        );
+
+        words.forEach((word, index) => {
+          const wordProgress = gsap.utils.clamp(0, 1, revealPosition - index);
+          const wordLine = wordLines[index] ?? 0;
+          const isReadLine = wordLine < activeLine;
+          const isImmediatelyPreviousLine = wordLine === activeLine - 1;
+          const isActiveLine = wordLine === activeLine;
+          const opacity = isImmediatelyPreviousLine
+            ? gsap.utils.interpolate(1, 0.38, activeLineProgress)
+            : isReadLine
+              ? 0.38
+              : isActiveLine
+                ? 0.1 + wordProgress * 0.9
+                : 0.1;
+          const accentColor = word.dataset.accent === "true" ? "#60a5fa" : "#ffffff";
+
+          word.style.opacity = String(opacity);
+          word.style.color = wordProgress > 0 || isReadLine ? accentColor : "#64748b";
+        });
+
+        const linkProgress = gsap.utils.clamp(0, 1, (progress - 0.87) / 0.05);
+        resumeLink.style.opacity = String(0.08 + linkProgress * 0.92);
+        resumeLink.style.pointerEvents = linkProgress > 0.2 ? "auto" : "none";
+        resumeLink.tabIndex = linkProgress > 0.2 ? 0 : -1;
+      };
+
+      measureLines();
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top 20%",
+        end: "bottom 35%",
+        scrub: 0.35,
+        invalidateOnRefresh: true,
+        onRefresh: measureLines,
+        onUpdate: ({ progress }) => renderProgress(progress),
+      });
+    }, section);
+
+    return () => context.revert();
+  }, [hasEntered]);
+
+  return (
+    <section
+      ref={sectionRef}
+      id="about"
+      className="relative min-h-[500svh] text-white"
+      aria-label={about.ariaLabel}
+    >
+      <div className="h-[30svh]" aria-hidden="true" />
+      <div className="sticky top-0 flex h-[100svh] items-center px-5 py-20 sm:px-10 lg:px-20">
+        <div ref={copyRef} className="relative mx-auto w-full max-w-6xl sm:-left-[3vw] lg:-left-[5vw]">
+          <h2 className="mb-5 text-sm font-semibold uppercase tracking-[0.24em] text-white/55 sm:mb-8 sm:text-base">
+            {about.eyebrow}
+          </h2>
+          <p
+            className="text-[clamp(1.15rem,4.2vw,2.75rem)] font-semibold leading-[1.18] tracking-[-0.015em]"
+            aria-label={fullDescription}
+          >
+            {descriptionWords.map(({ word, accent, key, needsSpace }, index) => (
+              <span
+                ref={(element) => {
+                  wordRefs.current[index] = element;
+                }}
+                key={key}
+                data-accent={accent}
+                className="inline text-slate-500 opacity-10"
+                aria-hidden="true"
+              >
+                {word}{needsSpace ? " " : ""}
+              </span>
+            ))}
+          </p>
+          <Link
+            ref={resumeLinkRef}
+            href="/resume"
+            tabIndex={-1}
+            className="pointer-events-none mt-7 inline-flex items-center rounded-full border border-blue-400/50 bg-blue-500/10 px-4 py-2 text-sm font-semibold tracking-wide text-white opacity-[0.08] shadow-[0_0_22px_rgba(96,165,250,0.12)] transition-[background-color,border-color,box-shadow] hover:border-blue-300 hover:bg-blue-500/20 hover:shadow-[0_0_28px_rgba(96,165,250,0.25)] sm:mt-9 sm:text-base"
+          >
+            View my resume →
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}

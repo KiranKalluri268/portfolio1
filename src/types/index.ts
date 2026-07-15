@@ -1,7 +1,7 @@
 // Shared TypeScript types for the portfolio application
 
 // Scene types
-export type SceneIndex = 0 | 1 | 2 | 3 | 4;
+export type SceneIndex = 0 | 1 | 2 | 3 | 4 | 5;
 
 // Project types
 export interface Project {

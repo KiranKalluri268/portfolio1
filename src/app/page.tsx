@@ -2,6 +2,7 @@
 
 import NavBar from '@/components/NavBar1';
 import Hero from '@/components/hero';
+import AboutSection from '@/components/AboutSection';
 import ProjectsSection from '@/components/projects';
 import ExperienceTimeline from '@/components/ExperienceTimeline';
 import SkillsCarousel from '@/components/SkillsCarousel';
@@ -22,6 +23,7 @@ export default function Home() {
 
       <div id="portfolio-content">
         <SkipLink href="#main-content">Skip to main content</SkipLink>
+        <SkipLink href="#about">Skip to about</SkipLink>
         <SkipLink href="#projects">Skip to projects</SkipLink>
         <SkipLink href="#experience">Skip to experience</SkipLink>
         <SkipLink href="#skills">Skip to skills</SkipLink>
@@ -47,20 +49,25 @@ export default function Home() {
           </SceneWrapper>
           <SceneWrapper index={1}>
             <ErrorBoundary>
-              <ProjectsSection />
+              <AboutSection />
             </ErrorBoundary>
           </SceneWrapper>
           <SceneWrapper index={2}>
             <ErrorBoundary>
-              <ExperienceTimeline />
+              <ProjectsSection />
             </ErrorBoundary>
           </SceneWrapper>
           <SceneWrapper index={3}>
             <ErrorBoundary>
-              <SkillsCarousel />
+              <ExperienceTimeline />
             </ErrorBoundary>
           </SceneWrapper>
           <SceneWrapper index={4}>
+            <ErrorBoundary>
+              <SkillsCarousel />
+            </ErrorBoundary>
+          </SceneWrapper>
+          <SceneWrapper index={5}>
             <ErrorBoundary>
               <ContactSection />
             </ErrorBoundary>

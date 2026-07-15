@@ -1,0 +1,42 @@
+{
+  "eyebrow": "A little about me",
+  "ariaLabel": "About Saikiran Kalluri",
+  "segments": [
+    {
+      "text": "I am a",
+      "accent": false
+    },
+    {
+      "text": "software engineer",
+      "accent": true
+    },
+    {
+      "text": "who enjoys turning complex problems into",
+      "accent": false
+    },
+    {
+      "text": "practical, scalable products.",
+      "accent": true
+    },
+    {
+      "text": "I work across",
+      "accent": false
+    },
+    {
+      "text": "full-stack development, cloud infrastructure, and AI",
+      "accent": true
+    },
+    {
+      "text": "— building everything from real-time WebRTC experiences and intelligent engagement systems to secure management platforms and developer diagnostics. I care about",
+      "accent": false
+    },
+    {
+      "text": "clean systems, thoughtful user experiences,",
+      "accent": true
+    },
+    {
+      "text": "and learning whatever the problem demands.",
+      "accent": false
+    }
+  ]
+}

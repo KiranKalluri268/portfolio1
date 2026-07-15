@@ -9,7 +9,39 @@
   display: flex;
   width: min(210mm, 100%);
   margin: 0 auto 1rem;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.resumeNote {
+  max-width: 34rem;
+  margin: 0;
+  color: #b7b7b7;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.actionCopy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+
+.backLink {
+  flex: 0 0 auto;
+  color: #e5e5e5;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.backLink:hover {
+  color: #60a5fa;
 }
 
 .paper {
@@ -121,8 +153,15 @@
     z-index: 10;
     margin: 0;
     padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.65rem 1rem;
     background: rgb(23 23 23 / 90%);
     backdrop-filter: blur(8px);
+  }
+
+  .resumeNote {
+    flex: 1 1 14rem;
+    font-size: 0.7rem;
   }
 
   .paper {
