@@ -119,13 +119,16 @@ export default function ProjectsSection() {
       let settleTimer: ReturnType<typeof setTimeout> | undefined;
       let gestureStartIndex: number | null = null;
       let gestureDelta = 0;
+      let touchStartX = 0;
       let touchStartY = 0;
       let isTouchGesture = false;
+      let isHorizontalTouchGesture = false;
 
       const resetGesture = () => {
         gestureStartIndex = null;
         gestureDelta = 0;
         isTouchGesture = false;
+        isHorizontalTouchGesture = false;
       };
 
       const settle = () => {
@@ -145,30 +148,42 @@ export default function ProjectsSection() {
         }
 
         const range = trigger.end - trigger.start;
-        const intendedScroll = isTouchGesture ? window.scrollY : lenis.targetScroll;
-        const intendedProgress = gsap.utils.clamp(
-          0,
-          1,
-          (intendedScroll - trigger.start) / range,
-        );
         let destinationIndex = currentIndex;
 
-        if (gestureDelta > 0) {
-          const nextIndex = currentIndex + 1;
-          const threshold = gsap.utils.interpolate(
-            anchors[currentIndex],
-            anchors[nextIndex],
-            SNAP_THRESHOLD,
-          );
-          if (intendedProgress >= threshold) destinationIndex = nextIndex;
+        if (isTouchGesture && isHorizontalTouchGesture) {
+          const swipeThreshold = Math.min(64, window.innerWidth * 0.12);
+          if (Math.abs(gestureDelta) >= swipeThreshold) {
+            destinationIndex = gsap.utils.clamp(
+              0,
+              LAST_PANEL_INDEX,
+              currentIndex + (gestureDelta > 0 ? 1 : -1),
+            );
+          }
         } else {
-          const previousIndex = currentIndex - 1;
-          const threshold = gsap.utils.interpolate(
-            anchors[currentIndex],
-            anchors[previousIndex],
-            SNAP_THRESHOLD,
+          const intendedScroll = isTouchGesture ? window.scrollY : lenis.targetScroll;
+          const intendedProgress = gsap.utils.clamp(
+            0,
+            1,
+            (intendedScroll - trigger.start) / range,
           );
-          if (intendedProgress <= threshold) destinationIndex = previousIndex;
+
+          if (gestureDelta > 0) {
+            const nextIndex = currentIndex + 1;
+            const threshold = gsap.utils.interpolate(
+              anchors[currentIndex],
+              anchors[nextIndex],
+              SNAP_THRESHOLD,
+            );
+            if (intendedProgress >= threshold) destinationIndex = nextIndex;
+          } else {
+            const previousIndex = currentIndex - 1;
+            const threshold = gsap.utils.interpolate(
+              anchors[currentIndex],
+              anchors[previousIndex],
+              SNAP_THRESHOLD,
+            );
+            if (intendedProgress <= threshold) destinationIndex = previousIndex;
+          }
         }
 
         const destination = trigger.start + anchors[destinationIndex] * range;
@@ -196,6 +211,7 @@ export default function ProjectsSection() {
       const handleTouchStart = (event: TouchEvent) => {
         if (!trigger.isActive || event.touches.length !== 1) return;
         isTouchGesture = true;
+        touchStartX = event.touches[0].clientX;
         touchStartY = event.touches[0].clientY;
         gestureStartIndex = nearestAnchorIndex(trigger.progress);
         gestureDelta = 0;
@@ -203,7 +219,10 @@ export default function ProjectsSection() {
 
       const handleTouchMove = (event: TouchEvent) => {
         if (!isTouchGesture || event.touches.length !== 1) return;
-        gestureDelta = touchStartY - event.touches[0].clientY;
+        const deltaX = touchStartX - event.touches[0].clientX;
+        const deltaY = touchStartY - event.touches[0].clientY;
+        isHorizontalTouchGesture = Math.abs(deltaX) > Math.abs(deltaY);
+        gestureDelta = isHorizontalTouchGesture ? deltaX : deltaY;
       };
 
       const handleTouchEnd = () => {

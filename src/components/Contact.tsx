@@ -207,7 +207,7 @@ export default function ContactSection() {
           </form>
         )}
 
-        <div className="mt-12 flex w-full justify-center gap-8 text-gray-200 sm:mt-20 sm:gap-16">
+        <div className="mt-8 flex w-full justify-center gap-8 text-gray-200 sm:mt-20 sm:gap-16">
           {socialLinks.map(({ name, url, svg }) => (
             <a
               key={name}
