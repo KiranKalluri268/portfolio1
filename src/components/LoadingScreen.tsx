@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useAudio } from "../context/AudioContextProvider";
+import { useAudio } from "@/context/AudioContextProvider";
 
 interface ParticleProps {
   radius: number;
@@ -93,12 +93,8 @@ export default function LoadingScreen({
   const particlesRef = useRef<LoadingParticle[]>([]);
   const animationFrameRef = useRef<number | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-
-  // Audio context
-  const { audioEnabled, setAudioEnabled } = useAudio();
-
-  // Show prompt if audio is not enabled
-  const [visible, setVisible] = useState(!audioEnabled);
+  const { hasEntered, enterPortfolio } = useAudio();
+  const [visible, setVisible] = useState(!hasEntered);
 
   // Loading progress state
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -211,6 +207,8 @@ export default function LoadingScreen({
   useEffect(() => {
     if (!visible) return; // don't run animation if hidden
 
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -291,25 +289,22 @@ export default function LoadingScreen({
   }, [canvasSize, color, thickness, speed, numParticles, orbitRadii, particleRadius, tailLength, visible]);
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && visible && isLoaded && buttonRef.current) {
-        buttonRef.current.click(); // triggers the full click lifecycle
-      }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Enter" && visible && isLoaded) buttonRef.current?.click();
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [visible, isLoaded]);
 
-  const handleEnableAudio = () => {
-    setAudioEnabled(true);
+  const handleEnter = () => {
+    enterPortfolio();
     setVisible(false);
   };
 
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex min-h-[100svh] items-center justify-center bg-black/30 backdrop-blur-md">
+    <div className="fixed inset-0 z-[9999] flex min-h-[100svh] items-center justify-center bg-black">
       <canvas
         ref={canvasRef}
         className="pointer-events-none absolute top-0 left-0 h-[100dvh] w-screen rounded-full bg-transparent"
@@ -327,11 +322,11 @@ export default function LoadingScreen({
           ) : (
             <button
               ref={buttonRef}
-              key="enter-button"
-              onClick={handleEnableAudio}
-              className="animate-pop-in text-2xl md:text-3xl font-bold cursor-pointer bg-transparent border-none select-none transition-transform duration-200 hover:scale-115 active:scale-95 p-4"
-              style={{ color: color }}
-              aria-label="Enable Audio and Enter"
+              type="button"
+              onClick={handleEnter}
+              className="animate-pop-in cursor-pointer rounded bg-transparent p-4 text-2xl font-bold transition-transform duration-200 hover:scale-115 active:scale-95 md:text-3xl"
+              style={{ color }}
+              aria-label="Enter portfolio and enable audio"
             >
               Enter
             </button>
@@ -342,7 +337,7 @@ export default function LoadingScreen({
         className="absolute bottom-[max(1rem,env(safe-area-inset-bottom))] left-0 w-full px-4 text-center text-xs font-light tracking-wider select-none sm:text-sm md:text-base"
         style={{ color: colorToRgba(color, 0.7) }}
       >
-        NOTE: You can also use arrow keys (or WASD keys like in Games) for navigation, Clicking &quot;ENTER&quot; will turn on audio
+        Press Enter to open the portfolio with audio. You can mute it anytime from the top control.
       </p>
     </div>
   );

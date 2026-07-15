@@ -20,6 +20,7 @@ export type SectionId = (typeof SECTION_IDS)[number];
 interface ScrollActionsContextValue {
   lenis: Lenis | null;
   scrollToSection: (section: SectionId) => void;
+  toggleProjectsEndpoint: () => void;
   scrollNext: () => void;
   scrollPrev: () => void;
 }
@@ -53,45 +54,40 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLenis(instance);
 
-    const updateScrollTrigger = () => ScrollTrigger.update();
+    const activateSection = (section: SectionId) => {
+      if (activeSectionRef.current === section) return;
+      activeSectionRef.current = section;
+      setActiveSection(section);
+    };
+
+    const detectActiveSection = () => {
+      const viewportCenter = window.innerHeight / 2;
+      const visibleSection = SECTION_IDS.find((id) => {
+        const element = document.getElementById(id);
+        if (!element) return false;
+        const rect = element.getBoundingClientRect();
+        return rect.top <= viewportCenter && rect.bottom > viewportCenter;
+      });
+      if (visibleSection) activateSection(visibleSection);
+    };
+
+    const updateScrollTrigger = () => {
+      ScrollTrigger.update();
+      detectActiveSection();
+    };
     const updateLenis = (time: number) => instance.raf(time * 1000);
     instance.on("scroll", updateScrollTrigger);
     gsap.ticker.add(updateLenis);
     gsap.ticker.lagSmoothing(0);
 
-    let sectionTriggers: ScrollTrigger[] = [];
-    const createSectionTriggers = () => {
-      sectionTriggers.forEach((trigger) => trigger.kill());
-      sectionTriggers = SECTION_IDS.flatMap((id) => {
-        const element = document.getElementById(id);
-        if (!element) return [];
-        return [ScrollTrigger.create({
-          id: `section-${id}`,
-          trigger: element,
-          start: "top center",
-          end: "bottom center",
-          onToggle: (self) => {
-            if (self.isActive && activeSectionRef.current !== id) {
-              activeSectionRef.current = id;
-              setActiveSection(id);
-            }
-          },
-        })];
-      });
-      ScrollTrigger.refresh();
-    };
-
-    createSectionTriggers();
-    const observer = new MutationObserver(() => {
-      if (SECTION_IDS.some((id) => !document.getElementById(id))) return;
-      createSectionTriggers();
-      observer.disconnect();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    const initialDetectionFrame = requestAnimationFrame(updateScrollTrigger);
+    window.addEventListener("resize", detectActiveSection, { passive: true });
+    ScrollTrigger.addEventListener("refresh", detectActiveSection);
 
     return () => {
-      observer.disconnect();
-      sectionTriggers.forEach((trigger) => trigger.kill());
+      cancelAnimationFrame(initialDetectionFrame);
+      window.removeEventListener("resize", detectActiveSection);
+      ScrollTrigger.removeEventListener("refresh", detectActiveSection);
       gsap.ticker.remove(updateLenis);
       instance.off("scroll", updateScrollTrigger);
       instance.destroy();
@@ -107,6 +103,27 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
     else element.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
+  const toggleProjectsEndpoint = useCallback(() => {
+    const projectsTrigger = ScrollTrigger.getById("projects-horizontal-pin");
+    if (!projectsTrigger) {
+      scrollToSection("projects");
+      return;
+    }
+
+    // Keep the destination just inside the pin so Projects remains the active
+    // scene at both ends. From the middle, continue toward the opposite half.
+    const pinInset = 2;
+    const destination = projectsTrigger.progress < 0.5
+      ? projectsTrigger.end - pinInset
+      : projectsTrigger.start + pinInset;
+
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(destination, { duration: 1.15 });
+    } else {
+      window.scrollTo({ top: destination, behavior: "smooth" });
+    }
+  }, [scrollToSection]);
+
   const scrollNext = useCallback(() => {
     const index = SECTION_IDS.indexOf(activeSectionRef.current);
     scrollToSection(SECTION_IDS[Math.min(index + 1, SECTION_IDS.length - 1)]);
@@ -117,8 +134,10 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
     scrollToSection(SECTION_IDS[Math.max(index - 1, 0)]);
   }, [scrollToSection]);
 
-  const actions = useMemo(() => ({ lenis, scrollToSection, scrollNext, scrollPrev }),
-    [lenis, scrollToSection, scrollNext, scrollPrev]);
+  const actions = useMemo(
+    () => ({ lenis, scrollToSection, toggleProjectsEndpoint, scrollNext, scrollPrev }),
+    [lenis, scrollToSection, toggleProjectsEndpoint, scrollNext, scrollPrev],
+  );
 
   return (
     <ScrollActionsContext.Provider value={actions}>

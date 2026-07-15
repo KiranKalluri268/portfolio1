@@ -12,11 +12,11 @@ export default function NavBar() {
       className="fixed top-0 left-0 right-0 z-50 flex w-full items-center justify-between px-5 pt-6 pb-0 text-white shadow-lg sm:px-12 sm:pt-10 lg:px-20 lg:pt-15"
       role="banner"
     >
-      <h1 className="text-2xl font-bold sm:text-3xl" id="site-title">
+      <div className="text-2xl font-bold sm:text-3xl" id="site-title">
         <a href="#main-content" aria-label="Saikiran Kalluri Portfolio - Home" className="outline-none">
           KS
         </a>
-      </h1>
+      </div>
       <nav aria-label="Main navigation" role="navigation">
         <ul className="flex space-x-6 text-lg items-center" role="list">
 

@@ -75,6 +75,7 @@ export default function ProjectsSection() {
       const timeline = gsap.timeline({
         defaults: { ease: "none" },
         scrollTrigger: {
+          id: "projects-horizontal-pin",
           trigger: section,
           start: "top top",
           end: () => `+=${window.innerHeight * LAST_PANEL_INDEX}`,

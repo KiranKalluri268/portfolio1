@@ -75,29 +75,13 @@ export default function NavigationControls() {
             scrollPrev();
         }
 
-        // Dispatch a global keydown event
-        // Dispatch key events to preserve the pressed-key visual feedback.
-        window.dispatchEvent(
-            new KeyboardEvent("keydown", {
-                key: key,
-                code: key,
-                bubbles: true,
-                cancelable: true,
-                view: window,
-            })
-        );
-
-        // Dispatch keyup after a short delay to simulate a tap and clear the highlight
+        setPressedKeys((previous) => new Set(previous).add(key));
         setTimeout(() => {
-            window.dispatchEvent(
-                new KeyboardEvent("keyup", {
-                    key: key,
-                    code: key,
-                    bubbles: true,
-                    cancelable: true,
-                    view: window,
-                })
-            );
+            setPressedKeys((previous) => {
+                const next = new Set(previous);
+                next.delete(key);
+                return next;
+            });
         }, 150);
     };
 
@@ -183,8 +167,8 @@ const ArrowButton = ({
     return (
         <button
             className={`absolute w-14 h-10 rounded-md flex items-center justify-center border ${enabled
-                ? "cursor-pointer pointer-events-auto"
-                : "opacity-30 cursor-not-allowed pointer-events-none"
+                ? "cursor-pointer"
+                : "opacity-30 cursor-not-allowed"
                 } ${isPressed
                     ? "bg-white border-white shadow-[0_0_15px_rgba(255,255,255,0.8)] scale-90"
                     : "bg-black/50 border-white/30 shadow-lg hover:bg-white/20 active:bg-white/20"

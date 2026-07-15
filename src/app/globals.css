@@ -71,10 +71,13 @@ canvas {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-pop-in,
-  .scroll-hint {
-    animation-duration: 0.01ms;
-    animation-iteration-count: 1;
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
@@ -96,22 +99,7 @@ canvas {
   50% { transform: scaleY(2); }
 }
 
-/* Remove all focus rings project-wide */
-*:focus,
-*:focus-visible,
-*:focus-within {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-button:focus,
-button:focus-visible,
-a:focus,
-a:focus-visible,
-input:focus,
-input:focus-visible,
-textarea:focus,
-textarea:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
+*:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 3px;
 }

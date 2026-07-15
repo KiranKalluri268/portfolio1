@@ -4,6 +4,7 @@ import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import type { Experience } from "@/types";
+import { useAudio } from "@/context/AudioContextProvider";
 
 type TimelineExperience = Omit<Experience, "description"> & {
   description: string[];
@@ -42,6 +43,7 @@ const experiences: TimelineExperience[] = [
 ];
 
 export default function ExperienceTimeline() {
+  const { hasEntered } = useAudio();
   const sectionRef = useRef<HTMLElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -49,6 +51,8 @@ export default function ExperienceTimeline() {
   const dotRefs = useRef<Array<HTMLSpanElement | null>>([]);
 
   useLayoutEffect(() => {
+    if (!hasEntered) return;
+
     const section = sectionRef.current;
     const timeline = timelineRef.current;
     const svg = svgRef.current;
@@ -103,29 +107,30 @@ export default function ExperienceTimeline() {
         gsap.timeline({
           scrollTrigger: {
             trigger: row,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
+            start: "top 90%",
+            end: "bottom 10%",
+            scrub: 0.35,
           },
         })
-          .fromTo(cards, { scale: 0.86 }, {
+          .fromTo(cards, { scale: 0.82 }, {
             scale: 1,
             duration: 0.5,
             ease: "sine.out",
           })
           .to(cards, {
-            scale: 0.86,
+            scale: 0.82,
             duration: 0.5,
             ease: "sine.in",
           });
       });
+      ScrollTrigger.refresh();
     }, section);
 
     return () => {
       resizeObserver.disconnect();
       context.revert();
     };
-  }, []);
+  }, [hasEntered]);
 
   return (
     <section

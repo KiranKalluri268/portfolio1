@@ -223,7 +223,7 @@ export default function SkillsCarousel() {
       style={{ zIndex: 10 }}
     >
       <div className="relative left-[2vw] w-full space-y-6 py-16 sm:left-[5vw] sm:w-[82%] sm:space-y-10 sm:py-20 md:w-[72%] lg:w-[62%] xl:w-[62%]">
-        <h1 className="mb-6 text-center text-3xl font-bold sm:mb-10 sm:text-4xl">Tech Stack</h1>
+        <h2 className="mb-6 text-center text-3xl font-bold sm:mb-10 sm:text-4xl">Tech Stack</h2>
         {skillCategories.map((category, index) => (
           <SkillRow key={category.title} category={category} reverse={index % 2 === 1} />
         ))}

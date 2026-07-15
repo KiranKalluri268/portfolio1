@@ -4,7 +4,7 @@ This document records the recommended improvements in priority order. The orderi
 
 ## Priority 0 — Critical fixes
 
-### 1. Remove the audio gate from the entire portfolio
+### ~~1. Remove the audio gate from the entire portfolio~~ — Completed
 
 **Problem:** The main portfolio is rendered only when `audioEnabled` is true. If a visitor does not enable audio, the actual site is hidden.
 
@@ -24,7 +24,7 @@ This document records the recommended improvements in priority order. The orderi
 
 **Relevant area:** `src/components/Contact.tsx`.
 
-### 3. Restore keyboard focus visibility
+### ~~3. Restore keyboard focus visibility~~ — Completed
 
 **Problem:** Global CSS removes all focus outlines and box shadows, making keyboard navigation inaccessible.
 
@@ -34,7 +34,7 @@ This document records the recommended improvements in priority order. The orderi
 
 **Relevant area:** `src/app/globals.css`.
 
-### 4. Add complete reduced-motion support
+### ~~4. Add complete reduced-motion support~~ — Completed
 
 **Problem:** The site continuously animates text, transitions, particles, canvases, and video without respecting motion preferences.
 
@@ -44,7 +44,7 @@ This document records the recommended improvements in priority order. The orderi
 
 **Relevant areas:** global CSS, `Hero`, `SceneWrapper`, background components, carousel components.
 
-### 5. Make interactive controls semantic and keyboard usable
+### ~~5. Make interactive controls semantic and keyboard usable~~ — Completed
 
 **Problem:** Some controls use `div` elements with `role="button"`, synthetic keyboard events, or mouse-only behavior.
 
@@ -56,7 +56,7 @@ This document records the recommended improvements in priority order. The orderi
 
 ## Priority 1 — Major usability and architecture improvements
 
-### 6. Keep all important portfolio content in the semantic document
+### ~~6. Keep all important portfolio content in the semantic document~~ — Completed
 
 **Problem:** Only the current scene is mounted. Search engines, assistive technology, browser find, text selection, and no-JavaScript users cannot reliably access all sections.
 
@@ -142,7 +142,7 @@ Also change JSON-LD from `http://schema.org` to `https://schema.org`.
 
 **Relevant areas:** `src/app/layout.tsx`, `src/app/sitemap.ts`, `src/app/robots.ts`, `public/images`.
 
-### 14. Fix heading hierarchy and semantic landmarks
+### ~~14. Fix heading hierarchy and semantic landmarks~~ — Completed
 
 Use one page-level `<h1>`. Change the navbar logo heading to a non-heading element if appropriate. Ensure every section has a visible heading, and use `header`, `nav`, `main`, `section`, and `footer` consistently.
 

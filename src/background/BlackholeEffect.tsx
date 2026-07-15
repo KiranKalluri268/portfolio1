@@ -1,28 +1,34 @@
 "use client";
 import { useRef, useEffect } from "react";
+import { useAudio } from "@/context/AudioContextProvider";
 
 export default function Blackhole() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { hasEntered } = useAudio();
 
   useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const handleVisibility = () => {
       const video = videoRef.current;
       if (!video) return;
-      if (document.hidden) video.pause();
+      if (!hasEntered || document.hidden || reducedMotion.matches) video.pause();
       else video.play().catch(() => {});
     };
+    handleVisibility();
     document.addEventListener("visibilitychange", handleVisibility);
+    reducedMotion.addEventListener("change", handleVisibility);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibility);
+      reducedMotion.removeEventListener("change", handleVisibility);
     };
-  }, []);
+  }, [hasEntered]);
 
   return (
     <div>
       <video
         ref={videoRef}
-        autoPlay
+        autoPlay={hasEntered}
         loop
         muted
         playsInline

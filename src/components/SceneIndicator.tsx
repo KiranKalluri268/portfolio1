@@ -18,7 +18,7 @@ const scenes: SceneInfo[] = [
 
 export default function SceneIndicator() {
   const activeSection = useActiveSection();
-  const { scrollToSection } = useScrollActions();
+  const { scrollToSection, toggleProjectsEndpoint } = useScrollActions();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -34,13 +34,18 @@ export default function SceneIndicator() {
   }, [hoveredIndex]);
 
   const handleDotClick = (section: SectionId) => {
-    if (section !== activeSection) scrollToSection(section);
+    if (section === activeSection) {
+      if (section === "projects") toggleProjectsEndpoint();
+      return;
+    }
+
+    scrollToSection(section);
   };
 
   return (
     <>
       <nav
-        className="fixed top-16 left-1/2 z-50 -translate-x-1/2 sm:top-8"
+        className="fixed bottom-16 left-1/2 z-50 -translate-x-1/2 sm:bottom-auto sm:top-8"
         aria-label="Scene navigation indicator"
         role="navigation"
       >

@@ -1,34 +1,33 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import clsx from 'clsx';
+import { useAudio } from '@/context/AudioContextProvider';
 
 const AudioToggle = () => {
-  const [isAudioPlaying, setIsAudioPlaying] = useState(true);
-  const [isIndicatorActive, setIsIndicatorActive] = useState(true);
+  const { audioEnabled, setAudioEnabled } = useAudio();
 
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
 
   const toggleAudioIndicator = () => {
-    setIsAudioPlaying((prev) => !prev);
-    setIsIndicatorActive((prev) => !prev);
+    setAudioEnabled(!audioEnabled);
   };
 
   useEffect(() => {
     if (!audioElementRef.current) return;
-    if (isAudioPlaying) {
+    if (audioEnabled) {
       audioElementRef.current.play().catch((err) => console.error("Audio error:", err));
     } else {
       audioElementRef.current.pause();
     }
-  }, [isAudioPlaying]);
+  }, [audioEnabled]);
 
   return (
     <button
       onClick={toggleAudioIndicator}
       className="ml-6 flex items-center space-x-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black rounded px-2 py-1"
-      aria-label={isAudioPlaying ? "Pause audio playback" : "Play audio playback"}
-      aria-pressed={isAudioPlaying}
+      aria-label={audioEnabled ? "Pause audio playback" : "Play audio playback"}
+      aria-pressed={audioEnabled}
       type="button"
     >
       <audio
@@ -42,7 +41,7 @@ const AudioToggle = () => {
         <div
           key={bar}
           className={clsx("indicator-line", {
-            active: isIndicatorActive,
+            active: audioEnabled,
           })}
           style={{
             animationDelay: `${bar * 0.1}s`,
