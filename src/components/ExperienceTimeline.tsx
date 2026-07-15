@@ -1,99 +1,259 @@
 "use client";
 
+import { useLayoutEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import type { Experience } from "@/types";
 
-const experiences: Experience[] = [
+type TimelineExperience = Omit<Experience, "description"> & {
+  description: string[];
+  location?: string;
+  workMode?: "On-site" | "Hybrid" | "Remote";
+};
 
+const experiences: TimelineExperience[] = [
   {
     title: "Software Engineer Intern",
     company: "Aude.ai",
     date: "January 2026 - Present",
-    description:
-      "Working on building a AI-powered platform that can help people to learn new things.",
+    description: [
+      "Building an AI-powered platform that helps people learn new concepts and skills.",
+    ],
   },
   {
     title: "Forward Deployed Engineer",
     company: "AarogyalinQ Pvt. Ltd.",
     date: "July 2025 - January 2026",
-    description:
-      "Learned and applied full-stack development using the MERN stack. Built basic web applications with user interfaces in React, backend services in Node/Express, and data storage in MongoDB.",
+    description: [
+      "Learned and applied full-stack development using the MERN stack.",
+      "Built React user interfaces and backend services with Node.js and Express.",
+      "Worked with MongoDB for application data storage.",
+    ],
   },
   {
     title: "AWS Cloud Virtual Internship",
     company: "Eduskills Foundation",
     date: "April 2024 - June 2024",
-    description:
-      "Completed a 3-month virtual internship focused on AWS Cloud technologies in collaboration with Eduskills and AWS Academy.",
-  }
+    description: [
+      "Completed a three-month virtual internship focused on AWS Cloud technologies.",
+      "Participated through a collaboration between Eduskills and AWS Academy.",
+    ],
+  },
 ];
 
-const ExperienceTimeline = () => {
+export default function ExperienceTimeline() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
+  const dotRefs = useRef<Array<HTMLSpanElement | null>>([]);
+
+  useLayoutEffect(() => {
+    const section = sectionRef.current;
+    const timeline = timelineRef.current;
+    const svg = svgRef.current;
+    const path = pathRef.current;
+    if (!section || !timeline || !svg || !path) return;
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const updateCurve = () => {
+      const timelineRect = timeline.getBoundingClientRect();
+      const points = dotRefs.current
+        .map((dot) => {
+          if (!dot) return null;
+          const rect = dot.getBoundingClientRect();
+          return {
+            x: rect.left + rect.width / 2 - timelineRect.left,
+            y: rect.top + rect.height / 2 - timelineRect.top,
+          };
+        })
+        .filter((point): point is { x: number; y: number } => point !== null);
+
+      svg.setAttribute("viewBox", `0 0 ${timelineRect.width} ${timelineRect.height}`);
+      if (points.length === 0) {
+        path.setAttribute("d", "");
+        return;
+      }
+
+      const commands = [`M ${points[0].x} ${points[0].y}`];
+      for (let index = 1; index < points.length; index += 1) {
+        const previous = points[index - 1];
+        const current = points[index];
+        const middleY = (previous.y + current.y) / 2;
+        commands.push(
+          `C ${previous.x} ${middleY}, ${current.x} ${middleY}, ${current.x} ${current.y}`,
+        );
+      }
+      path.setAttribute("d", commands.join(" "));
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateCurve();
+      ScrollTrigger.refresh();
+    });
+    resizeObserver.observe(timeline);
+    updateCurve();
+
+    const context = gsap.context(() => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      gsap.utils.toArray<HTMLElement>(".experience-row").forEach((row) => {
+        const cards = row.querySelectorAll<HTMLElement>(".experience-card-scale");
+        gsap.timeline({
+          scrollTrigger: {
+            trigger: row,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true,
+          },
+        })
+          .fromTo(cards, { scale: 0.86 }, {
+            scale: 1,
+            duration: 0.5,
+            ease: "sine.out",
+          })
+          .to(cards, {
+            scale: 0.86,
+            duration: 0.5,
+            ease: "sine.in",
+          });
+      });
+    }, section);
+
+    return () => {
+      resizeObserver.disconnect();
+      context.revert();
+    };
+  }, []);
+
   return (
     <section
       id="experience"
-      className="min-h-screen flex items-center justify-center px-4 text-white overflow-hidden relative"
+      ref={sectionRef}
+      className="relative z-10 min-h-screen overflow-hidden px-4 py-24 text-white sm:px-6 lg:px-8"
       aria-label="Experience timeline section"
-      style={{ zIndex: 10 }}
     >
-      <div className="w-full max-w-4xl">
-        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-8">Experience Timeline</h2>
-        <div
-          className="relative max-w-3xl mx-auto"
-          aria-label="Professional experience timeline"
-        >
-          {/* Glowing timeline line */}
-          <div className="absolute left-4 top-[26px] bottom-10 w-[2px] bg-gradient-to-b from-blue-500 via-purple-500 to-transparent shadow-[0_0_10px_rgba(59,130,246,0.5)] z-0" />
+      <div className="relative mx-auto w-full max-w-[1080px] lg:-left-[6vw]">
+        <h2 className="mb-14 text-center text-3xl font-bold sm:text-4xl">
+          Experience Timeline
+        </h2>
 
-          <ul className="flex flex-col gap-6 sm:gap-8 relative z-10 w-full">
-            {experiences.map((exp, index) => (
-              <TimelineItem key={index} experience={exp} index={index} />
-            ))}
-          </ul>
+        <div ref={timelineRef} className="relative flex flex-col gap-20 md:gap-24">
+          <svg
+            ref={svgRef}
+            className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <defs>
+              <linearGradient id="experience-line-gradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#3b82f6" />
+                <stop offset="55%" stopColor="#8b5cf6" />
+                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.25" />
+              </linearGradient>
+            </defs>
+            <path
+              ref={pathRef}
+              fill="none"
+              stroke="url(#experience-line-gradient)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          </svg>
+
+          {experiences.map((experience, index) => (
+            <ExperienceRow
+              key={`${experience.company}-${experience.title}`}
+              experience={experience}
+              index={index}
+              dotRef={(dot) => {
+                dotRefs.current[index] = dot;
+              }}
+            />
+          ))}
         </div>
       </div>
     </section>
   );
-};
-
-interface TimelineItemProps {
-  experience: Experience;
-  index: number;
 }
 
-const TimelineItem = ({ experience, index }: TimelineItemProps) => {
+interface ExperienceRowProps {
+  experience: TimelineExperience;
+  index: number;
+  dotRef: (dot: HTMLSpanElement | null) => void;
+}
+
+function ExperienceRow({ experience, index, dotRef }: ExperienceRowProps) {
+  const isReversed = index % 2 === 1;
+  const rowShift = isReversed ? "lg:-left-12" : "lg:left-12";
+  const detailColumn = isReversed ? "md:col-start-3" : "md:col-start-1";
+  const descriptionColumn = isReversed ? "md:col-start-1" : "md:col-start-3";
+  const desktopColumns = isReversed
+    ? "md:grid-cols-[minmax(0,1.28fr)_64px_minmax(0,0.72fr)]"
+    : "md:grid-cols-[minmax(0,0.72fr)_64px_minmax(0,1.28fr)]";
+
   return (
-    <li
-      className="relative pl-12 sm:pl-16 list-none group"
-      role="listitem"
-      aria-label={`Experience ${index + 1}: ${experience.title} at ${experience.company}`}
+    <article
+      className={`experience-row relative z-10 grid grid-cols-[32px_minmax(0,1fr)] gap-x-3 gap-y-4 ${desktopColumns} md:items-stretch md:gap-x-5 md:gap-y-0 ${rowShift}`}
+      aria-label={`${experience.title} at ${experience.company}`}
     >
-      {/* Glowing Dot */}
+      <div
+        className={`experience-card-scale col-start-2 row-start-1 ${detailColumn} md:row-start-1`}
+        style={{ transformOrigin: isReversed ? "left center" : "right center" }}
+      >
+        <div className="h-full rounded-2xl border border-white/10 bg-black/55 p-5 shadow-xl transition-[background-color,border-color,transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-blue-400/25 hover:bg-white/5 hover:shadow-blue-500/10 sm:p-6">
+          <h3 className="mb-3 text-xl font-bold tracking-wide sm:text-2xl">
+            {experience.title}
+          </h3>
+          <p className="mb-4 font-medium text-blue-400">{experience.company}</p>
+          <dl className="space-y-3 text-sm text-gray-300">
+            <div>
+              <dt className="text-xs uppercase tracking-wider text-gray-500">Period</dt>
+              <dd className="mt-1">{experience.date}</dd>
+            </div>
+            {experience.location && (
+              <div>
+                <dt className="text-xs uppercase tracking-wider text-gray-500">Location</dt>
+                <dd className="mt-1">{experience.location}</dd>
+              </div>
+            )}
+            {experience.workMode && (
+              <div>
+                <dt className="text-xs uppercase tracking-wider text-gray-500">Work mode</dt>
+                <dd className="mt-1">{experience.workMode}</dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      </div>
+
       <span
-        className="absolute left-[10px] top-[26px] w-[14px] h-[14px] bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.8)] border border-white/40 z-10 
-                   group-hover:scale-150 group-hover:bg-blue-400 group-hover:shadow-[0_0_20px_rgba(59,130,246,1)] group-hover:border-white transition-all duration-300"
+        ref={dotRef}
+        className="col-start-1 row-span-2 row-start-1 place-self-center rounded-full border border-white/70 bg-blue-500 shadow-[0_0_14px_rgba(59,130,246,0.9)] md:col-start-2 md:row-span-1 md:row-start-1"
+        style={{ width: 16, height: 16 }}
         aria-hidden="true"
       />
-      {/* Card */}
-      <article className="bg-transparent backdrop-blur-sm border border-white/5 p-5 sm:p-6 rounded-2xl shadow-xl 
-                        hover:-translate-y-1 hover:bg-white/5 hover:border-white/10 hover:shadow-2xl hover:shadow-blue-500/20 
-                        transition-all duration-500 ease-out cursor-default relative overflow-hidden">
-        {/* Subtle inner gradient on hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-        <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 tracking-wide relative z-10">{experience.title}</h3>
-
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 relative z-10">
-          <p className="text-sm sm:text-base font-medium text-blue-400">{experience.company}</p>
-          <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-gray-600" />
-          <time className="inline-flex items-center px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-medium rounded-full" dateTime={experience.date}>
-            {experience.date}
-          </time>
+      <div
+        className={`experience-card-scale col-start-2 row-start-2 ${descriptionColumn} md:row-start-1`}
+        style={{ transformOrigin: isReversed ? "right center" : "left center" }}
+      >
+        <div className="h-full rounded-2xl border border-white/10 bg-black/55 p-5 shadow-xl transition-[background-color,border-color,transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-purple-400/25 hover:bg-white/5 hover:shadow-purple-500/10 sm:p-6">
+          <h4 className="mb-4 text-sm font-semibold uppercase tracking-widest text-gray-400">
+            Highlights
+          </h4>
+          <ul className="space-y-3 text-sm leading-relaxed text-gray-300 sm:text-base">
+            {experience.description.map((item) => (
+              <li key={item} className="flex gap-3">
+                <span className="mt-[0.65em] h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400" aria-hidden="true" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-
-        <p className="text-sm sm:text-base text-gray-300 leading-relaxed relative z-10">{experience.description}</p>
-      </article>
-    </li>
+      </div>
+    </article>
   );
-};
-
-export default ExperienceTimeline;
+}
