@@ -1,0 +1,104 @@
+{
+  "basics": {
+    "name": "SAIKIRAN KALLURI",
+    "location": "Palakurthi, Jangaon, Telangana – 506252",
+    "phone": "+91-8897008268",
+    "email": "kirankalluri888@gmail.com",
+    "links": [
+      {
+        "label": "linkedin.com/in/saikiran-kalluri",
+        "url": "https://linkedin.com/in/saikiran-kalluri"
+      },
+      {
+        "label": "github.com/KiranKalluri268",
+        "url": "https://github.com/KiranKalluri268"
+      },
+      {
+        "label": "saikirankalluri.vercel.app",
+        "url": "https://saikirankalluri.vercel.app"
+      }
+    ]
+  },
+  "objective": "Innovative and detail-oriented Full Stack Developer and Computer Science undergraduate with hands-on experience in building scalable web applications, AI/ML integrations, and cloud-based systems. Strong foundation in Data Structures and Algorithms, with a passion for problem-solving and developing impactful, user-centric solutions.",
+  "skills": [
+    {
+      "category": "Languages",
+      "items": ["Python", "JavaScript", "Java"]
+    },
+    {
+      "category": "AI/ML",
+      "items": ["TensorFlow.js", "RAG (Retrieval-Augmented Generation)", "Deep Learning (CNN, ResNet)", "LangChain"]
+    },
+    {
+      "category": "Web/Frameworks",
+      "items": ["React", "Next.js", "Node.js", "Express", "TailwindCSS"]
+    },
+    {
+      "category": "Databases",
+      "items": ["MongoDB", "MySQL", "PostgreSQL", "Supabase", "DynamoDB"]
+    },
+    {
+      "category": "Cloud & DevOps",
+      "items": ["AWS (EC2, S3, Lambda, IAM, IVS, DynamoDB, Amplify)", "Git", "Docker"]
+    },
+    {
+      "category": "Other Tools",
+      "items": ["Linux", "Figma", "Canva", "Tableau", "Cloudinary"]
+    }
+  ],
+  "projects": [
+    {
+      "name": "ThirdEyeAI – Real-time Engagement Detection & Meeting Platform",
+      "technologies": "MERN, TensorFlow.js, WebRTC, Python",
+      "highlights": [
+        "Engineered a hybrid ensemble bagging model (1D CNN and 1D ResNet) trained on the DAiSEE dataset to achieve 94.25% accuracy in detecting student engagement.",
+        "Implemented client-side inference using TensorFlow.js, enabling infinite horizontal scaling and ensuring user privacy by processing video streams locally within the browser.",
+        "Developed a fully functional WebRTC-based meeting engine for online classes, featuring real-time data visualization of engagement metrics for instructors.",
+        "Integrated a RAG (Retrieval-Augmented Generation) system to allow instructors to query session data using natural language, providing instant insights into student participation and distractions."
+      ]
+    },
+    {
+      "name": "CertiSafe – Certificate Management System",
+      "technologies": "MERN, AWS, DynamoDB",
+      "highlights": [
+        "Led a 4-member team to build and deploy a certificate management platform for my institute.",
+        "Integrated AWS DynamoDB and Cloudinary for secure data and media handling; onboarded 95+ users."
+      ]
+    }
+  ],
+  "internships": [
+    {
+      "role": "Software Engineer Intern",
+      "company": "Aude.ai",
+      "period": "Jan 2026 – Present",
+      "highlights": [
+        "Designed and developed a diagnostic web application to monitor real-time data integrity and ensure consistent delivery for end-users.",
+        "Engineered an end-to-end feedback mechanism that aggregates user input and visualizes it within the diagnostic dashboard, streamlining the debugging and product upgrade cycle for the development team.",
+        "Integrated cross-platform data sources (such as GitHub, Jira, or Slack) to automate the tracking of performance and system health metrics."
+      ]
+    },
+    {
+      "role": "Forward Deployed Engineer Intern (FDE)",
+      "company": "AarogyalinQ Private Limited",
+      "period": "Aug 2025 – Jan 2026",
+      "highlights": [
+        "Collaborated with clients to implement new features and optimize existing workflows.",
+        "Integrated voice input and commands using Bhashini API and ElevenLabs API in the company’s web application.",
+        "Added cloud functionality to a C++ application by enabling video storage in AWS S3 and live streaming through AWS IVS, improving accessibility and performance."
+      ]
+    }
+  ],
+  "education": {
+    "degree": "Bachelor of Technology – Computer Science & Engineering",
+    "institution": "Vaagdevi College of Engineering",
+    "period": "2022–2026",
+    "cgpa": "8.27"
+  },
+  "certifications": [
+    "AWS Cloud Foundations & Architecture – 2024",
+    "Cisco: Python, Cybersecurity & Packet Tracer – 2024",
+    "Oracle Fusion Cloud Process Essentials (SCM, ERP, CX, HCM) – 2025"
+  ],
+  "languages": ["English", "Telugu", "Hindi"],
+  "strengths": ["Problem-solving", "leadership", "Curious", "fast learner"]
+}

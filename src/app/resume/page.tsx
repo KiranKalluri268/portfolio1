@@ -1,0 +1,120 @@
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import resume from "@/data/resume.json";
+import DownloadResumeButton from "./DownloadResumeButton";
+import styles from "./resume.module.css";
+
+export const metadata: Metadata = {
+  title: "Resume | Saikiran Kalluri",
+  description: "Professional resume of Saikiran Kalluri.",
+};
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className={styles.section}>
+      <h2 className={styles.sectionTitle}>{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+export default function ResumePage() {
+  return (
+    <main className={styles.page}>
+      <div className={styles.actions}>
+        <DownloadResumeButton />
+      </div>
+      <article className={styles.paper} aria-label={`${resume.basics.name} resume`}>
+        <header>
+          <h1 className={styles.name}>{resume.basics.name}</h1>
+          <p className={styles.contactLine}>
+            {resume.basics.location} <span className={styles.separator}>|</span>{" "}
+            <a className={styles.contactLink} href={`tel:${resume.basics.phone.replace(/[^+\d]/g, "")}`}>
+              {resume.basics.phone}
+            </a>{" "}
+            <span className={styles.separator}>|</span>{" "}
+            <a className={styles.contactLink} href={`mailto:${resume.basics.email}`}>
+              {resume.basics.email}
+            </a>
+          </p>
+          <p className={styles.links}>
+            {resume.basics.links.map((link, index) => (
+              <span key={link.url}>
+                <a href={link.url} target="_blank" rel="noopener noreferrer">{link.label}</a>
+                {index < resume.basics.links.length - 1 && (
+                  <> <span className={styles.separator}>|</span>{" "}</>
+                )}
+              </span>
+            ))}
+          </p>
+        </header>
+
+        <Section title="Objective">
+          <p className={styles.paragraph}>{resume.objective}</p>
+        </Section>
+
+        <Section title="Core Skills">
+          {resume.skills.map((skill) => (
+            <p className={styles.skill} key={skill.category}>
+              <span className={styles.skillLabel}>{skill.category}:</span>{" "}
+              {skill.items.join(", ")}
+            </p>
+          ))}
+        </Section>
+
+        <Section title="Projects">
+          {resume.projects.map((project) => (
+            <div key={project.name}>
+              <h3 className={styles.entryTitle}>
+                {project.name}{" "}
+                <span className={styles.technologies}>({project.technologies})</span>
+              </h3>
+              <ul className={styles.list}>
+                {project.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
+              </ul>
+            </div>
+          ))}
+        </Section>
+
+        <Section title="Internships">
+          {resume.internships.map((internship) => (
+            <div key={`${internship.company}-${internship.role}`}>
+              <h3 className={styles.entryTitle}>
+                {internship.role} – {internship.company}{" "}
+                <span className={styles.period}>({internship.period})</span>
+              </h3>
+              <ul className={styles.list}>
+                {internship.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
+              </ul>
+            </div>
+          ))}
+        </Section>
+
+        <Section title="Education">
+          <p className={styles.education}>
+            {resume.education.degree} <span className={styles.separator}>|</span>{" "}
+            {resume.education.institution} <span className={styles.separator}>|</span>{" "}
+            {resume.education.period} <span className={styles.separator}>|</span>{" "}
+            CGPA: {resume.education.cgpa}
+          </p>
+        </Section>
+
+        <Section title="Certifications">
+          <ul className={styles.list}>
+            {resume.certifications.map((certification) => (
+              <li key={certification}>{certification}</li>
+            ))}
+          </ul>
+        </Section>
+
+        <div className={styles.footer}>
+          <p className={styles.footerLine}>
+            <span className={styles.footerLabel}>Languages:</span> {resume.languages.join(", ")}{" "}
+            <span className={styles.separator}>|</span>{" "}
+            <span className={styles.footerLabel}>Strengths:</span> {resume.strengths.join(", ")}
+          </p>
+        </div>
+      </article>
+    </main>
+  );
+}
