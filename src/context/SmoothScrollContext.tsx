@@ -40,7 +40,11 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       autoRaf: false,
       anchors: true,
       smoothWheel: !reduceMotion,
-      lerp: reduceMotion ? 1 : 0.09,
+      // A finite ease reaches the target cleanly. Lerp mode ends with a
+      // sub-pixel snap that horizontal ScrollTrigger motion can amplify.
+      lerp: reduceMotion ? 1 : 0,
+      duration: reduceMotion ? undefined : 0.8,
+      easing: (progress: number) => 1 - Math.pow(1 - progress, 4),
       syncTouch: false,
       wheelMultiplier: 0.9,
     });

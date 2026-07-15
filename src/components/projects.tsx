@@ -4,7 +4,9 @@ import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import Image from "next/image";
+import type { VirtualScrollData } from "lenis";
 import type { Project } from "@/types";
+import { useScrollActions } from "@/context/SmoothScrollContext";
 
 const projects: Project[] = [
   {
@@ -42,30 +44,40 @@ const projects: Project[] = [
   },
 ];
 
-const ProjectsSection = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
+const PANEL_COUNT = projects.length + 2;
+const LAST_PANEL_INDEX = PANEL_COUNT - 1;
+const SNAP_THRESHOLD = 0.4;
+
+export default function ProjectsSection() {
+  const { lenis } = useScrollActions();
+  const sectionRef = useRef<HTMLElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const seeAllRef = useRef<HTMLHeadingElement>(null);
 
   useLayoutEffect(() => {
-    const container = containerRef.current;
+    const section = sectionRef.current;
+    const track = trackRef.current;
     const title = titleRef.current;
-    const seeAll = seeAllRef.current;
-    if (!container || !title || !seeAll) return;
+    if (!section || !track || !title) return;
 
     gsap.registerPlugin(ScrollTrigger);
-    const steps = projects.length + 1;
+    let cleanupSnap: (() => void) | undefined;
+
     const context = gsap.context(() => {
-      gsap.set(title, { xPercent: -50, yPercent: -50, y: "18vh", autoAlpha: 0 });
-      gsap.set(seeAll, { xPercent: -50, yPercent: -50, x: "110vw", autoAlpha: 0 });
-      gsap.set([title, seeAll, ".project-card"], { willChange: "transform,opacity" });
-      gsap.set(".project-card", { xPercent: 145, autoAlpha: 0 });
+      gsap.set(track, { x: 0, force3D: true, willChange: "transform" });
+      gsap.set(title, {
+        xPercent: -50,
+        yPercent: -50,
+        autoAlpha: 1,
+        willChange: "transform,opacity",
+      });
 
       const timeline = gsap.timeline({
+        defaults: { ease: "none" },
         scrollTrigger: {
-          trigger: container,
+          trigger: section,
           start: "top top",
-          end: () => `+=${window.innerHeight * steps}`,
+          end: () => `+=${window.innerHeight * LAST_PANEL_INDEX}`,
           pin: true,
           scrub: true,
           invalidateOnRefresh: true,
@@ -73,100 +85,193 @@ const ProjectsSection = () => {
       });
 
       timeline
-        .to(title, { y: 0, autoAlpha: 1, duration: 0.06, ease: "none" }, 0)
-        .to(title, { x: () => window.innerWidth < 640 ? "-20vw" : "-40vw", y: () => window.innerWidth < 640 ? "-28vh" : "-24vh", duration: 0.12, ease: "none" }, 0.06)
-        .to(title, { x: "-110vw", autoAlpha: 0, duration: 0.1, ease: "none" }, 0.78)
-        .to(seeAll, { x: 0, autoAlpha: 1, duration: 0.12, ease: "none" }, 0.84);
+        .to(track, {
+          x: () => -(track.scrollWidth - section.clientWidth),
+          duration: 1,
+        }, 0)
+        .to(title, {
+          x: () => window.innerWidth < 640 ? "-20vw" : "-40vw",
+          y: () => window.innerWidth < 640 ? "-28vh" : "-24vh",
+          duration: 0.14,
+        }, 0.02)
+        .to(title, {
+          x: "-110vw",
+          autoAlpha: 0,
+          duration: 0.12,
+          ease: "sine.inOut",
+        }, 0.84);
 
-      gsap.utils.toArray<HTMLElement>(".project-card").forEach((card, index) => {
-        const start = 0.18 + index * 0.15;
-        timeline
-          .to(card, { xPercent: 0, autoAlpha: 1, duration: 0.075, ease: "none" }, start)
-          .to(card, { xPercent: -145, autoAlpha: 0, duration: 0.075, ease: "none" }, start + 0.09);
-      });
-    }, container);
+      if (!lenis || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    return () => context.revert();
-  }, []);
+      const trigger = timeline.scrollTrigger;
+      if (!trigger) return;
+
+      const anchors = Array.from(
+        { length: PANEL_COUNT },
+        (_, index) => index / LAST_PANEL_INDEX,
+      );
+      const nearestAnchorIndex = (progress: number) => Math.round(
+        gsap.utils.clamp(0, 1, progress) * LAST_PANEL_INDEX,
+      );
+
+      let settleTimer: ReturnType<typeof setTimeout> | undefined;
+      let gestureStartIndex: number | null = null;
+      let gestureDelta = 0;
+
+      const resetGesture = () => {
+        gestureStartIndex = null;
+        gestureDelta = 0;
+      };
+
+      const settle = () => {
+        settleTimer = undefined;
+        if (!trigger.isActive || gestureStartIndex === null || gestureDelta === 0) {
+          resetGesture();
+          return;
+        }
+
+        const currentIndex = gestureStartIndex;
+        if (
+          (gestureDelta < 0 && currentIndex === 0) ||
+          (gestureDelta > 0 && currentIndex === LAST_PANEL_INDEX)
+        ) {
+          resetGesture();
+          return;
+        }
+
+        const range = trigger.end - trigger.start;
+        const intendedProgress = gsap.utils.clamp(
+          0,
+          1,
+          (lenis.targetScroll - trigger.start) / range,
+        );
+        let destinationIndex = currentIndex;
+
+        if (gestureDelta > 0) {
+          const nextIndex = currentIndex + 1;
+          const threshold = gsap.utils.interpolate(
+            anchors[currentIndex],
+            anchors[nextIndex],
+            SNAP_THRESHOLD,
+          );
+          if (intendedProgress >= threshold) destinationIndex = nextIndex;
+        } else {
+          const previousIndex = currentIndex - 1;
+          const threshold = gsap.utils.interpolate(
+            anchors[currentIndex],
+            anchors[previousIndex],
+            SNAP_THRESHOLD,
+          );
+          if (intendedProgress <= threshold) destinationIndex = previousIndex;
+        }
+
+        const destination = trigger.start + anchors[destinationIndex] * range;
+        const dampingEnd = 1 - 9 * Math.exp(-8);
+        lenis.scrollTo(destination, {
+          duration: 0.45,
+          easing: (progress) =>
+            (1 - (1 + 8 * progress) * Math.exp(-8 * progress)) / dampingEnd,
+        });
+        resetGesture();
+      };
+
+      const handleVirtualScroll = ({ deltaX, deltaY, event }: VirtualScrollData) => {
+        if (!trigger.isActive || event.type === "touchmove") return;
+        const delta = Math.abs(deltaY) >= Math.abs(deltaX) ? deltaY : deltaX;
+        if (delta === 0) return;
+        if (gestureStartIndex === null) {
+          gestureStartIndex = nearestAnchorIndex(trigger.progress);
+        }
+        gestureDelta += delta;
+        if (settleTimer) clearTimeout(settleTimer);
+        settleTimer = setTimeout(settle, 100);
+      };
+
+      lenis.on("virtual-scroll", handleVirtualScroll);
+      cleanupSnap = () => {
+        if (settleTimer) clearTimeout(settleTimer);
+        lenis.off("virtual-scroll", handleVirtualScroll);
+      };
+    }, section);
+
+    return () => {
+      cleanupSnap?.();
+      context.revert();
+    };
+  }, [lenis]);
 
   return (
     <section
-      ref={containerRef}
+      ref={sectionRef}
       id="projects"
-      className="relative text-white h-screen overflow-hidden"
+      className="relative h-screen overflow-hidden text-white"
       aria-label="Projects section"
       style={{ zIndex: 10 }}
     >
-      {/* Animated Title */}
       <h2
         ref={titleRef}
-        className="text-5xl sm:text-6xl font-bold tracking-tight text-center absolute top-3/8 left-1/2 whitespace-nowrap z-[999]"
+        className="absolute top-3/8 left-1/2 z-20 whitespace-nowrap text-center text-5xl font-bold tracking-tight sm:text-6xl"
       >
         Projects
       </h2>
 
-      {/* Animated See All */}
-      <h2
-        ref={seeAllRef}
-        className="text-4xl sm:text-5xl font-bold tracking-tight text-center absolute top-3/8 left-1/2 whitespace-nowrap z-[999]"
-      >
-        See all projects
-      </h2>
+      <div ref={trackRef} className="flex h-full w-max">
+        <div className="h-screen w-screen shrink-0" aria-hidden="true" />
 
-      {/* Projects Carousel */}
-      <div className="flex items-center justify-center h-full w-full">
-        <div className="relative w-full h-full">
-          {projects.map((project, index: number) => {
-            return (
-                <div
-                  key={index}
-                  className="project-card invisible absolute w-full h-full p-12 flex flex-col justify-center items-center text-center will-change-transform"
+        {projects.map((project) => (
+          <article
+            key={project.id}
+            className="flex h-screen w-screen shrink-0 flex-col items-center justify-center p-12 text-center"
+          >
+            <h3 className="mb-4 text-lg font-semibold sm:text-3xl">{project.title}</h3>
+            <div
+              className="relative mb-4 h-[200px] w-full max-w-3xl sm:h-[300px]"
+              role="img"
+              aria-label={`Screenshot of ${project.title}`}
+            >
+              <Image
+                src={project.image}
+                alt={`Screenshot of ${project.title} project`}
+                fill
+                className="rounded-xl object-cover shadow-lg"
+                quality={90}
+                loading="eager"
+              />
+            </div>
+            <p className="mb-6 max-w-xl text-base sm:text-lg">{project.description}</p>
+            <nav className="space-x-4" aria-label={`Links for ${project.title}`}>
+              {project.github && (
+                <a
+                  href={project.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded px-2 py-1 underline"
+                  aria-label={`Visit ${project.title} on GitHub (opens in new tab)`}
                 >
-                  <h3 className="text-lg sm:text-3xl font-semibold mb-4">{project.title}</h3>
-                  <div className="relative w-full sm:h-[300px] h-[200px] max-w-3xl mb-4" role="img" aria-label={`Screenshot of ${project.title}`}>
-                    <Image
-                      src={project.image}
-                      alt={`Screenshot of ${project.title} project`}
-                      fill
-                      className="object-cover rounded-xl shadow-lg"
-                      quality={90}
-                      priority={index === 0}
-                    />
-                  </div>
-                  <p className="text-base sm:text-lg max-w-xl mb-6">{project.description}</p>
-                  <nav className="space-x-4" aria-label={`Links for ${project.title}`}>
-                    {project.github && (
-                      <>
-                        <a
-                          href={project.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black rounded px-2 py-1"
-                          aria-label={`Visit ${project.title} on GitHub (opens in new tab)`}
-                        >
-                          GitHub
-                        </a>
-                        {project.live && (
-                          <a
-                            href={project.live}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black rounded px-2 py-1"
-                            aria-label={`Visit ${project.title} live demo (opens in new tab)`}
-                          >
-                            Live Demo
-                          </a>
-                        )}
-                      </>
-                    )}
-                  </nav>
-                </div>
-            );
-          })}
+                  GitHub
+                </a>
+              )}
+              {project.live && (
+                <a
+                  href={project.live}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded px-2 py-1 underline"
+                  aria-label={`Visit ${project.title} live demo (opens in new tab)`}
+                >
+                  Live Demo
+                </a>
+              )}
+            </nav>
+          </article>
+        ))}
+
+        <div className="flex h-screen w-screen shrink-0 items-center justify-center">
+          <h2 className="whitespace-nowrap text-center text-4xl font-bold tracking-tight sm:text-5xl">
+            See all projects
+          </h2>
         </div>
       </div>
     </section>
   );
-};
-
-export default ProjectsSection;
+}
