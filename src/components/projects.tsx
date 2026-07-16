@@ -12,15 +12,24 @@ import { useScrollActions } from "@/context/SmoothScrollContext";
 const projects: Project[] = [
   {
     id: 1,
+    title: "ThirdEyeAI – Real-time Engagement Detection & Meeting Platform",
+    description:
+      "An AI-powered learning platform combining a WebRTC meeting engine, 94.25%-accurate engagement detection, privacy-first TensorFlow.js inference, real-time instructor analytics, and RAG-based session insights.",
+    image: "/images/project3.webp",
+    github: "https://github.com/KiranKalluri268/ThirdEye_Client",
+    live: "https://thirdeyeai.vercel.app/",
+  },
+  {
+    id: 2,
     title: "CertiSafe (A Certificate Management System)",
     description:
-      "A web app built with React, Node.js, Express, DynamoDB, and Cloudinary that allows students to securely upload and manage their certificates while enabling institutes to access them directly and generate Excel reports.",
+      "A certificate management platform built by a four-member team for an institute, using React, Node.js, Express, DynamoDB, and Cloudinary for secure data and media handling. The platform onboarded more than 95 users.",
     image: "/images/project1.png",
     github: "https://github.com/KiranKalluri268/CMS_PRO",
     live: "https://cms-pro-kiran-kalluris-projects.vercel.app/",
   },
   {
-    id: 2,
+    id: 3,
     title: "IPL Score Predictor AI",
     description:
       "A Deep Neural Network model built with Keras to predict the final score of ongoing IPL matches using live inputs such as current runs, wickets, overs, recent performance, and team info.",
@@ -28,7 +37,7 @@ const projects: Project[] = [
     github: "https://github.com/KiranKalluri268/MS_AI_IPL-Score-Predictor",
   },
   {
-    id: 3,
+    id: 4,
     title: "ResumeByAI",
     description:
       "A Next.js web app integrated with GPT-4 turbo and Razorpay that generates ATS-friendly resumes for users at a low cost.",
@@ -36,7 +45,7 @@ const projects: Project[] = [
     github: "https://github.com/KiranKalluri268",
   },
   {
-    id: 4,
+    id: 5,
     title: "MindPlan",
     description:
       "A Flutter-based productivity app to manage goals, prioritize tasks using the Eisenhower Matrix, and track daily productivity.",

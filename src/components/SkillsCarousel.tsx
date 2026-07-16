@@ -6,6 +6,7 @@ import { useScrollActions } from "@/context/SmoothScrollContext";
 import gsap from "gsap";
 import {
   FaCss3Alt,
+  FaGitAlt,
   FaHtml5,
   FaJava,
   FaJs,
@@ -75,6 +76,7 @@ const skillCategories: SkillCategory[] = [
   {
     title: "Tools",
     skills: [
+      { name: "Git", icon: <FaGitAlt /> },
       { name: "Linux", icon: <SiLinux /> },
       { name: "Figma", icon: <SiFigma /> },
       { name: "Canva", icon: <SiCanva /> },

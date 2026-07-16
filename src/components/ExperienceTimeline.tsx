@@ -17,24 +17,29 @@ const experiences: TimelineExperience[] = [
     title: "Software Engineer Intern",
     company: "Aude.ai",
     date: "January 2026 - Present",
+    location: "Remote",
     description: [
-      "Building an AI-powered platform that helps people learn new concepts and skills.",
+      "Designed and developed a diagnostic web application for monitoring real-time data integrity and consistent end-user delivery.",
+      "Engineered an end-to-end feedback mechanism that aggregates user input and visualizes it in the diagnostic dashboard.",
+      "Integrated GitHub, Jira, and Slack data sources to automate performance and system-health tracking.",
     ],
   },
   {
-    title: "Forward Deployed Engineer",
-    company: "AarogyalinQ Pvt. Ltd.",
-    date: "July 2025 - January 2026",
+    title: "Forward Deployed Engineer Intern (FDE)",
+    company: "AarogyalinQ Private Limited",
+    date: "August 2025 - January 2026",
+    location: "Remote",
     description: [
-      "Learned and applied full-stack development using the MERN stack.",
-      "Built React user interfaces and backend services with Node.js and Express.",
-      "Worked with MongoDB for application data storage.",
+      "Collaborated with clients to implement new features and optimize existing workflows.",
+      "Integrated voice input and commands using the Bhashini and ElevenLabs APIs.",
+      "Added AWS S3 video storage and AWS IVS live streaming to a C++ application.",
     ],
   },
   {
     title: "AWS Cloud Virtual Internship",
     company: "Eduskills Foundation",
     date: "April 2024 - June 2024",
+    location: "Remote",
     description: [
       "Completed a three-month virtual internship focused on AWS Cloud technologies.",
       "Participated through a collaboration between Eduskills and AWS Academy.",
@@ -208,7 +213,7 @@ function ExperienceRow({ experience, index, dotRef }: ExperienceRowProps) {
         className={`experience-card-scale col-start-2 row-start-1 ${detailColumn} md:row-start-1`}
         style={{ transformOrigin: isReversed ? "left center" : "right center" }}
       >
-        <div className="h-full rounded-2xl border border-white/10 bg-black/55 p-5 shadow-xl transition-[background-color,border-color,transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-blue-400/25 hover:bg-white/5 hover:shadow-blue-500/10 sm:p-6">
+        <div className="h-full rounded-2xl border border-white/10 bg-black/55 p-5 shadow-xl backdrop-blur-sm transition-[background-color,border-color,box-shadow] duration-300 hover:border-blue-400/25 hover:bg-white/5 hover:shadow-blue-500/10 sm:p-6">
           <h3 className="mb-3 text-xl font-bold tracking-wide sm:text-2xl">
             {experience.title}
           </h3>
@@ -245,7 +250,7 @@ function ExperienceRow({ experience, index, dotRef }: ExperienceRowProps) {
         className={`experience-card-scale col-start-2 row-start-2 ${descriptionColumn} md:row-start-1`}
         style={{ transformOrigin: isReversed ? "right center" : "left center" }}
       >
-        <div className="h-full rounded-2xl border border-white/10 bg-black/55 p-5 shadow-xl transition-[background-color,border-color,transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-purple-400/25 hover:bg-white/5 hover:shadow-purple-500/10 sm:p-6">
+        <div className="h-full rounded-2xl border border-white/10 bg-black/55 p-5 shadow-xl backdrop-blur-sm transition-[background-color,border-color,box-shadow] duration-300 hover:border-purple-400/25 hover:bg-white/5 hover:shadow-purple-500/10 sm:p-6">
           <h4 className="mb-4 text-sm font-semibold uppercase tracking-widest text-gray-400">
             Highlights
           </h4>
