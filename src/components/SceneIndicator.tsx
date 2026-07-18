@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useActiveSection, useScrollActions, type SectionId } from "@/context/SmoothScrollContext";
+import { useAudio } from "@/context/AudioContextProvider";
 import type { SceneIndex } from "@/types";
 
 interface SceneInfo {
@@ -18,11 +20,19 @@ const scenes: SceneInfo[] = [
 ];
 
 export default function SceneIndicator() {
+  const { hasEntered } = useAudio();
   const activeSection = useActiveSection();
   const { scrollToSection, toggleProjectsEndpoint } = useScrollActions();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [portalReady, setPortalReady] = useState(false);
 
   const tooltipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Render after hydration so the fixed controls can safely portal to body.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPortalReady(true);
+  }, []);
 
   useEffect(() => {
     if (hoveredIndex === null) return;
@@ -43,10 +53,12 @@ export default function SceneIndicator() {
     scrollToSection(section);
   };
 
-  return (
+  if (!portalReady || !hasEntered) return null;
+
+  return createPortal(
     <>
       <nav
-        className="fixed bottom-[calc(3rem+env(safe-area-inset-bottom))] left-1/2 z-50 -translate-x-1/2 sm:bottom-auto sm:top-8"
+        className="pointer-events-auto fixed bottom-[calc(3rem+env(safe-area-inset-bottom))] left-1/2 z-[1000] isolate -translate-x-1/2 touch-manipulation rounded-full border border-white/10 bg-black/65 shadow-[0_6px_20px_rgba(0,0,0,0.4)] backdrop-blur-md sm:bottom-auto sm:top-8 sm:border-transparent sm:bg-transparent sm:shadow-none sm:backdrop-blur-none"
         aria-label="Scene navigation indicator"
         role="navigation"
       >
@@ -63,7 +75,7 @@ export default function SceneIndicator() {
             return (
               <div key={scene.index} className="relative flex flex-col items-center">
                 <button
-                  className="relative z-10 flex min-h-10 min-w-10 cursor-pointer items-center justify-center border-none bg-transparent p-4 outline-none sm:min-h-12 sm:min-w-12 sm:p-6"
+                  className="relative z-10 flex min-h-9 min-w-9 cursor-pointer items-center justify-center border-none bg-transparent p-3 outline-none sm:min-h-12 sm:min-w-12 sm:p-6"
                   aria-label={`Go to ${scene.name} section${isActive ? " (current)" : ""}`}
                   aria-current={isActive ? "page" : undefined}
                   onClick={() => handleDotClick(scene.id)}
@@ -108,7 +120,8 @@ export default function SceneIndicator() {
           >
             {scenes[hoveredIndex].name}
           </div>
-        )}
-    </>
+      )}
+    </>,
+    document.body,
   );
 }
