@@ -147,7 +147,7 @@ export default function Hero() {
             }`}
         >
           <h1
-            className="font-bold font-[family-name:var(--font-foldit)] whitespace-pre-line leading-none"
+            className="font-bold font-[family-name:var(--font-tektur)] whitespace-pre-line leading-none md:font-[family-name:var(--font-foldit)]"
             style={{
               textShadow:
                 "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
@@ -171,7 +171,7 @@ export default function Hero() {
             ))}
             {visibleH1State !== 'done' && (
               <span
-                className="animate-blink text-[clamp(2.5rem,13vw,8rem)] text-blue-500"
+                className="animate-blink text-[clamp(2.5rem,13vw,8rem)] text-white"
                 aria-hidden="true"
               >
                 |
@@ -180,7 +180,7 @@ export default function Hero() {
           </h1>
 
           <h2
-            className="hero-role mt-4 max-w-full break-words text-[clamp(2.15rem,10vw,7.5rem)] font-bold font-[family-name:var(--font-foldit)] leading-none"
+            className="hero-role mt-4 max-w-full break-words text-[clamp(2.15rem,10vw,7.5rem)] font-bold font-[family-name:var(--font-tektur)] leading-none md:font-[family-name:var(--font-foldit)]"
             style={{
               textShadow:
                 "0.1rem 0 0.3rem rgba(255, 255, 255, 0.8), 0 0 0.6rem rgba(18, 33, 163, 0.5)",
@@ -189,7 +189,7 @@ export default function Hero() {
             aria-atomic="true"
           >
             <span className="text-blue-500">{visibleSecondLine}</span>
-            {!reduceMotion && showSecondCursor && <span className="text-red-500 animate-blink" aria-hidden="true">|</span>}
+            {!reduceMotion && showSecondCursor && <span className="animate-blink text-blue-500" aria-hidden="true">|</span>}
           </h2>
         </div>
       </div>

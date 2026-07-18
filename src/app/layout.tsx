@@ -15,8 +15,8 @@ const SITE_DESCRIPTION =
 const foldit = Foldit({
   variable: "--font-foldit",
   subsets: ["latin"],
-  display: 'swap',
-  weight: ["400", "700"], // Only specify available weights
+  display: "swap",
+  weight: ["400", "700"],
 });
 
 const tektur = Tektur({
