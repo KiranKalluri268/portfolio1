@@ -86,10 +86,6 @@ const skillCategories: SkillCategory[] = [
   },
 ];
 
-// Icon-center distance is ITEM_WIDTH + GAP: 104px + 24px = 128px.
-const SKILL_ITEM_WIDTH_PX = 124;
-const SKILL_GAP_PX = 24;
-
 interface SkillRowProps {
   category: SkillCategory;
   reverse: boolean;
@@ -113,12 +109,7 @@ function SkillGroup({
       {category.skills.map((skill) => (
         <div
           key={`${category.title}-${skill.name}`}
-          className="flex h-24 shrink-0 flex-col items-center justify-center rounded text-gray-300 transition-colors duration-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-orange"
-          style={{
-            width: SKILL_ITEM_WIDTH_PX,
-            minWidth: SKILL_ITEM_WIDTH_PX,
-            marginRight: SKILL_GAP_PX,
-          }}
+          className="mr-3 flex h-24 w-[104px] min-w-[104px] shrink-0 flex-col items-center justify-center rounded text-gray-300 transition-colors duration-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-orange sm:mr-6 sm:w-[124px] sm:min-w-[124px]"
           title={skill.name}
           role={duplicate ? undefined : "img"}
           aria-label={duplicate ? undefined : skill.name}
