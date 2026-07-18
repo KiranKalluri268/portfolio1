@@ -1,24 +1,35 @@
 "use client";
 
-import { useScrollActions, type SectionId } from "@/context/SmoothScrollContext";
+import {
+  SECTION_IDS,
+  useScrollActions,
+  type SectionId,
+} from "@/context/SmoothScrollContext";
 
 interface SkipLinkProps {
   href: string;
   children: React.ReactNode;
 }
 
-const SECTION_IDS = new Set<SectionId>(["hero", "projects", "experience", "skills", "contact"]);
+const SECTION_ID_SET = new Set<string>(SECTION_IDS);
 
 export default function SkipLink({ href, children }: SkipLinkProps) {
   const { scrollToSection } = useScrollActions();
 
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     const id = href.slice(1);
-    if (id === "main-content") return;
-    if (!SECTION_IDS.has(id as SectionId)) return;
+    const target = document.getElementById(id);
+    if (!target) return;
+
     event.preventDefault();
-    scrollToSection(id as SectionId);
-    document.getElementById(id)?.focus({ preventScroll: true });
+    if (SECTION_ID_SET.has(id)) {
+      scrollToSection(id as SectionId);
+    } else {
+      target.scrollIntoView({ block: "start" });
+    }
+
+    if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+    target.focus({ preventScroll: true });
   };
 
   return (

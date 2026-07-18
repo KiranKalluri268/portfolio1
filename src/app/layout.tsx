@@ -7,6 +7,11 @@ import StarsBackground from "@/background/StarsBackground";
 import { AudioProvider } from "@/context/AudioContextProvider";
 import { SmoothScrollProvider } from "@/context/SmoothScrollContext";
 
+const SITE_URL = "https://saikirankalluri.vercel.app";
+const SITE_NAME = "Saikiran Kalluri";
+const SITE_DESCRIPTION =
+  "Portfolio of Saikiran Kalluri, a software engineer building full-stack, AI-assisted, cloud, and developer-focused products.";
+
 const foldit = Foldit({
   variable: "--font-foldit",
   subsets: ["latin"],
@@ -22,36 +27,84 @@ const tektur = Tektur({
 });
 
 export const metadata: Metadata = {
-  title: "Saikiran Kalluri | MERN Full Stack Developer, DevOps Engineer & Cloud Engineer| Telangana, India",
-  description: "Portfolio of Saikiran Kalluri (SaiKiran), a Software Engineer and AI Enthusiastic from Telangana, India. Specializing in Web Development(MERN Stack),DevOps, AWS, C++, and Java. View projects by Saikiran Kalluri.",
-  keywords: ["Saikiran Kalluri", "Sai Kiran Kalluri", "Kiran Kalluri", "SaiKiran", "Kiran", "AWS Engineer", "C++ Developer", "Java Developer", "Full Stack Developer", "Cloud Engineer", "DevOps Engineer", "AI Enthusiastic", "Telangana", "India"],
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Saikiran Kalluri | Software Engineer",
+    template: "%s | Saikiran Kalluri",
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  keywords: [
+    "Saikiran Kalluri",
+    "Sai Kiran Kalluri",
+    "software engineer",
+    "full-stack developer",
+    "React developer",
+    "Next.js developer",
+    "Node.js developer",
+    "AWS developer",
+    "AI engineer",
+    "portfolio",
+  ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "/",
+    siteName: SITE_NAME,
+    title: "Saikiran Kalluri | Software Engineer",
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Saikiran Kalluri — Software Engineer",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Saikiran Kalluri | Software Engineer",
+    description: SITE_DESCRIPTION,
+    images: ["/opengraph-image"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   verification: {
     google: "3EakCwstiUdkMkdhG4C9U2iG3xAVbQnaDxh9ButJ7yM",
   },
 };
 
 const jsonLd = {
-  "@context": "http://schema.org",
+  "@context": "https://schema.org",
   "@type": "Person",
   "name": "Sai Kiran Kalluri",
   "alternateName": ["Kiran Kalluri", "Sai Kiran", "Saikiran Kalluri"],
-  "url": "https://saikirankalluri.vercel.app",
-  "jobTitle": "Software Engineer",
+  "url": SITE_URL,
+  "jobTitle": "Software Engineer Intern",
   "address": {
     "@type": "PostalAddress",
     "addressLocality": "Telangana",
     "addressCountry": "India"
   },
-  "knowsAbout": ["AWS", "React", "Node.js", "JAVA", "Python", "C++", "MERN Stack", "DevOps", "Git", "Github", "Docker", "Linux", "CI/CD", "GCP"],
+  "knowsAbout": ["AWS", "React", "Next.js", "Node.js", "Java", "Python", "C++", "MERN Stack", "DevOps", "Git", "GitHub", "Docker", "Linux", "CI/CD"],
   "worksFor": {
     "@type": "Organization",
-    "name": "Freelance"
+    "name": "Aude.ai"
   },
   "image": {
     "@type": "ImageObject",
-    "url": "https://saikirankalluri.vercel.app/images/kiran_passphoto.jpg",
-    "width": 500,
-    "height": 500
+    "url": `${SITE_URL}/images/kiran_passphoto.jpg`,
+    "width": 390,
+    "height": 510
   },
   "sameAs": [
     "https://www.linkedin.com/in/saikiran-kalluri",

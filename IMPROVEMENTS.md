@@ -134,7 +134,7 @@ This document records the recommended improvements in priority order. The orderi
 
 ## Priority 2 — SEO, content, and hiring effectiveness
 
-### 13. Improve metadata and social sharing
+### ~~13. Improve metadata and social sharing~~ — Completed
 
 Add `metadataBase`, canonical URL, Open Graph metadata, Twitter card metadata, and a properly designed social preview image. Shorten and clarify the page title.
 

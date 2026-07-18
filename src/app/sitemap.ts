@@ -1,13 +1,20 @@
-import { MetadataRoute } from 'next';
+import type { MetadataRoute } from "next";
+
+const SITE_URL = "https://saikirankalluri.vercel.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
     return [
         {
-            url: 'https://saikirankalluri.vercel.app',
+            url: SITE_URL,
             lastModified: new Date(),
-            changeFrequency: 'monthly',
+            changeFrequency: "monthly",
             priority: 1,
         },
-        // Add more routes here if you have multiple pages
+        {
+            url: `${SITE_URL}/resume`,
+            lastModified: new Date(),
+            changeFrequency: "monthly",
+            priority: 0.8,
+        },
     ];
 }

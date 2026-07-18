@@ -1,4 +1,14 @@
+import type { Metadata } from "next";
 import BackNavigationButton from "@/components/BackNavigationButton";
+
+export const metadata: Metadata = {
+  title: "Projects",
+  description: "Detailed software project case studies by Saikiran Kalluri are coming soon.",
+  robots: {
+    index: false,
+    follow: true,
+  },
+};
 
 export default function ProjectsPage() {
   return (

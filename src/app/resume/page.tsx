@@ -6,8 +6,16 @@ import DownloadResumeButton from "./DownloadResumeButton";
 import styles from "./resume.module.css";
 
 export const metadata: Metadata = {
-  title: "Resume | Saikiran Kalluri",
-  description: "Professional resume of Saikiran Kalluri.",
+  title: "Resume",
+  description: "View and download the professional resume of software engineer Saikiran Kalluri.",
+  alternates: {
+    canonical: "/resume",
+  },
+  openGraph: {
+    title: "Resume | Saikiran Kalluri",
+    description: "Experience, projects, and technical skills of software engineer Saikiran Kalluri.",
+    url: "/resume",
+  },
 };
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
