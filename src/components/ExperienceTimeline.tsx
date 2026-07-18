@@ -52,6 +52,7 @@ export default function ExperienceTimeline() {
   const sectionRef = useRef<HTMLElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const glowPathRef = useRef<SVGPathElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
   const dotRefs = useRef<Array<HTMLSpanElement | null>>([]);
 
@@ -61,26 +62,36 @@ export default function ExperienceTimeline() {
     const section = sectionRef.current;
     const timeline = timelineRef.current;
     const svg = svgRef.current;
+    const glowPath = glowPathRef.current;
     const path = pathRef.current;
-    if (!section || !timeline || !svg || !path) return;
+    if (!section || !timeline || !svg || !glowPath || !path) return;
 
     gsap.registerPlugin(ScrollTrigger);
 
     const updateCurve = () => {
       const timelineRect = timeline.getBoundingClientRect();
+      const isMobile = window.matchMedia("(max-width: 767px)").matches;
       const points = dotRefs.current
         .map((dot) => {
           if (!dot) return null;
           const rect = dot.getBoundingClientRect();
+          const row = dot.closest<HTMLElement>(".experience-row");
+          const cards = row?.querySelectorAll<HTMLElement>(".experience-card-scale");
+          const mobileGapCenter = isMobile && row && cards?.length === 2
+            ? row.offsetTop
+              + (cards[0].offsetTop + cards[0].offsetHeight + cards[1].offsetTop) / 2
+            : null;
+
           return {
             x: rect.left + rect.width / 2 - timelineRect.left,
-            y: rect.top + rect.height / 2 - timelineRect.top,
+            y: mobileGapCenter ?? rect.top + rect.height / 2 - timelineRect.top,
           };
         })
         .filter((point): point is { x: number; y: number } => point !== null);
 
       svg.setAttribute("viewBox", `0 0 ${timelineRect.width} ${timelineRect.height}`);
       if (points.length === 0) {
+        glowPath.setAttribute("d", "");
         path.setAttribute("d", "");
         return;
       }
@@ -94,7 +105,9 @@ export default function ExperienceTimeline() {
           `C ${previous.x} ${middleY}, ${current.x} ${middleY}, ${current.x} ${current.y}`,
         );
       }
-      path.setAttribute("d", commands.join(" "));
+      const curve = commands.join(" ");
+      glowPath.setAttribute("d", curve);
+      path.setAttribute("d", curve);
     };
 
     const resizeObserver = new ResizeObserver(() => {
@@ -104,35 +117,64 @@ export default function ExperienceTimeline() {
     resizeObserver.observe(timeline);
     updateCurve();
 
+    const media = gsap.matchMedia();
     const context = gsap.context(() => {
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-      gsap.utils.toArray<HTMLElement>(".experience-row").forEach((row) => {
-        const cards = row.querySelectorAll<HTMLElement>(".experience-card-scale");
-        gsap.timeline({
-          scrollTrigger: {
-            trigger: row,
-            start: "top 90%",
-            end: "bottom 10%",
-            scrub: 0.35,
-          },
-        })
-          .fromTo(cards, { scale: 0.82 }, {
-            scale: 1,
-            duration: 0.5,
-            ease: "sine.out",
+      const createFocusAnimations = ({
+        start,
+        end,
+        restingScale,
+      }: {
+        start: string;
+        end: string;
+        restingScale: number;
+      }) => {
+        gsap.utils.toArray<HTMLElement>(".experience-row").forEach((row) => {
+          const cards = row.querySelectorAll<HTMLElement>(".experience-card-scale");
+          gsap.timeline({
+            scrollTrigger: {
+              trigger: row,
+              start,
+              end,
+              scrub: 0.35,
+              invalidateOnRefresh: true,
+            },
           })
-          .to(cards, {
-            scale: 0.82,
-            duration: 0.5,
-            ease: "sine.in",
-          });
+            .fromTo(cards, { scale: restingScale }, {
+              scale: 1,
+              duration: 0.5,
+              ease: "sine.out",
+            })
+            .to(cards, {
+              scale: restingScale,
+              duration: 0.5,
+              ease: "sine.in",
+            });
+        });
+      };
+
+      media.add("(min-width: 768px)", () => {
+        createFocusAnimations({
+          start: "top 90%",
+          end: "bottom 10%",
+          restingScale: 0.82,
+        });
+      });
+
+      media.add("(max-width: 767px)", () => {
+        createFocusAnimations({
+          start: "top 82%",
+          end: "bottom 18%",
+          restingScale: 0.86,
+        });
       });
       ScrollTrigger.refresh();
     }, section);
 
     return () => {
       resizeObserver.disconnect();
+      media.revert();
       context.revert();
     };
   }, [hasEntered]);
@@ -152,7 +194,7 @@ export default function ExperienceTimeline() {
         <div ref={timelineRef} className="relative flex flex-col gap-20 md:gap-24">
           <svg
             ref={svgRef}
-            className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible"
+            className="pointer-events-none absolute inset-0 z-[5] h-full w-full overflow-visible"
             preserveAspectRatio="none"
             aria-hidden="true"
           >
@@ -164,10 +206,19 @@ export default function ExperienceTimeline() {
               </linearGradient>
             </defs>
             <path
+              ref={glowPathRef}
+              fill="none"
+              stroke="#3b82f6"
+              strokeWidth="7"
+              strokeLinecap="round"
+              strokeOpacity="0.2"
+              vectorEffect="non-scaling-stroke"
+            />
+            <path
               ref={pathRef}
               fill="none"
               stroke="url(#experience-line-gradient)"
-              strokeWidth="2"
+              strokeWidth="2.5"
               strokeLinecap="round"
               vectorEffect="non-scaling-stroke"
             />
@@ -206,12 +257,11 @@ function ExperienceRow({ experience, index, dotRef }: ExperienceRowProps) {
 
   return (
     <article
-      className={`experience-row relative z-10 grid grid-cols-[32px_minmax(0,1fr)] gap-x-3 gap-y-4 ${desktopColumns} md:items-stretch md:gap-x-5 md:gap-y-0 ${rowShift}`}
+      className={`experience-row relative grid grid-cols-[32px_minmax(0,1fr)] gap-x-3 gap-y-4 ${desktopColumns} md:items-stretch md:gap-x-5 md:gap-y-0 ${rowShift}`}
       aria-label={`${experience.title} at ${experience.company}`}
     >
       <div
-        className={`experience-card-scale col-start-2 row-start-1 ${detailColumn} md:row-start-1`}
-        style={{ transformOrigin: isReversed ? "left center" : "right center" }}
+        className={`experience-card-scale relative z-10 col-start-2 row-start-1 origin-center ${detailColumn} md:row-start-1 ${isReversed ? "md:origin-left" : "md:origin-right"}`}
       >
         <div className="h-full rounded-2xl border border-white/10 bg-black/55 p-5 shadow-xl backdrop-blur-sm transition-[background-color,border-color,box-shadow] duration-300 hover:border-blue-400/25 hover:bg-white/5 hover:shadow-blue-500/10 sm:p-6">
           <h3 className="mb-3 text-xl font-bold tracking-wide sm:text-2xl">
@@ -241,14 +291,13 @@ function ExperienceRow({ experience, index, dotRef }: ExperienceRowProps) {
 
       <span
         ref={dotRef}
-        className="col-start-1 row-span-2 row-start-1 place-self-center rounded-full border border-white/70 bg-blue-500 shadow-[0_0_14px_rgba(59,130,246,0.9)] md:col-start-2 md:row-span-1 md:row-start-1"
+        className="relative z-10 col-start-1 row-start-2 -translate-y-full self-start justify-self-center rounded-full border border-white/70 bg-blue-500 shadow-[0_0_14px_rgba(59,130,246,0.9)] md:col-start-2 md:row-start-1 md:translate-y-0 md:place-self-center"
         style={{ width: 16, height: 16 }}
         aria-hidden="true"
       />
 
       <div
-        className={`experience-card-scale col-start-2 row-start-2 ${descriptionColumn} md:row-start-1`}
-        style={{ transformOrigin: isReversed ? "right center" : "left center" }}
+        className={`experience-card-scale relative z-10 col-start-2 row-start-2 origin-center ${descriptionColumn} md:row-start-1 ${isReversed ? "md:origin-right" : "md:origin-left"}`}
       >
         <div className="h-full rounded-2xl border border-white/10 bg-black/55 p-5 shadow-xl backdrop-blur-sm transition-[background-color,border-color,box-shadow] duration-300 hover:border-purple-400/25 hover:bg-white/5 hover:shadow-purple-500/10 sm:p-6">
           <h4 className="mb-4 text-sm font-semibold uppercase tracking-widest text-gray-400">
