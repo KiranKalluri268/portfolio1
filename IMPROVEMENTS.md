@@ -183,7 +183,7 @@ Use valid `dateTime` values such as `2026-01` or separate start/end dates instea
 
 Fonts are loaded using both `next/font/google` and a Google Fonts CSS import. Keep the Next.js font integration and remove the duplicate import.
 
-### 20. Replace the default README
+### ~~20. Replace the default README~~ — Completed
 
 Document the actual project, including:
 

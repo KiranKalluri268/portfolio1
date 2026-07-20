@@ -229,7 +229,7 @@ export default function ContactSection() {
       <footer
         className="absolute bottom-2 left-0 w-full px-4 py-3 text-center text-xs text-gray-500 sm:bottom-4 sm:py-4 sm:text-sm"
       >
-        © {new Date().getFullYear()} Kiran. All Rights Reserved.
+        © {new Date().getFullYear()} Saikiran Kalluri · Code MIT · Content CC BY 4.0
       </footer>
     </section>
   );
