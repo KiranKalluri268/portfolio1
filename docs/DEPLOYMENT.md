@@ -60,7 +60,7 @@ The workflow intentionally verifies builds only. A future CI improvement should 
 - Download the résumé and test its links.
 - Submit the contact form and reply to the delivered email.
 - Inspect the social preview using LinkedIn Post Inspector or another crawler debugger.
-- Confirm `/projects` emits `noindex` while it remains incomplete.
+- Confirm `/projects` metadata, project links, images, and responsive layout.
 
 ## Common failures
 

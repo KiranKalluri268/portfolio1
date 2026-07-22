@@ -8,51 +8,16 @@ import Link from "next/link";
 import type { VirtualScrollData } from "lenis";
 import type { Project } from "@/types";
 import { useScrollActions } from "@/context/SmoothScrollContext";
+import projectData from "@/data/projects.json";
 
-const projects: Project[] = [
-  {
-    id: 1,
-    title: "ThirdEyeAI – Real-time Engagement Detection & Meeting Platform",
-    description:
-      "An AI-powered learning platform combining a WebRTC meeting engine, 94.25%-accurate engagement detection, privacy-first TensorFlow.js inference, real-time instructor analytics, and RAG-based session insights.",
-    image: "/images/project3.webp",
-    github: "https://github.com/KiranKalluri268/ThirdEye_Client",
-    live: "https://thirdeyeai.vercel.app/",
-  },
-  {
-    id: 2,
-    title: "CertiSafe (A Certificate Management System)",
-    description:
-      "A certificate management platform built by a four-member team for an institute, using React, Node.js, Express, DynamoDB, and Cloudinary for secure data and media handling. The platform onboarded more than 95 users.",
-    image: "/images/project1.png",
-    github: "https://github.com/KiranKalluri268/CMS_PRO",
-    live: "https://cms-pro-kiran-kalluris-projects.vercel.app/",
-  },
-  {
-    id: 3,
-    title: "IPL Score Predictor AI",
-    description:
-      "A Deep Neural Network model built with Keras to predict the final score of ongoing IPL matches using live inputs such as current runs, wickets, overs, recent performance, and team info.",
-    image: "/images/project2.png",
-    github: "https://github.com/KiranKalluri268/MS_AI_IPL-Score-Predictor",
-  },
-  {
-    id: 4,
-    title: "ResumeByAI",
-    description:
-      "A Next.js web app integrated with GPT-4 turbo and Razorpay that generates ATS-friendly resumes for users at a low cost.",
-    image: "/images/KS Logo.webp",
-    github: "https://github.com/KiranKalluri268",
-  },
-  {
-    id: 5,
-    title: "MindPlan",
-    description:
-      "A Flutter-based productivity app to manage goals, prioritize tasks using the Eisenhower Matrix, and track daily productivity.",
-    image: "/images/project4.webp",
-    github: "https://github.com/KiranKalluri268",
-  },
-];
+const projects: Project[] = projectData.projects.map((project) => ({
+  id: project.id,
+  title: project.title,
+  description: project.summary,
+  image: project.image,
+  github: project.links.github,
+  live: project.links.live,
+}));
 
 const PANEL_COUNT = projects.length + 2;
 const LAST_PANEL_INDEX = PANEL_COUNT - 1;
