@@ -1,40 +1,36 @@
 # Project Status
 
 Last updated: 2026-07-22  
-Active branch: `feat/projects-page`
+Active branch: `feat/hiring-cta-content-audit`
 
 ## Current focus
 
-Build and review the complete `/projects` case-study experience.
+Complete the copy, semantic-date, and image-quality audits.
 
 | Work item | Status | Notes |
 | --- | --- | --- |
-| Shared structured project data | Complete | Homepage and `/projects` use `src/data/projects.json` |
-| Responsive projects page | Complete | Featured case studies plus additional-project cards |
-| Project metadata and indexing | Complete | Canonical metadata added; `noindex` removed |
-| Sitemap | Complete | `/projects` included |
-| Content accuracy review | In review | Confirm descriptions, roles, metrics, and available links |
-| Desktop visual QA | Pending | Test common desktop widths and hover/focus states |
-| Mobile visual QA | Pending | Test small phones, landscape, and long-card scrolling |
+| Copy consistency audit | Complete | Corrected role naming, punctuation, capitalization, and résumé terminology |
+| Semantic experience dates | Complete | Visible periods use valid machine-readable year-month values |
+| Image quality configuration | Complete | Project images consistently use configured quality `90` |
+| Desktop visual QA | Pending | Review audited copy and experience-period rendering |
+| Mobile visual QA | Pending | Review audited copy and experience-period wrapping |
 | Automated verification | Complete | ESLint and the Next.js production build pass |
 
 ## Next
 
-1. Review `/projects` content and visuals on desktop and mobile.
-2. Add project-specific repository or live links if ResumeByAI or MindPlan become public.
-3. Complete the hiring CTA with availability and preferred-role information.
-4. Audit copy and machine-readable experience dates.
-5. Add automated tests and strengthen CI.
+1. Review the audited copy and experience dates on desktop and mobile.
+2. Add automated tests and strengthen CI.
+3. Add production error monitoring and structured operational logging.
 
 ## Later
 
-- Add production error monitoring and structured operational logging.
 - Consider individual project detail routes if case studies grow beyond the overview page.
 - Add new project screenshots and measurable outcomes as they become available.
 
 ## Recently completed
 
 - Comprehensive README and operational documentation
+- Responsive `/projects` case-study page backed by shared structured data
 - MIT code license and CC BY 4.0 content/design license
 - Mobile Experience timeline alignment and focus animation
 - Persistent mobile scene navigation overlay

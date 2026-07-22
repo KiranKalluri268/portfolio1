@@ -6,8 +6,14 @@ import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import type { Experience } from "@/types";
 import { useAudio } from "@/context/AudioContextProvider";
 
-type TimelineExperience = Omit<Experience, "description"> & {
+type TimelineExperience = Omit<Experience, "description" | "date"> & {
   description: string[];
+  period: {
+    startLabel: string;
+    startDate: string;
+    endLabel: string;
+    endDate?: string;
+  };
   location?: string;
   workMode?: "On-site" | "Hybrid" | "Remote";
 };
@@ -16,7 +22,11 @@ const experiences: TimelineExperience[] = [
   {
     title: "Software Engineer Intern",
     company: "Aude.ai",
-    date: "January 2026 - Present",
+    period: {
+      startLabel: "January 2026",
+      startDate: "2026-01",
+      endLabel: "Present",
+    },
     location: "Remote",
     description: [
       "Designed and developed a diagnostic web application for monitoring real-time data integrity and consistent end-user delivery.",
@@ -27,7 +37,12 @@ const experiences: TimelineExperience[] = [
   {
     title: "Forward Deployed Engineer Intern (FDE)",
     company: "AarogyalinQ Private Limited",
-    date: "August 2025 - January 2026",
+    period: {
+      startLabel: "August 2025",
+      startDate: "2025-08",
+      endLabel: "January 2026",
+      endDate: "2026-01",
+    },
     location: "Remote",
     description: [
       "Collaborated with clients to implement new features and optimize existing workflows.",
@@ -38,7 +53,12 @@ const experiences: TimelineExperience[] = [
   {
     title: "AWS Cloud Virtual Internship",
     company: "Eduskills Foundation",
-    date: "April 2024 - June 2024",
+    period: {
+      startLabel: "April 2024",
+      startDate: "2024-04",
+      endLabel: "June 2024",
+      endDate: "2024-06",
+    },
     location: "Remote",
     description: [
       "Completed a three-month virtual internship focused on AWS Cloud technologies.",
@@ -271,7 +291,15 @@ function ExperienceRow({ experience, index, dotRef }: ExperienceRowProps) {
           <dl className="space-y-3 text-sm text-gray-300">
             <div>
               <dt className="text-xs uppercase tracking-wider text-gray-500">Period</dt>
-              <dd className="mt-1">{experience.date}</dd>
+              <dd className="mt-1">
+                <time dateTime={experience.period.startDate}>{experience.period.startLabel}</time>
+                <span aria-hidden="true"> – </span>
+                {experience.period.endDate ? (
+                  <time dateTime={experience.period.endDate}>{experience.period.endLabel}</time>
+                ) : (
+                  <span>{experience.period.endLabel}</span>
+                )}
+              </dd>
             </div>
             {experience.location && (
               <div>

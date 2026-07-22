@@ -26,8 +26,8 @@ export default function Hero() {
   const reduceMotion = useReducedMotion();
   const words = useMemo(
     () => [
-      "MERN FULL STACK DEVELOPER..",
-      "PYTHON DEVELOPER....",
+      "MERN FULL-STACK DEVELOPER...",
+      "PYTHON DEVELOPER...",
       "AWS ENGINEER...",
       "C++ DEVELOPER...",
     ],
