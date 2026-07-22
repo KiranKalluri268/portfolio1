@@ -164,7 +164,7 @@ Avoid linking projects only to the general GitHub profile.
 
 Add a downloadable résumé, current availability, preferred role, location/time zone, and one prominent contact action. Keep social links as secondary actions.
 
-### 17. Correct copy and encoding issues
+### ~~17. Correct copy and encoding issues~~ — Completed
 
 Fix grammar, punctuation, capitalization, and corrupted characters such as `Â©` and `â†’`.
 
@@ -175,7 +175,7 @@ Examples include:
 - Add spacing around separators in the title
 - Use consistent technology naming: Node.js, GitHub, Java, AWS, etc.
 
-### 18. Replace invalid machine-readable dates
+### ~~18. Replace invalid machine-readable dates~~ — Completed
 
 Use valid `dateTime` values such as `2026-01` or separate start/end dates instead of strings like `January 2026 - Present` in the `dateTime` attribute.
 

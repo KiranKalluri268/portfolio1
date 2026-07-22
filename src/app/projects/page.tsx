@@ -136,7 +136,7 @@ function AdditionalProject({ project }: { project: ProjectCase }) {
           src={project.image}
           alt={project.imageAlt}
           fill
-          quality={88}
+          quality={90}
           sizes="(max-width: 768px) calc(100vw - 2rem), 33vw"
           className={project.id === 4 ? "object-contain" : "object-cover"}
         />

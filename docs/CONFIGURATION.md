@@ -85,6 +85,8 @@ When changing domains, update every canonical occurrence and the generated socia
 
 Keep both transparent video formats unless browser support requirements change. Large media should be optimized before committing.
 
+Project images use the configured Next.js quality value `90`; the default `75` remains available for other images. Add new quality values to `images.qualities` in `next.config.ts` before using them.
+
 ## Fonts
 
 The application uses `next/font/google` for Foldit and Tektur. The social image renderer cannot consume those generated WOFF2 URLs directly, so it embeds the committed static Tektur TTF files in `public/fonts`.

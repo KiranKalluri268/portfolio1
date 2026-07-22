@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   devIndicators: false,
   reactStrictMode: true,
+  images: {
+    qualities: [75, 90],
+  },
   
   // Optional modern configurations:
   compiler: {

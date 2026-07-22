@@ -19,7 +19,7 @@
       }
     ]
   },
-  "objective": "Innovative and detail-oriented Full Stack Developer and Computer Science undergraduate with hands-on experience in building scalable web applications, AI/ML integrations, and cloud-based systems. Strong foundation in Data Structures and Algorithms, with a passion for problem-solving and developing impactful, user-centric solutions.",
+  "objective": "Innovative and detail-oriented full-stack developer and Computer Science undergraduate with hands-on experience building scalable web applications, AI/ML integrations, and cloud-based systems. Strong foundation in data structures and algorithms, with a passion for problem-solving and developing impactful, user-centered solutions.",
   "skills": [
     {
       "category": "Languages",
@@ -31,7 +31,7 @@
     },
     {
       "category": "Web/Frameworks",
-      "items": ["React", "Next.js", "Node.js", "Express", "TailwindCSS"]
+      "items": ["React", "Next.js", "Node.js", "Express", "Tailwind CSS"]
     },
     {
       "category": "Databases",
@@ -100,5 +100,5 @@
     "Oracle Fusion Cloud Process Essentials (SCM, ERP, CX, HCM) – 2025"
   ],
   "languages": ["English", "Telugu", "Hindi"],
-  "strengths": ["Problem-solving", "leadership", "Curious", "fast learner"]
+  "strengths": ["Problem-solving", "leadership", "curiosity", "fast learning"]
 }
