@@ -146,7 +146,9 @@ Also change JSON-LD from `http://schema.org` to `https://schema.org`.
 
 Use one page-level `<h1>`. Change the navbar logo heading to a non-heading element if appropriate. Ensure every section has a visible heading, and use `header`, `nav`, `main`, `section`, and `footer` consistently.
 
-### 15. Improve project information and links
+### 15. Improve project information and links — In progress
+
+The shared project dataset and `/projects` case-study page are implemented. Content accuracy, available links, and real-device visual QA remain under review.
 
 Give every project its own repository link where available, add live demos where available, and explain:
 

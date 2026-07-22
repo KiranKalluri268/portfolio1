@@ -88,7 +88,7 @@ npm run build
 | --- | --- |
 | `/` | Main portfolio narrative |
 | `/resume` | Accessible JSON-driven résumé and PDF download |
-| `/projects` | Placeholder for detailed project case studies; currently `noindex` |
+| `/projects` | Responsive project overview and case studies |
 | `/api/contact` | Server-side contact form endpoint |
 | `/opengraph-image` | Generated 1200×630 social preview |
 | `/robots.txt` | Search crawler rules |
@@ -119,6 +119,7 @@ docs/                    Architecture and operational documentation
 - [Configuration](docs/CONFIGURATION.md)
 - [Deployment](docs/DEPLOYMENT.md)
 - [Contributing](docs/CONTRIBUTING.md)
+- [Current project status](PROJECT_STATUS.md)
 - [Improvement backlog](IMPROVEMENTS.md)
 
 ## Accessibility and performance

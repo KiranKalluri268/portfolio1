@@ -53,11 +53,14 @@ Edit `src/data/about.json`. Preserve valid JSON and keep emphasis ranges aligned
 
 Edit `src/data/resume.json`. Both `/resume` and the downloaded PDF consume this file, so content remains synchronized.
 
-### Homepage projects and experience
+### Projects and experience
 
-These currently live in:
+Project content is shared by the homepage carousel and projects page through:
 
-- `src/components/projects.tsx`
+- `src/data/projects.json`
+
+Experience content currently lives in:
+
 - `src/components/ExperienceTimeline.tsx`
 
 Use optimized images from `public/images` and provide specific repository/demo URLs where available.

@@ -69,7 +69,8 @@ The video pauses when the tab is hidden, before entry, or when reduced motion is
 
 - `src/data/about.json` controls About copy and emphasis.
 - `src/data/resume.json` is the single source for both résumé HTML and PDF output.
-- Homepage project and experience data currently live in their respective components.
+- `src/data/projects.json` supplies both the homepage carousel and `/projects` case studies.
+- Homepage experience data currently lives in `ExperienceTimeline.tsx`.
 
 The `/resume` route renders accessible HTML. `DownloadResumeButton` dynamically imports `@react-pdf/renderer`, keeping PDF generation code out of the initial homepage bundle.
 
@@ -87,4 +88,4 @@ The in-memory limiter is best-effort and instance-local. A distributed store is 
 
 ## Metadata
 
-The root layout defines canonical metadata, Open Graph data, Twitter card data, and Person JSON-LD. Next.js metadata routes generate the sitemap, robots file, and social image. `/projects` remains `noindex` until its case-study content is complete.
+The root layout defines canonical metadata, Open Graph data, Twitter card data, and Person JSON-LD. Next.js metadata routes generate the sitemap, robots file, and social image. `/projects` provides route-specific canonical and sharing metadata.
