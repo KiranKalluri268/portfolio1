@@ -65,7 +65,7 @@ When `prefers-reduced-motion: reduce` is active:
 - Black-hole video and shooting-star animation are paused.
 - Global CSS reduces transition and animation duration.
 
-Never hide content as part of a reduced-motion fallback.
+*Never hide content as part of a reduced-motion fallback.*
 
 ## Adding an animation safely
 
