@@ -84,7 +84,7 @@ The Contact component validates required fields in the browser, then posts JSON 
 4. Sends a plain-text email through the Resend REST API
 5. Returns truthful success or error responses
 
-The in-memory limiter is best-effort and instance-local. A distributed store is required if strict global rate limiting becomes necessary.
+*The in-memory limiter is best-effort and instance-local. A distributed store is required if strict global rate limiting becomes necessary.*
 
 ## Metadata
 
