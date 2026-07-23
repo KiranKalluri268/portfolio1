@@ -86,6 +86,6 @@ Run `npm run build`; metadata image failures appear during prerendering.
 
 Check filename capitalization and verify both source formats are committed. Vercel's filesystem is case-sensitive.
 
-### Build works in PowerShell but not WSL
+### Build works in PowerShell but not Windows Subsystem for Linux
 
 Use WSL 2 with a Linux Node.js installation, or run npm commands from PowerShell. Avoid mixing Windows and Linux dependency installations in the same `node_modules` directory.
